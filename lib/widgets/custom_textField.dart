@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final String label;
   final bool isPassword;
   final bool readOnly;
+  final bool phone;
   final TextEditingController? controller;
   final IconData? prefixIcon;
   final IconData? suffixIcon;
@@ -16,10 +18,11 @@ class CustomTextField extends StatelessWidget {
   final List<String>? dropdownItems;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     this.isPassword = false,
     this.readOnly = false,
+    this.phone = false,
     this.controller,
     this.prefixIcon,
     this.suffixIcon,
@@ -29,27 +32,48 @@ class CustomTextField extends StatelessWidget {
     this.initialValue,
     this.isDropdown = false,
     this.dropdownItems,
-  }) : super(key: key);
+  });
+
+  @override
+  _CustomTextFieldState createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  bool _obscureText = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isPassword) {
+      _obscureText = false;
+    }
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 16)),
+        Text(widget.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        isDropdown
+        widget.isDropdown
             ? DropdownButtonFormField<String>(
-          value: dropdownItems?.isNotEmpty == true ? dropdownItems!.first : null,
-          items: dropdownItems
+          value: widget.dropdownItems?.isNotEmpty == true ? widget.dropdownItems!.first : null,
+          items: widget.dropdownItems
               ?.map((item) => DropdownMenuItem(
             value: item,
             child: Text(item),
           ))
               .toList(),
           onChanged: (value) {
-            if (value != null) {
-              onChanged!(value);
+            if (value != null && widget.onChanged != null) {
+              widget.onChanged!(value);
             }
           },
           decoration: InputDecoration(
@@ -59,36 +83,54 @@ class CustomTextField extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.borderColor), // Default color
+              borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.borderColor, width: 2), // Color when focused
+              borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
             ),
           ),
         )
-            :
-        TextField(
-          controller: controller,
-          onChanged: onChanged,
-          obscureText: isPassword,
-          readOnly: readOnly,
-          keyboardType: keyboardType,
-          onTap: onTap,
+            : widget.phone
+            ? IntlPhoneField(
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+          ),
+          initialCountryCode: 'BD',
+          onChanged: (phone) {
+            if (widget.onChanged != null) {
+              widget.onChanged!(phone.completeNumber);
+            }
+          },
+        )
+            : TextField(
+          controller: widget.controller,
+          onChanged: widget.onChanged,
+          obscureText: widget.isPassword ? _obscureText : false,
+          readOnly: widget.readOnly,
+          keyboardType: widget.keyboardType,
+          onTap: widget.onTap,
           decoration: InputDecoration(
-            prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-            suffixIcon: suffixIcon != null ? Icon(suffixIcon) : null,
+            prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
+            suffixIcon: widget.isPassword
+                ? IconButton(
+              icon: Icon(
+                _obscureText ? Icons.visibility : Icons.visibility_off,
+              ),
+              onPressed: _togglePasswordVisibility,
+            )
+                : (widget.suffixIcon != null ? Icon(widget.suffixIcon) : null),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.borderColor),
+              borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.borderColor),
+              borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: AppColors.borderColor, width: 2),
+              borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
             ),
           ),
         ),

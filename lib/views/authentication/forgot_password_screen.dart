@@ -24,7 +24,7 @@ class ForgotPasswordScreen extends StatelessWidget {
             const SizedBox(height: 16),
             const CustomTextField(label: "Email"),
             const SizedBox(height: 16,),
-            CustomButton(text: "Continue", onPressed: () => Get.toNamed('/verify-code'),),
+            CustomButton(text: "CONTINUE", onPressed: () => Get.toNamed('/language'),),
             const SizedBox(height: 16),
             const SignupWithOther(),
           ],

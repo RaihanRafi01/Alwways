@@ -3,11 +3,11 @@ import 'dart:ui';
 import 'package:get/get.dart';
 
 class LanguageController extends GetxController {
-  var selectedLanguage = 'en'.obs;
+  var selectedLanguage = 'en'.obs; // Observable for language selection
 
   void changeLanguage(String languageCode) {
-    selectedLanguage.value = languageCode;
-    // Optionally, set the app language here
+    selectedLanguage.value = languageCode; // Update selected language
+    // Update the app locale dynamically
     if (languageCode == 'en') {
       Get.updateLocale(const Locale('en', 'US'));
     } else if (languageCode == 'es') {
@@ -16,7 +16,7 @@ class LanguageController extends GetxController {
   }
 
   void saveLanguagePreference() {
-    // Save the selected language to local storage or shared preferences
-    // This can be used to persist language choice
+    // Optionally save the language to local storage for persistence
+    // This could be used for remembering the user's language preference
   }
 }

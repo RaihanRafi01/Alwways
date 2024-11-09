@@ -16,20 +16,22 @@ class SetNewPasswordScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const AppLogo(),
-              const SizedBox(height: 20),
-              const Text("Enter your email to reset your password.",style: TextStyle(fontWeight: FontWeight.bold),),
-              const SizedBox(height: 16),
-              const CustomTextField(label: "New Password" , suffixIcon : Icons.visibility_off_outlined,isPassword: true,),
-              const CustomTextField(label: "Confirm Password", suffixIcon : Icons.visibility_off_outlined,isPassword: true,),
-              const SizedBox(height: 16,),
-              CustomButton(text: "Continue", onPressed: () => Get.toNamed('/set-new-password'),),
-              const SizedBox(height: 16),
-              const SignupWithOther(),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const AppLogo(),
+                const SizedBox(height: 60),
+                const CustomTextField(label: "New Password" , suffixIcon : Icons.visibility_off_outlined,isPassword: true,),
+                const CustomTextField(label: "Confirm Password", suffixIcon : Icons.visibility_off_outlined,isPassword: true,),
+                const SizedBox(height: 16,),
+                // TODO
+                // After provide the new password ; next page will be ?
+                CustomButton(text: "SUBMIT", onPressed: () => Get.toNamed('/login'),),
+                const SizedBox(height: 16),
+                const SignupWithOther(),
+              ],
+            ),
           ),
         ),
       ),

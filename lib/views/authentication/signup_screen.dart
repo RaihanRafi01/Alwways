@@ -70,12 +70,14 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
               CustomTextField(
                 label: "Email address",
+                keyboardType: TextInputType.emailAddress,
                 prefixIcon: Icons.email_outlined,
                 onChanged: (value) => authController.email.value = value,
               ),
               CustomTextField(
                 label: "Contact",
-                prefixIcon: Icons.phone,
+                keyboardType: TextInputType.phone,
+                phone: true,
                 onChanged: (value) => authController.contact.value = value,
               ),
               CustomTextField(

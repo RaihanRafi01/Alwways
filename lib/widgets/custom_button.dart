@@ -32,7 +32,7 @@ class CustomButton extends StatelessWidget {
           ),
         ),
         child: Text(
-          text,
+          text.toUpperCase(),
           style: TextStyle(fontSize: 16, color: textColor),
         ),
       ),
