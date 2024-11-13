@@ -6,6 +6,8 @@ import 'package:playground_02/views/authentication/set_new_password_screen.dart'
 import 'package:playground_02/views/authentication/signup_screen.dart';
 import 'package:playground_02/views/authentication/verify_code_screen.dart';
 import 'package:playground_02/views/chatWithAI/chatScreen.dart';
+import 'package:playground_02/views/home/book_overview.dart';
+import 'package:playground_02/views/home/home_landing.dart';
 import 'package:playground_02/views/onboarding/splashScreen_1.dart';
 class AppRoutes {
   static const String splash1 = '/splash1';
@@ -16,13 +18,20 @@ class AppRoutes {
   static const String setNewPassword = '/set-new-password';
   static const String signup = '/signup';
   static const String language = '/language';
+  static const String homePageLanding = '/homePageLanding';
+  static const String bookOverView = '/bookOverView';
+
 
 
   static const String chat = '/chat';
 
   static final List<GetPage> pages = [
+
+    ///// ONBOARDING
     GetPage(name: splash1, page: () => const Splashscreen1()),
     GetPage(name: splash2, page: () => LoginScreen()),
+
+    ///// AUTH
     GetPage(name: login, page: () => LoginScreen()),
     GetPage(name: forgotPassword, page: () => ForgotPasswordScreen()),
     GetPage(name: verifyCode, page: () => VerifyCodeScreen()),
@@ -30,7 +39,16 @@ class AppRoutes {
     GetPage(name: signup, page: () => SignupScreen()),
     GetPage(name: language, page: () => LanguageScreen()),
 
+    ///// HOME
+    GetPage(name: homePageLanding, page: () => HomePageLanding()),
+    GetPage(name: bookOverView, page: () => BookOverView()),
+
+
+
+    //// CHAT BOT
 
     GetPage(name: chat, page: () => ChatScreen()),
+
+
   ];
 }

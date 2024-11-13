@@ -9,7 +9,7 @@ class UserMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 80.0),
+      padding: const EdgeInsets.only(left: 80.0,top: 5,bottom: 5),
       child: Align(
         alignment: Alignment.centerRight,
         child: Container(

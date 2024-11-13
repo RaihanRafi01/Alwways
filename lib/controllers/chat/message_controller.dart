@@ -9,6 +9,11 @@ class MessageController extends GetxController {
   var messages = <Widget>[].obs;
   var userMessages = <String>[]; // Store all user messages for batch processing
   var isPromptVisible = true.obs; // Track the visibility of the prompt
+  var hasText = false.obs; // Track if there's text in the input field
+
+  void updateHasText(String text) {
+    hasText.value = text.isNotEmpty;
+  }
 
   void sendMessage(String message) {
     if (message.trim().isNotEmpty) {
@@ -43,7 +48,9 @@ class MessageController extends GetxController {
   void _handleButtonClick(bool isYes) {
     // Remove the Yes/No prompt after a button click
     isPromptVisible.value = false; // Hide the prompt
-    messages.removeWhere((message) => message is BotMessage && message.message == "Would you like to generate a book from your stories?");
+    messages.removeWhere((message) =>
+    message is BotMessage &&
+        message.message == "Would you like to generate a book from your stories?");
 
     // Add the corresponding response message
     if (isYes) {
@@ -85,13 +92,13 @@ class MessageController extends GetxController {
 
           messages.add(BotMessage(message: botMessage));
         } else {
-          messages.add(BotMessage(message: "Failed to generate the book. Please try again."));
+          messages.add(const BotMessage(message: "Failed to generate the book. Please try again."));
         }
       } catch (e) {
-        messages.add(BotMessage(message: "Could not connect to server."));
+        messages.add(const BotMessage(message: "Could not connect to server."));
       }
     } else {
-      messages.add(BotMessage(message: "No stories found to generate the book. Please add some stories first."));
+      messages.add(const BotMessage(message: "No stories found to generate the book. Please add some stories first."));
     }
   }
 }

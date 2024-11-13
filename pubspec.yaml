@@ -40,6 +40,8 @@ dependencies:
   intl: ^0.19.0
   pin_code_fields: ^8.0.1
   intl_phone_field: ^3.2.0
+  flutter_svg: ^2.0.14
+  speech_to_text: ^7.0.0
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +71,8 @@ flutter:
     - assets/images/auth/
     - assets/images/flags/
     - assets/images/chat/
+    - assets/images/home/
+    - assets/images/book/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

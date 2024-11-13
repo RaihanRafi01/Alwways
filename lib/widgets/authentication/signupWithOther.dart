@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:playground_02/widgets/social_button.dart';
-
+import 'package:playground_02/widgets/authentication/social_button.dart';
 class SignupWithOther extends StatelessWidget {
   const SignupWithOther({super.key});
 

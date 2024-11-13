@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:playground_02/widgets/appLogo.dart';
-import 'package:playground_02/widgets/custom_button.dart';
-import 'package:playground_02/widgets/custom_textField.dart';
-import 'package:playground_02/widgets/pinCode_InputField.dart';
-import 'package:playground_02/widgets/signupWithOther.dart';
+import 'package:playground_02/widgets/authentication/appLogo.dart';
+import 'package:playground_02/widgets/authentication/custom_button.dart';
+import 'package:playground_02/widgets/authentication/pinCode_InputField.dart';
+import 'package:playground_02/widgets/authentication/signupWithOther.dart';
 import '../../controllers/auth_controller.dart';
 
 class VerifyCodeScreen extends StatelessWidget {

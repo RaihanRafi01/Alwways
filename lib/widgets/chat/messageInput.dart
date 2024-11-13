@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/controllers/chat/message_controller.dart';
+import 'package:playground_02/controllers/chat/voice_controller.dart';
 
 class MessageInput extends StatelessWidget {
-  const MessageInput({super.key});
+  final MessageController _messageController = Get.find<MessageController>();
+  final VoiceController _voiceController = Get.put(VoiceController());
+  final TextEditingController _textController = TextEditingController();
+  bool _isBottomSheetOpen = false;
+
+  MessageInput({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final MessageController controller = Get.find<MessageController>();
-    final TextEditingController textController = TextEditingController();
+    _textController.addListener(() {
+      _messageController.updateHasText(_textController.text);
+    });
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -16,36 +25,145 @@ class MessageInput extends StatelessWidget {
         children: [
           Expanded(
             child: TextField(
-              controller: textController,  // Use TextEditingController to get the current input
+              controller: _textController,
               decoration: InputDecoration(
                 hintText: 'Message',
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: Colors.grey[200],
                 contentPadding: const EdgeInsets.symmetric(
-                    vertical: 10.0, horizontal: 20.0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30.0),
-                  borderSide: BorderSide.none,
+                    vertical: 12.0, horizontal: 20.0),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                  borderSide: const BorderSide(
+                    color: AppColors.borderColor,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20.0),
+                  borderSide: const BorderSide(
+                    color: AppColors.borderColor,
+                    width: 2.0,
+                  ),
+                ),
+                suffixIcon: IconButton(
+                  icon: SvgPicture.asset(
+                    'assets/images/chat/att_icon.svg',
+                  ),
+                  onPressed: () {
+                    // Handle attachment button press
+                  },
                 ),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () {
-              String currentMessage = textController.text.trim();
-              if (currentMessage.isNotEmpty) {
-                controller.sendMessage(currentMessage);  // Send the current message
-                textController.clear();  // Clear the text field after sending
-              }
-            },
-            child: const CircleAvatar(
-              backgroundColor: Colors.green,
-              child: Icon(Icons.send, color: Colors.white),
-            ),
-          ),
+          Obx(() {
+            return GestureDetector(
+              onTap: () {
+                if (_messageController.hasText.value) {
+                  // Send text message
+                  _messageController.sendMessage(_textController.text.trim());
+                  _textController.clear();
+                } else {
+                  // Start listening for voice input
+                  _voiceController.startListening();
+                  _voiceController.isManuallyCancelled = false;
+                  _showVoiceInputSheet(context);
+                }
+              },
+              child: SvgPicture.asset(
+                _messageController.hasText.value
+                    ? 'assets/images/chat/send_icon.svg'
+                    : 'assets/images/chat/mic_icon.svg',
+                width: 36,
+                height: 36,
+              ),
+            );
+          }),
         ],
       ),
     );
+  }
+
+  void _showVoiceInputSheet(BuildContext context) {
+    if (_isBottomSheetOpen) return;
+    _isBottomSheetOpen = true;
+
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      builder: (BuildContext context) {
+        return Container(
+          height: 200,
+          padding: const EdgeInsets.all(16.0),
+          child: Stack(
+            children: [
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/images/chat/listening_icon.svg',
+                      height: 22,
+                      width: 77,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Listening...",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                bottom: 16,
+                left: 16,
+                child: SvgPicture.asset(
+                  'assets/images/chat/att_icon.svg',
+                  height: 32,
+                  width: 32,
+                ),
+              ),
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    _voiceController.isManuallyCancelled = true;
+                    _voiceController.cancelVoiceInput();
+                    if (_isBottomSheetOpen) {
+                      Navigator.pop(context);
+                      _isBottomSheetOpen = false;
+                    }
+                  },
+                  child: SvgPicture.asset(
+                    'assets/images/chat/cancel_icon.svg',
+                    height: 32,
+                    width: 32,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ).then((_) {
+      _isBottomSheetOpen = false;
+      if (!_voiceController.isManuallyCancelled &&
+          _voiceController.recognizedText.isNotEmpty) {
+        _voiceController.sendRecognizedText();
+      }
+    });
+
+    // Listen for recognized text to close the sheet
+    _voiceController.recognizedText.listen((text) {
+      if (text.isNotEmpty && _isBottomSheetOpen) {
+        Navigator.pop(context);
+        _isBottomSheetOpen = false;
+        if (!_voiceController.isManuallyCancelled) {
+          _voiceController.sendRecognizedText();
+        }
+      }
+    });
   }
 }

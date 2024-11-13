@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/controllers/auth_controller.dart';
-import 'package:playground_02/widgets/appLogo.dart';
-import 'package:playground_02/widgets/custom_button.dart';
-import 'package:playground_02/widgets/custom_textField.dart';
-import 'package:playground_02/widgets/signupWithOther.dart';
-import 'package:playground_02/widgets/social_button.dart';
+import 'package:playground_02/widgets/authentication/appLogo.dart';
+import 'package:playground_02/widgets/authentication/custom_button.dart';
+import 'package:playground_02/widgets/authentication/signupWithOther.dart';
+import '../../widgets/authentication/custom_textField.dart';
 
 class LoginScreen extends StatelessWidget {
   final AuthController authController = Get.put(AuthController());

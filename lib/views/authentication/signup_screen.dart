@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:playground_02/widgets/custom_button.dart';
-import 'package:playground_02/widgets/custom_textField.dart';
-import 'package:playground_02/widgets/profileImage.dart';
+import 'package:playground_02/widgets/authentication/custom_button.dart';
+import 'package:playground_02/widgets/authentication/custom_textField.dart';
+import 'package:playground_02/widgets/authentication/profileImage.dart';
 import '../../controllers/auth_controller.dart';
 import 'package:intl/intl.dart';
 

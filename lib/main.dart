@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       translations: AppTranslations(),
       locale: const Locale('en', 'US'),
       fallbackLocale: const Locale('en', 'US'),
-      initialRoute: AppRoutes.chat,
+      initialRoute: AppRoutes.homePageLanding,
       getPages: AppRoutes.pages,
       theme: ThemeData(
         fontFamily: 'Visby',
