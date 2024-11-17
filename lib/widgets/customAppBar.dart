@@ -124,7 +124,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
             CustomButton(
               isEditPage: true,
               text: "cancel",
-              onPressed: () {},
+              onPressed: () => Get.back(),
               backgroundColor: Colors.transparent,
               textColor: AppColors.appColor,
             ),
@@ -160,7 +160,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
             CustomButton(
               isEditPage: true,
               text: "No, save using lock off",
-              onPressed: () {},
+              onPressed: () => Get.back(),
               backgroundColor: Colors.transparent,
               textColor: AppColors.appColor,
             ),
