@@ -4,7 +4,7 @@ import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/controllers/chat/message_controller.dart';
 import 'package:playground_02/widgets/chat/bookPreview.dart';
 import 'package:playground_02/widgets/chat/botMessage.dart';
-import 'package:playground_02/widgets/chatHeader.dart';
+import 'package:playground_02/widgets/customAppBar.dart';
 import 'package:playground_02/widgets/chat/messageInput.dart';
 
 class ChatScreen extends StatelessWidget {

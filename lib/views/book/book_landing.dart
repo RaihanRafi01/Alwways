@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/constants/routes.dart';
 import 'package:playground_02/widgets/book/bookCard.dart';
-import '../../widgets/chatHeader.dart';
+import '../../widgets/customAppBar.dart';
 
 class BookLandingScreen extends StatelessWidget {
   const BookLandingScreen({super.key});

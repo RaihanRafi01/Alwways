@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:playground_02/widgets/book/bookPageView.dart';
-import 'package:playground_02/widgets/chatHeader.dart';
+import 'package:playground_02/widgets/customAppBar.dart';
 
 class BookDetailsScreen extends StatelessWidget {
 

@@ -18,6 +18,7 @@ class AppColors {
   static const Color bookTextColor = Color(0xFF364636);
   static const Color dotInactive = Color(0xFFA1A1A1);
   static const Color onboardingText = Color(0xFF707070);
+  static const Color buttonRed = Color(0xFFFF3B30);
 
 
 

@@ -1,44 +1,103 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:playground_02/widgets/authentication/custom_button.dart';
+import 'package:playground_02/widgets/customAppBar.dart';
 
+import '../../constants/color/app_colors.dart';
 import '../../controllers/book/bookChapter_controller.dart';
 
-class BookEditScreen extends StatelessWidget {
+class BookEditPage extends StatefulWidget {
+  final String chapterTitle;
+  final String chapterContent;
   final int index;
-  final ChapterController chapterController;
 
-  BookEditScreen({required this.index, required this.chapterController});
+  const BookEditPage({
+    super.key,
+    required this.index,
+    required this.chapterTitle,
+    required this.chapterContent,
+  });
 
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController contentController = TextEditingController();
+  @override
+  _BookEditPageState createState() => _BookEditPageState();
+}
+
+class _BookEditPageState extends State<BookEditPage> {
+  late TextEditingController _titleController; // Controller for chapter title
+  late TextEditingController _contentController; // Controller for chapter content
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize controllers with the initial title and content
+    _titleController = TextEditingController(text: widget.chapterTitle);
+    _contentController = TextEditingController(text: widget.chapterContent);
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the controllers when the widget is removed
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    titleController.text = chapterController.bookChapter[index];
-    contentController.text = chapterController.bookContent[index];
-
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit Chapter")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: const CustomAppbar(
+        title: "Edit Memory",
+        isEdit: true,
+      ),
+      body: Container(
+        color: AppColors.bookBackground, // Background color
+        padding: const EdgeInsets.all(16.0), // Padding around content
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start, // Align title to the left
           children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: "Chapter Title"),
+            // Title TextField (Editable title)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0), // Add spacing below title
+              child: TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "Enter the chapter title...",
+                ),
+                style: const TextStyle(
+                  fontSize: 20.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-            TextField(
-              controller: contentController,
-              decoration: const InputDecoration(labelText: "Chapter Content"),
-              maxLines: 10,
+            // Content TextField (Editable content)
+            Expanded(
+              child: TextField(
+                controller: _contentController,
+                maxLines: null,
+                expands: true,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "Edit the content here...",
+                ),
+                style: const TextStyle(
+                  fontSize: 16.0,
+                ),
+              ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
+            const SizedBox(height: 16),
+            // Save Button
+            CustomButton(
+              text: "Save",
               onPressed: () {
-                chapterController.updateChapter(index, titleController.text, contentController.text);
+                final controller = Get.find<BookChapterController>();
+                // Update the chapter title and content using the controller
+                controller.updateChapterTitle(widget.index, _titleController.text.trim());
+                controller.updateChapterContent(widget.index, _contentController.text.trim());
+                print('Title and content updated successfully!');
+                // Optionally, navigate back after saving
                 Get.back();
               },
-              child: const Text("Save Changes"),
             ),
           ],
         ),
