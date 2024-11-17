@@ -9,8 +9,8 @@ class BookDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return const Scaffold(
-      appBar: CustomAppbar(title: "",isHome: true,),
+    return Scaffold(
+      appBar: const CustomAppbar(title: "",isHome: true,),
       body: BookPageView(), // Display the book content
     );
   }

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
+import 'package:playground_02/constants/routes.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
+import 'package:playground_02/widgets/book/bookCard.dart';
 import 'package:playground_02/widgets/home/book_card.dart';
 import 'package:playground_02/widgets/home/custom_bottom_navigation_bar.dart';
 
@@ -34,7 +37,10 @@ class _HomePageLandingState extends State<BookOverView> {
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.only(left: 20.0,right: 20,top: 30),
-                  child: BookCard(progress: progress),
+                  child: GestureDetector(
+                    //TODO Change the route
+                    onTap: () => Get.toNamed(AppRoutes.bookLanding),
+                      child: BookCard(progress: progress)),
                 ),
                 const SizedBox(height: 20),
                 const Text(

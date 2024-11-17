@@ -5,13 +5,18 @@ import 'package:playground_02/views/authentication/login_screen.dart';
 import 'package:playground_02/views/authentication/set_new_password_screen.dart';
 import 'package:playground_02/views/authentication/signup_screen.dart';
 import 'package:playground_02/views/authentication/verify_code_screen.dart';
+import 'package:playground_02/views/book/bookDetailsScreen.dart';
 import 'package:playground_02/views/chatWithAI/chatScreen.dart';
 import 'package:playground_02/views/home/book_overview.dart';
 import 'package:playground_02/views/home/home_landing.dart';
+import 'package:playground_02/views/onboarding/onboardingScreen.dart';
 import 'package:playground_02/views/onboarding/splashScreen_1.dart';
+
+import '../views/book/bookCoverEditScreen.dart';
+import '../views/book/book_landing.dart';
 class AppRoutes {
   static const String splash1 = '/splash1';
-  static const String splash2 = '/splash2';
+  static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String forgotPassword = '/forgot-password';
   static const String verifyCode = '/verify-code';
@@ -20,7 +25,9 @@ class AppRoutes {
   static const String language = '/language';
   static const String homePageLanding = '/homePageLanding';
   static const String bookOverView = '/bookOverView';
-
+  static const String bookLanding = '/bookLanding';
+  static const String bookDetailsScreen = '/bookDetailsScreen';
+  static const String bookCoverEditScreen = '/bookCoverEditScreen';
 
 
   static const String chat = '/chat';
@@ -29,7 +36,7 @@ class AppRoutes {
 
     ///// ONBOARDING
     GetPage(name: splash1, page: () => const Splashscreen1()),
-    GetPage(name: splash2, page: () => LoginScreen()),
+    GetPage(name: onboarding, page: () => const OnboardingScreen()),
 
     ///// AUTH
     GetPage(name: login, page: () => LoginScreen()),
@@ -40,14 +47,26 @@ class AppRoutes {
     GetPage(name: language, page: () => LanguageScreen()),
 
     ///// HOME
-    GetPage(name: homePageLanding, page: () => HomePageLanding()),
+    GetPage(name: homePageLanding, page: () => const HomePageLanding()),
     GetPage(name: bookOverView, page: () => BookOverView()),
 
 
 
     //// CHAT BOT
 
-    GetPage(name: chat, page: () => ChatScreen()),
+    GetPage(name: chat, page: () => const ChatScreen()),
+
+
+    /////// BOOK
+
+    GetPage(name: bookLanding, page: () => const BookLandingScreen()),
+    GetPage(name: bookDetailsScreen, page: () => const BookDetailsScreen()),
+    GetPage(name: bookLanding, page: () => const BookLandingScreen()),
+    GetPage(name: bookCoverEditScreen, page: () => const BookCoverEditScreen()),
+
+
+
+
 
 
   ];

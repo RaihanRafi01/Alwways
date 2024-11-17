@@ -16,6 +16,7 @@ class CustomTextField extends StatefulWidget {
   final String? initialValue;
   final bool isDropdown;
   final List<String>? dropdownItems;
+  final double radius;
 
   const CustomTextField({
     super.key,
@@ -32,6 +33,7 @@ class CustomTextField extends StatefulWidget {
     this.initialValue,
     this.isDropdown = false,
     this.dropdownItems,
+    this.radius = 10,
   });
 
   @override
@@ -78,15 +80,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
           },
           decoration: InputDecoration(
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(widget.radius),
               borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(widget.radius),
               borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(widget.radius),
               borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
             ),
           ),
@@ -121,15 +123,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
             )
                 : (widget.suffixIcon != null ? Icon(widget.suffixIcon) : null),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(widget.radius),
               borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(widget.radius),
               borderSide: const BorderSide(color: AppColors.borderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(widget.radius),
               borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
             ),
           ),

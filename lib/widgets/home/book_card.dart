@@ -1,59 +1,62 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
 
 class BookCard extends StatelessWidget {
   final double progress;
+  final bool isGrid;
 
-  const BookCard({Key? key, required this.progress}) : super(key: key);
+  const BookCard({
+    Key? key,
+    required this.progress,
+    this.isGrid = false, // Default to false if not specified
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 408,
-      padding: const EdgeInsets.all(16),
+      height: isGrid ? 100 : 450, // Adjust container height based on isGrid
+      padding: EdgeInsets.all(isGrid ? 16 : 20),
       decoration: BoxDecoration(
-        color: AppColors.bookBackground,
+        color: isGrid ? Colors.transparent : AppColors.bookBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderColor),
+        border: Border.all(color: isGrid ? Colors.transparent : AppColors.borderColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Book cover with image background, title, and decoration
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0,right: 20,top: 20),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Background image
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    "assets/images/book/cover_image_1.png",
-                    height: 300,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // Background image with conditional height
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  "assets/images/book/cover_image_1.png",
+                  height: isGrid ? 200 : 350, // Adjust image height based on isGrid
+                  width: double.infinity,
+                  fit: BoxFit.cover,
                 ),
-                // Text and underline decoration
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "My Life",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+              ),
+              // Text and underline decoration
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "My Life",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(height: 4),
-                    SvgPicture.asset("assets/images/book/book_underline_1.svg"),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                  const SizedBox(height: 4),
+                  SvgPicture.asset("assets/images/book/book_underline_1.svg"),
+                ],
+              ),
+            ],
           ),
           const SizedBox(height: 16),
 
@@ -90,7 +93,7 @@ class BookCard extends StatelessWidget {
             style: const TextStyle(
               color: AppColors.textColor,
               fontSize: 14,
-              fontWeight: FontWeight.bold
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -98,3 +101,4 @@ class BookCard extends StatelessWidget {
     );
   }
 }
+*/

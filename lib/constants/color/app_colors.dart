@@ -13,6 +13,12 @@ class AppColors {
   static const Color botTextColor = Color(0xFF8CAB91);
   static const Color userMessageBackground = Color(0xFFE9E9E9);
   static const Color bookBackground = Color(0xFFFAF1E6);
+  static const Color bookBackground1 = Color(0xFFDABF9E);
+  static const Color bookBackground2 = Color(0xFFFCCA8D);
+  static const Color bookTextColor = Color(0xFF364636);
+  static const Color dotInactive = Color(0xFFA1A1A1);
+  static const Color onboardingText = Color(0xFF707070);
+
 
 
 

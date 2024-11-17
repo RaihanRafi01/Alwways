@@ -80,10 +80,102 @@ class MessageInput extends StatelessWidget {
               ),
             );
           }),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => _showMoreOptionsSheet(context),
+            child: SvgPicture.asset("assets/images/chat/more_icon.svg",
+              width: 36,
+              height: 36,),
+          )
         ],
       ),
     );
   }
+
+  void _showMoreOptionsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: true, // Dismisses the modal when tapping outside
+      isScrollControlled: true, // Custom size control
+      backgroundColor: Colors.transparent, // Transparent for custom width
+      builder: (BuildContext context) {
+        return GestureDetector(
+          onTap: () => Navigator.pop(context), // Close on tapping outside
+          child: Container(
+            color: Colors.transparent, // Transparent to detect outside taps
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 60.0,right: 10),
+                child: Container(
+                  width: 150, // Fixed width
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16.0),
+                    border: Border.all(
+                      color: AppColors.appColor, // Add your border color here
+                      width: 2.0, // Border thickness
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: AppColors.appColor,
+                        blurRadius: 5.0,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        title: const Text('Option 1'),
+                        onTap: () {
+                          // Handle Option 1
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('Option 2'),
+                        onTap: () {
+                          // Handle Option 2
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('Option 2'),
+                        onTap: () {
+                          // Handle Option 2
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('Option 2'),
+                        onTap: () {
+                          // Handle Option 2
+                          Navigator.pop(context);
+                        },
+                      ),
+                      ListTile(
+                        title: const Text('Option 2'),
+                        onTap: () {
+                          // Handle Option 2
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+
+
 
   void _showVoiceInputSheet(BuildContext context) {
     if (_isBottomSheetOpen) return;
@@ -108,10 +200,15 @@ class MessageInput extends StatelessWidget {
                       width: 77,
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      "Listening...",
-                      style: TextStyle(fontSize: 16),
-                    ),
+                    Obx(() {
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Text(
+                          _voiceController.recognizedText.value,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ),

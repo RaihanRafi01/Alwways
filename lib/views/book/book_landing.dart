@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/constants/routes.dart';
 import 'package:playground_02/widgets/book/bookCard.dart';
-import 'package:playground_02/widgets/home/book_card.dart';
 import '../../widgets/chatHeader.dart';
 
 class BookLandingScreen extends StatelessWidget {

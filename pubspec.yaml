@@ -42,6 +42,9 @@ dependencies:
   intl_phone_field: ^3.2.0
   flutter_svg: ^2.0.14
   speech_to_text: ^7.0.0
+  introduction_screen: ^3.1.14
+  smooth_page_indicator: ^1.2.0+3
+  gif: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +76,7 @@ flutter:
     - assets/images/chat/
     - assets/images/home/
     - assets/images/book/
+    - assets/images/onboarding/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

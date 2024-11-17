@@ -4,7 +4,7 @@ import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/controllers/chat/message_controller.dart';
 import 'package:playground_02/widgets/chat/bookPreview.dart';
 import 'package:playground_02/widgets/chat/botMessage.dart';
-import 'package:playground_02/widgets/chat/chatHeader.dart';
+import 'package:playground_02/widgets/chatHeader.dart';
 import 'package:playground_02/widgets/chat/messageInput.dart';
 
 class ChatScreen extends StatelessWidget {
@@ -25,7 +25,7 @@ class ChatScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.appBackground,
-      appBar: const ChatHeader(),
+      appBar: const CustomAppbar(title: "AI Bot",),
       body: Column(
         children: [
           Expanded(
@@ -34,7 +34,7 @@ class ChatScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               children: [
                 const Text("Hello, and welcome!",style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
-                /*const BookPreview(),*/
+                const BookPreview(bookTitle: 'My Life', svgPath: 'assets/images/book/book_underline_1_rotate.svg'),
                 const BotMessage(message: "I’m here to help you create a beautiful memoir of your life. 😊"),
                 const SizedBox(height: 20),
                 const BotMessage(message: "We’ll go through some questions, and you can share as much or as little as you’d like. Think of me as a guide, helping you capture your most meaningful memories.\nLet’s start with something simple. Can you tell me a little about where you grew up?"),

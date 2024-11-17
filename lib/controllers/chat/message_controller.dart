@@ -15,6 +15,11 @@ class MessageController extends GetxController {
     hasText.value = text.isNotEmpty;
   }
 
+  void sendBotMessage(String botMessage) {
+    messages.add(BotMessage(message: botMessage));
+  }
+
+
   void sendMessage(String message) {
     if (message.trim().isNotEmpty) {
       userMessages.add(message); // Store the message for API request

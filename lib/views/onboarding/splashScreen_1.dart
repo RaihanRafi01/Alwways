@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:get/get.dart';
-import 'package:playground_02/views/onboarding/splashScreen_2.dart'; // Import the second splash screen
+import 'package:playground_02/constants/routes.dart';
+import 'package:playground_02/views/onboarding/onboardingScreen.dart'; // Import the second splash screen
 
 class Splashscreen1 extends StatefulWidget {
   const Splashscreen1({super.key});
@@ -15,7 +16,7 @@ class _Splashscreen1State extends State<Splashscreen1> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () {
-      Get.to(() => const Splashscreen2()); // Navigate to the second splash screen
+      Get.offNamed(AppRoutes.onboarding);// Navigate to the second splash screen
     });
   }
 
