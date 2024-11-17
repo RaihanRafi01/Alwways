@@ -251,7 +251,6 @@ class MessageInput extends StatelessWidget {
         _voiceController.sendRecognizedText();
       }
     });
-
     // Listen for recognized text to close the sheet
     _voiceController.recognizedText.listen((text) {
       if (text.isNotEmpty && _isBottomSheetOpen) {
