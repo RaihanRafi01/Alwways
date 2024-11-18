@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -61,30 +63,31 @@ class BookPageView extends StatelessWidget {
               itemCount: controller.bookContents.length,
               itemBuilder: (context, index) {
                 if (index == 0) {
+                  // Book cover page
                   return Center(
                     child: Stack(
                       alignment: Alignment.bottomRight,
                       children: [
                         const BookCover(isGrid: false),
                         Padding(
-                          padding:
-                              const EdgeInsets.only(bottom: 130, right: 16),
+                          padding: const EdgeInsets.only(bottom: 130, right: 16),
                           child: GestureDetector(
                             onTap: () =>
                                 Get.toNamed(AppRoutes.bookCoverEditScreen),
                             child: SvgPicture.asset(
-                                "assets/images/book/edit_icon.svg",
-                                height: 24,
-                                width: 24),
+                              "assets/images/book/edit_icon.svg",
+                              height: 24,
+                              width: 24,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   );
                 } else {
+                  // Chapter pages
                   return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 60, vertical: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
                     child: Container(
                       color: AppColors.bookBackground,
                       child: Column(
@@ -102,6 +105,21 @@ class BookPageView extends StatelessWidget {
                               const SizedBox(height: 30),
                               const Text('Motivation',
                                   style: TextStyle(fontSize: 16)),
+                              Obx(() {
+                                final imagePath = controller.bookImages[index];
+                                if (imagePath != null) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 16.0),
+                                    child: Image.file(
+                                      File(imagePath),
+                                      height: 100,
+                                      width: double.infinity,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink(); // Empty space if no image
+                              }),
                               Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: RichText(

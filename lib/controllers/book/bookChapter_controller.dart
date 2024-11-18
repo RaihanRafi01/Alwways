@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 class BookChapterController extends GetxController {
   final PageController pageController = PageController(); // PageView controller
   final RxInt currentPage = 0.obs; // Observable for the current page index
+  final RxList<String?> bookImages = List<String?>.generate(6, (index) => null).obs;
 
   final RxList<String> bookChapters = [
     "Landing",
@@ -40,6 +41,13 @@ class BookChapterController extends GetxController {
     pageController.dispose(); // Dispose of the PageController
     super.onClose();
   }
+  /// Update the image for a specific chapter
+  void updateChapterImage(int index, String? imagePath) {
+    if (index < 0 || index >= bookImages.length) {
+      throw Exception("Invalid chapter index");
+    }
+    bookImages[index] = imagePath;
+  }
 
   // Method to update chapter content
   void updateChapterContent(int index, String newContent) {
@@ -59,19 +67,4 @@ class BookChapterController extends GetxController {
     }
   }
 
-  // Add a new chapter
-  void addChapter(String title, String content) {
-    bookChapters.add(title);
-    bookContents.add(content);
-  }
-
-  // Remove a chapter
-  void removeChapter(int index) {
-    if (index >= 0 && index < bookChapters.length) {
-      bookChapters.removeAt(index);
-      bookContents.removeAt(index);
-    } else {
-      throw Exception("Invalid chapter index");
-    }
-  }
 }
