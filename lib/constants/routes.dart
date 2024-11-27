@@ -12,8 +12,10 @@ import 'package:playground_02/views/home/home_landing.dart';
 import 'package:playground_02/views/onboarding/onboardingScreen.dart';
 import 'package:playground_02/views/onboarding/splashScreen_1.dart';
 
+import '../views/book/addBook.dart';
 import '../views/book/bookCoverEditScreen.dart';
 import '../views/book/book_landing.dart';
+import '../views/profile/profile_landing.dart';
 class AppRoutes {
   static const String splash1 = '/splash1';
   static const String onboarding = '/onboarding';
@@ -28,6 +30,8 @@ class AppRoutes {
   static const String bookLanding = '/bookLanding';
   static const String bookDetailsScreen = '/bookDetailsScreen';
   static const String bookCoverEditScreen = '/bookCoverEditScreen';
+  static const String bookAddScreen = '/bookAddScreen';
+  static const String profileScreen = '/profileScreen';
 
 
   static const String chat = '/chat';
@@ -63,11 +67,38 @@ class AppRoutes {
     GetPage(name: bookDetailsScreen, page: () => const BookDetailsScreen()),
     GetPage(name: bookLanding, page: () => const BookLandingScreen()),
     GetPage(name: bookCoverEditScreen, page: () => const BookCoverEditScreen()),
+    GetPage(name: bookAddScreen, page: () => const AddBook()),
 
 
+    /////////////// PROFILE
+
+    GetPage(name: profileScreen, page: () => ProfileScreen()),
 
 
 
 
   ];
 }
+
+class NavigationController extends GetxController {
+  var selectedIndex = 0.obs; // Reactive variable for selected index
+
+  // Method to update selected index and navigate
+  void changePage(int index) {
+    selectedIndex.value = index;
+    switch (index) {
+      case 0:
+        Get.toNamed(AppRoutes.homePageLanding);
+        break;
+      case 1:
+        Get.toNamed(AppRoutes.bookLanding);
+        break;
+      case 2:
+        Get.toNamed(AppRoutes.profileScreen);
+        break;
+      default:
+        Get.toNamed(AppRoutes.homePageLanding);
+    }
+  }
+}
+

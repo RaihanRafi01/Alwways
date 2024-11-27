@@ -151,6 +151,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: CustomButton(
+                height: 60,
                 isEditPage: true,
                 text: "Yes, turn on lock mode",
                 onPressed: () {},
@@ -158,6 +159,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
             CustomButton(
+              height: 60,
               isEditPage: true,
               text: "No, save using lock off",
               onPressed: () => Get.back(),

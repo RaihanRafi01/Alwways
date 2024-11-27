@@ -17,6 +17,7 @@ class CustomTextField extends StatefulWidget {
   final bool isDropdown;
   final List<String>? dropdownItems;
   final double radius;
+  final Color textColor;
 
   const CustomTextField({
     super.key,
@@ -34,6 +35,7 @@ class CustomTextField extends StatefulWidget {
     this.isDropdown = false,
     this.dropdownItems,
     this.radius = 10,
+    this.textColor = Colors.black
   });
 
   @override
@@ -62,7 +64,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(widget.label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: widget.textColor)),
         const SizedBox(height: 8),
         widget.isDropdown
             ? DropdownButtonFormField<String>(

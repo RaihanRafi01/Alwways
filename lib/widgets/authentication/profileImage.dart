@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileImage extends StatelessWidget {
@@ -46,7 +47,7 @@ class ProfileImage extends StatelessWidget {
                 ),
                 child: CircleAvatar(radius: 12,
                   backgroundColor: Colors.white,
-                  child: Image.asset('assets/images/camera_icon.png'),
+                  child: SvgPicture.asset('assets/images/camera_icon.svg'),
                 ),
               ),
             ),

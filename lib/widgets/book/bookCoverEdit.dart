@@ -39,7 +39,7 @@ class _BookcovereditState extends State<Bookcoveredit> {
           children: [
             const Padding(
               padding: EdgeInsets.only(left: 50, right: 50, top: 10),
-              child: BookCover(isGrid: false,isEdit: true,),
+              child: BookCover(isGrid: false,isCoverEdit: true,),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40.0),

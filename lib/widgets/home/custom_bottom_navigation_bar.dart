@@ -13,6 +13,24 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, String>> navItems = [
+      {
+        'label': 'Home',
+        'filledIcon': 'assets/images/home/home_icon_filled.svg',
+        'defaultIcon': 'assets/images/home/home_icon.svg',
+      },
+      {
+        'label': 'Book',
+        'filledIcon': 'assets/images/home/book_icon_filled.svg',
+        'defaultIcon': 'assets/images/home/book_icon.svg',
+      },
+      {
+        'label': 'profile',
+        'filledIcon': 'assets/images/home/profile_icon_filled.svg',
+        'defaultIcon': 'assets/images/home/profile_icon.svg',
+      },
+    ];
+
     return BottomNavigationBar(
       currentIndex: selectedIndex,
       type: BottomNavigationBarType.fixed,
@@ -22,40 +40,16 @@ class CustomBottomNavigationBar extends StatelessWidget {
       showSelectedLabels: false,
       showUnselectedLabels: false,
       onTap: onItemSelected,
-      items: [
-        BottomNavigationBarItem(
+      items: navItems.map((item) {
+        final isSelected = navItems.indexOf(item) == selectedIndex;
+        return BottomNavigationBarItem(
           icon: SvgPicture.asset(
-            selectedIndex == 0
-                ? "assets/images/home/home_icon_filled.svg" // Filled icon when selected
-                : "assets/images/home/home_icon.svg", // Default icon when unselected
+            isSelected ? item['filledIcon']! : item['defaultIcon']!,
+            key: ValueKey(isSelected), // Force rebuild
           ),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: SvgPicture.asset(
-            selectedIndex == 1
-                ? "assets/images/home/book_icon.svg" // Filled icon when selected
-                : "assets/images/home/book_icon.svg", // Default icon when unselected
-          ),
-          label: 'Book',
-        ),
-        BottomNavigationBarItem(
-          icon: SvgPicture.asset(
-            selectedIndex == 2
-                ? "assets/images/home/qna_icon_filled.svg" // Filled icon when selected
-                : "assets/images/home/qna_icon.svg", // Default icon when unselected
-          ),
-          label: 'Chat',
-        ),
-        BottomNavigationBarItem(
-          icon: SvgPicture.asset(
-            selectedIndex == 3
-                ? "assets/images/home/setting_icon_filled.svg" // Filled icon when selected
-                : "assets/images/home/setting_icon.svg", // Default icon when unselected
-          ),
-          label: 'Settings',
-        ),
-      ],
+          label: item['label'],
+        );
+      }).toList(),
     );
   }
 }

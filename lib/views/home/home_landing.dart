@@ -13,14 +13,7 @@ class HomePageLanding extends StatefulWidget {
 }
 
 class _HomePageLandingState extends State<HomePageLanding> {
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    // Add GetX navigation here based on the index
-  }
+  final NavigationController navController = Get.put(NavigationController());
 
   @override
   Widget build(BuildContext context) {
@@ -57,18 +50,24 @@ class _HomePageLandingState extends State<HomePageLanding> {
                 style: TextStyle(color: AppColors.textColor, fontSize: 14),
               ),
               const SizedBox(height: 30), // Add a spacer to push buttons toward the center
-              CustomButton(text: "TALK TO AI", onPressed: () => Get.toNamed(AppRoutes.chat),),
+              CustomButton(
+                text: "TALK TO AI",
+                onPressed: () => Get.toNamed(AppRoutes.chat),
+              ),
               const SizedBox(height: 20),
               CustomButton(text: "STRUCTURED Q&A", onPressed: () {}),
-               // Add another spacer to balance bottom space
+              // Add another spacer to balance bottom space
             ],
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        selectedIndex: _selectedIndex,
-        onItemSelected: _onItemTapped,
+      bottomNavigationBar: Obx(
+            () => CustomBottomNavigationBar(
+          selectedIndex: navController.selectedIndex.value,
+          onItemSelected: navController.changePage,
+        ),
       ),
     );
   }
 }
+

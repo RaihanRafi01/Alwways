@@ -18,6 +18,7 @@ class BookPageView extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
+          // Display chapter info only when currentPage is not 0
           Obx(() {
             if (controller.currentPage.value != 0) {
               return Container(
@@ -25,7 +26,7 @@ class BookPageView extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      controller.bookChapters[controller.currentPage.value],
+                      controller.allPageChapters[controller.currentPage.value],
                       style: const TextStyle(
                           fontSize: 24, fontWeight: FontWeight.bold),
                     ),
@@ -60,7 +61,7 @@ class BookPageView extends StatelessWidget {
           Expanded(
             child: PageView.builder(
               controller: controller.pageController,
-              itemCount: controller.bookContents.length,
+              itemCount: controller.allPages.length,
               itemBuilder: (context, index) {
                 if (index == 0) {
                   // Book cover page
@@ -84,7 +85,8 @@ class BookPageView extends StatelessWidget {
                       ],
                     ),
                   );
-                } else {
+                }
+                else {
                   // Chapter pages
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
@@ -96,7 +98,7 @@ class BookPageView extends StatelessWidget {
                           Column(
                             children: [
                               const SizedBox(height: 30),
-                              Text(controller.bookChapters[index],
+                              Text(controller.allPageChapters[index],
                                   style: const TextStyle(fontSize: 10)),
                               const SizedBox(height: 20),
                               SvgPicture.asset(
@@ -106,7 +108,7 @@ class BookPageView extends StatelessWidget {
                               const Text('Motivation',
                                   style: TextStyle(fontSize: 16)),
                               Obx(() {
-                                final imagePath = controller.bookImages[index];
+                                final imagePath = controller.allPageImages[index];
                                 if (imagePath != null) {
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 16.0),
@@ -127,14 +129,14 @@ class BookPageView extends StatelessWidget {
                                   text: TextSpan(
                                     children: [
                                       TextSpan(
-                                        text: controller.bookContents[index]
+                                        text: controller.allPages[index]
                                             [0],
                                         style: const TextStyle(
                                             fontSize: 18,
                                             color: AppColors.bookTextColor),
                                       ),
                                       TextSpan(
-                                        text: controller.bookContents[index]
+                                        text: controller.allPages[index]
                                             .substring(1),
                                         style: const TextStyle(
                                             fontSize: 8,
@@ -153,18 +155,20 @@ class BookPageView extends StatelessWidget {
                                   const EdgeInsets.only(bottom: 16, right: 16),
                               child: GestureDetector(
                                 onTap: () async {
+                                  final isCover = controller.allPages[index].contains("ChapterCover");
                                   final result =
                                       await Get.to(() => BookEditPage(
                                         index: index,
                                             chapterTitle:
-                                                controller.bookChapters[index],
+                                                controller.allPageChapters[index],
                                             chapterContent:
-                                                controller.bookContents[index],
+                                            controller.allPages[index],
+                                        isCover: isCover,
                                           ));
                                   if (result != null) {
-                                    controller.bookChapters[index] =
+                                    controller.allPageChapters[index] =
                                         result["title"];
-                                    controller.bookContents[index] =
+                                    controller.allPages[index] =
                                         result["content"];
                                   }
                                 },
