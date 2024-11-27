@@ -80,19 +80,19 @@ class MessageInput extends StatelessWidget {
               ),
             );
           }),
-          const SizedBox(width: 8),
+          /*const SizedBox(width: 8),
           GestureDetector(
             onTap: () => _showMoreOptionsSheet(context),
             child: SvgPicture.asset("assets/images/chat/more_icon.svg",
               width: 36,
               height: 36,),
-          )
+          )*/
         ],
       ),
     );
   }
 
-  void _showMoreOptionsSheet(BuildContext context) {
+  /*void _showMoreOptionsSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isDismissible: true, // Dismisses the modal when tapping outside
@@ -171,7 +171,7 @@ class MessageInput extends StatelessWidget {
         );
       },
     );
-  }
+  }*/
 
 
 

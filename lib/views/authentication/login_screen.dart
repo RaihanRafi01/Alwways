@@ -4,6 +4,7 @@ import 'package:playground_02/controllers/auth_controller.dart';
 import 'package:playground_02/widgets/authentication/appLogo.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/authentication/signupWithOther.dart';
+import 'package:playground_02/widgets/customAppBar.dart';
 import '../../widgets/authentication/custom_textField.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -14,7 +15,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login"),),
+      appBar: const CustomAppbar(title: 'Login',),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(

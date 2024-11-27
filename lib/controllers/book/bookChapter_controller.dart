@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class BookChapterController extends GetxController {
-  final PageController pageController = PageController(); // PageView controller
-  final RxInt currentPage = 0.obs; // Observable for the current page index
-  final RxList<String?> bookImages = List<String?>.generate(6, (index) => null).obs;
+  final PageController pageController = PageController();
+  final RxInt currentPage = 0.obs;
 
   final RxList<String> bookChapters = [
     "Landing",
@@ -13,58 +12,94 @@ class BookChapterController extends GetxController {
     "Chapter 2 Deep Dive",
     "Chapter 3 Analysis",
     "Conclusion"
-  ].obs; // List of chapter titles (observable for updates)
+  ].obs;
 
   final RxList<String> bookContents = [
-    "landing",
-    "Writing this book is important to me because I want my family to understand my past life. By sharing my experiences, I hope to create a meaningful connection with them.",
+    "Landing",
+    "ChapterCover",
     "Page 2 Content: Chapter 1 Overview",
     "Page 3 Content: Chapter 2 Deep Dive",
     "Page 4 Content: Chapter 3 Analysis",
     "Page 5 Content: Conclusion"
-  ].obs; // List of chapter contents (observable for updates)
+  ].obs;
+
+  // Initialize with null images for each chapter
+  late RxList<String?> bookImages = List<String?>.filled(bookContents.length, null).obs;
+
+  final RxList<String> allPages = <String>[].obs; // Flattened pages
+  final RxList<String> allPageChapters = <String>[].obs; // Flattened chapter mapping
+  final RxList<String?> allPageImages = <String?>[].obs; // Flattened image mapping
 
   @override
   void onInit() {
     super.onInit();
-    // Listen to pageController changes
-    pageController.addListener(() {
-      final pageIndex = pageController.page?.round() ?? 0;
-      if (currentPage.value != pageIndex) {
-        currentPage.value = pageIndex;
-      }
-    });
+    _splitContentIntoPages(); // Initialize flattened content
+    pageController.addListener(_onPageChanged);
   }
 
   @override
   void onClose() {
-    pageController.dispose(); // Dispose of the PageController
+    pageController.removeListener(_onPageChanged);
+    pageController.dispose();
     super.onClose();
   }
-  /// Update the image for a specific chapter
+
+  // Listener for page controller
+  void _onPageChanged() {
+    final pageIndex = pageController.page?.round() ?? 0;
+    if (currentPage.value != pageIndex) {
+      currentPage.value = pageIndex;
+    }
+  }
+
+  // Split content into pages, ensuring valid word count per page
+  void _splitContentIntoPages({int maxWordsPerPage = 10}) {
+    allPages.clear();
+    allPageChapters.clear();
+    allPageImages.clear();
+
+    for (var i = 0; i < bookContents.length; i++) {
+      final content = bookContents[i];
+      final chapterTitle = bookChapters[i];
+      final chapterImage = bookImages[i];
+
+      // Break content into pages based on word count
+      final words = content.split(' ');
+      for (var j = 0; j < words.length; j += maxWordsPerPage) {
+        final page = words
+            .sublist(j, (j + maxWordsPerPage).clamp(0, words.length))
+            .join(' ');
+        allPages.add(page);
+        allPageChapters.add(chapterTitle);
+        allPageImages.add(chapterImage);
+      }
+    }
+  }
+
+  // Update image for a chapter and refresh mappings
   void updateChapterImage(int index, String? imagePath) {
-    if (index < 0 || index >= bookImages.length) {
+    if (index.isNegative || index >= bookImages.length) {
       throw Exception("Invalid chapter index");
     }
     bookImages[index] = imagePath;
+    _splitContentIntoPages(); // Update flattened lists
   }
 
-  // Method to update chapter content
+  // Update content for a chapter and refresh mappings
   void updateChapterContent(int index, String newContent) {
-    if (index >= 0 && index < bookContents.length) {
-      bookContents[index] = newContent;
-    } else {
+    if (index.isNegative || index >= bookContents.length) {
       throw Exception("Invalid chapter index");
     }
+    bookContents[index] = newContent;
+    _splitContentIntoPages(); // Update flattened lists
   }
 
-  // Method to update chapter title
+  // Update chapter title and refresh mappings
   void updateChapterTitle(int index, String newTitle) {
-    if (index >= 0 && index < bookChapters.length) {
-      bookChapters[index] = newTitle;
-    } else {
+    if (index.isNegative || index >= bookChapters.length) {
       throw Exception("Invalid chapter index");
     }
+    bookChapters[index] = newTitle;
+    _splitContentIntoPages(); // Update flattened lists
   }
-
 }

@@ -17,10 +17,13 @@ class CustomTextField extends StatefulWidget {
   final bool isDropdown;
   final List<String>? dropdownItems;
   final double radius;
+  final Color textColor;
+  final String hint;
 
   const CustomTextField({
     super.key,
     required this.label,
+    this.hint = '',
     this.isPassword = false,
     this.readOnly = false,
     this.phone = false,
@@ -34,6 +37,7 @@ class CustomTextField extends StatefulWidget {
     this.isDropdown = false,
     this.dropdownItems,
     this.radius = 10,
+    this.textColor = Colors.black
   });
 
   @override
@@ -62,7 +66,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(widget.label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: widget.textColor)),
         const SizedBox(height: 8),
         widget.isDropdown
             ? DropdownButtonFormField<String>(
@@ -113,6 +117,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           keyboardType: widget.keyboardType,
           onTap: widget.onTap,
           decoration: InputDecoration(
+            hintText: widget.hint,
             prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
             suffixIcon: widget.isPassword
                 ? IconButton(

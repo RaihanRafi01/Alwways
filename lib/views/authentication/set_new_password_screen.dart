@@ -4,6 +4,7 @@ import 'package:playground_02/widgets/authentication/appLogo.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/authentication/custom_textField.dart';
 import 'package:playground_02/widgets/authentication/signupWithOther.dart';
+import 'package:playground_02/widgets/customAppBar.dart';
 import '../../controllers/auth_controller.dart';
 
 class SetNewPasswordScreen extends StatelessWidget {
@@ -12,7 +13,7 @@ class SetNewPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Set New Password")),
+      appBar: const CustomAppbar(title: 'Set New Password'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(

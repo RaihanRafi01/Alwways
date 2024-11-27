@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:playground_02/views/home/home_splash.dart';
 
 class AuthController extends GetxController {
   // Reactive variables for user input
@@ -19,6 +20,7 @@ class AuthController extends GetxController {
   // Login method
   void login() {
     // Logic for login (e.g., API call for login)
+    Get.offAll(const HomeSplashscreen());
   }
 
   // Reset password method

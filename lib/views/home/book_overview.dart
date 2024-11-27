@@ -13,15 +13,8 @@ class BookOverView extends StatefulWidget {
 }
 
 class _HomePageLandingState extends State<BookOverView> {
+  final NavigationController navController = Get.put(NavigationController());
   final double progress = 0.3; // 30% completion progress
-  int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    // Add GetX navigation here based on the index
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +58,10 @@ class _HomePageLandingState extends State<BookOverView> {
           ),
         ),
       ),
-      bottomNavigationBar: CustomBottomNavigationBar(
-        selectedIndex: _selectedIndex,
-        onItemSelected: _onItemTapped,
-      ),
+      /*bottomNavigationBar: CustomBottomNavigationBar(
+        selectedIndex: navController.selectedIndex.value,
+        onItemSelected: navController.changePage,
+      ),*/
     );
   }
 }

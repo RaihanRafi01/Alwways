@@ -11,11 +11,13 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   final bool showIcon;
   final bool isEdit;
   final String title;
+  final bool isback;
 
   const CustomAppbar({
     super.key,
     this.isHome = false,
     this.isEdit = false,
+    this.isback = false,
     this.showIcon = true, // Default to true
     required this.title,
   });
@@ -23,14 +25,15 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      scrolledUnderElevation: 0,
       elevation: 0,
       backgroundColor: Colors.transparent,
-      leading: IconButton(
+      leading: isback? IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.black),
         onPressed: () {
           Get.back();
         },
-      ),
+      ) : null,
       title: Text(
         title,
         style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -67,7 +70,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ]
           : [
-        GestureDetector(
+        /*GestureDetector(
           child: Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: isHome
@@ -88,7 +91,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
               );
             }
           },
-        ),
+        ),*/
       ]
           : [], // No icon shown if showIcon is false
     );
@@ -151,6 +154,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: CustomButton(
+                height: 60,
                 isEditPage: true,
                 text: "Yes, turn on lock mode",
                 onPressed: () {},
@@ -158,6 +162,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
             CustomButton(
+              height: 60,
               isEditPage: true,
               text: "No, save using lock off",
               onPressed: () => Get.back(),

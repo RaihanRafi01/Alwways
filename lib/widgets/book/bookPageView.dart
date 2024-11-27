@@ -7,6 +7,7 @@ import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/constants/routes.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/book/bookCover.dart';
+import 'package:playground_02/widgets/customAppBar.dart';
 import '../../controllers/book/bookChapter_controller.dart';
 import '../../views/book/bookPageEditScreen.dart';
 
@@ -16,8 +17,10 @@ class BookPageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: CustomAppbar(title: ''),
       body: Column(
         children: [
+          // Display chapter info only when currentPage is not 0
           Obx(() {
             if (controller.currentPage.value != 0) {
               return Container(
@@ -25,7 +28,7 @@ class BookPageView extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      controller.bookChapters[controller.currentPage.value],
+                      controller.allPageChapters[controller.currentPage.value],
                       style: const TextStyle(
                           fontSize: 24, fontWeight: FontWeight.bold),
                     ),
@@ -60,7 +63,7 @@ class BookPageView extends StatelessWidget {
           Expanded(
             child: PageView.builder(
               controller: controller.pageController,
-              itemCount: controller.bookContents.length,
+              itemCount: controller.allPages.length,
               itemBuilder: (context, index) {
                 if (index == 0) {
                   // Book cover page
@@ -70,7 +73,7 @@ class BookPageView extends StatelessWidget {
                       children: [
                         const BookCover(isGrid: false),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 130, right: 16),
+                          padding: const EdgeInsets.only(bottom: 170, right: 16),
                           child: GestureDetector(
                             onTap: () =>
                                 Get.toNamed(AppRoutes.bookCoverEditScreen),
@@ -84,98 +87,103 @@ class BookPageView extends StatelessWidget {
                       ],
                     ),
                   );
-                } else {
+                }
+                else {
                   // Chapter pages
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
                     child: Container(
                       color: AppColors.bookBackground,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            children: [
-                              const SizedBox(height: 30),
-                              Text(controller.bookChapters[index],
-                                  style: const TextStyle(fontSize: 10)),
-                              const SizedBox(height: 20),
-                              SvgPicture.asset(
-                                  "assets/images/book/chapter_underline_1.svg",
-                                  width: 100),
-                              const SizedBox(height: 30),
-                              const Text('Motivation',
-                                  style: TextStyle(fontSize: 16)),
-                              Obx(() {
-                                final imagePath = controller.bookImages[index];
-                                if (imagePath != null) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 16.0),
-                                    child: Image.file(
-                                      File(imagePath),
-                                      height: 100,
-                                      width: double.infinity,
-                                      fit: BoxFit.contain,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              children: [
+                                const SizedBox(height: 30),
+                                Text(controller.allPageChapters[index],
+                                    style: const TextStyle(fontSize: 10)),
+                                const SizedBox(height: 20),
+                                SvgPicture.asset(
+                                    "assets/images/book/chapter_underline_1.svg",
+                                    width: 100),
+                                const SizedBox(height: 30),
+                                const Text('Motivation',
+                                    style: TextStyle(fontSize: 16)),
+                                Obx(() {
+                                  final imagePath = controller.allPageImages[index];
+                                  if (imagePath != null) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 16.0),
+                                      child: Image.file(
+                                        File(imagePath),
+                                        height: 100,
+                                        width: double.infinity,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    );
+                                  }
+                                  return const SizedBox.shrink(); // Empty space if no image
+                                }),
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: RichText(
+                                    textAlign: TextAlign.start,
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: controller.allPages[index]
+                                              [0],
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              color: AppColors.bookTextColor),
+                                        ),
+                                        TextSpan(
+                                          text: controller.allPages[index]
+                                              .substring(1),
+                                          style: const TextStyle(
+                                              fontSize: 8,
+                                              color: AppColors.bookTextColor),
+                                        ),
+                                      ],
                                     ),
-                                  );
-                                }
-                                return const SizedBox.shrink(); // Empty space if no image
-                              }),
-                              Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: RichText(
-                                  textAlign: TextAlign.start,
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: controller.bookContents[index]
-                                            [0],
-                                        style: const TextStyle(
-                                            fontSize: 18,
-                                            color: AppColors.bookTextColor),
-                                      ),
-                                      TextSpan(
-                                        text: controller.bookContents[index]
-                                            .substring(1),
-                                        style: const TextStyle(
-                                            fontSize: 8,
-                                            color: AppColors.bookTextColor),
-                                      ),
-                                    ],
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          Align(
-                            alignment: Alignment.bottomRight,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(bottom: 16, right: 16),
-                              child: GestureDetector(
-                                onTap: () async {
-                                  final result =
-                                      await Get.to(() => BookEditPage(
-                                        index: index,
-                                            chapterTitle:
-                                                controller.bookChapters[index],
-                                            chapterContent:
-                                                controller.bookContents[index],
-                                          ));
-                                  if (result != null) {
-                                    controller.bookChapters[index] =
-                                        result["title"];
-                                    controller.bookContents[index] =
-                                        result["content"];
-                                  }
-                                },
-                                child: SvgPicture.asset(
-                                    "assets/images/book/edit_icon.svg",
-                                    height: 24,
-                                    width: 24),
+                              ],
+                            ),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.only(bottom: 16, right: 16),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final isCover = controller.allPages[index].contains("ChapterCover");
+                                    final result =
+                                        await Get.to(() => BookEditPage(
+                                          index: index,
+                                              chapterTitle:
+                                                  controller.allPageChapters[index],
+                                              chapterContent:
+                                              controller.allPages[index],
+                                          isCover: isCover,
+                                            ));
+                                    if (result != null) {
+                                      controller.allPageChapters[index] =
+                                          result["title"];
+                                      controller.allPages[index] =
+                                          result["content"];
+                                    }
+                                  },
+                                  child: SvgPicture.asset(
+                                      "assets/images/book/edit_icon.svg",
+                                      height: 24,
+                                      width: 24),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -183,7 +191,7 @@ class BookPageView extends StatelessWidget {
               },
             ),
           ),
-          Padding(
+          /*Padding(
             padding: const EdgeInsets.all(16.0),
             child: CustomButton(
               text: "Get Book",
@@ -191,7 +199,7 @@ class BookPageView extends StatelessWidget {
                 // Add logic for the button
               },
             ),
-          ),
+          ),*/
         ],
       ),
     );

@@ -4,10 +4,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/authentication/custom_textField.dart';
 import 'package:playground_02/widgets/authentication/profileImage.dart';
+import 'package:playground_02/widgets/customAppBar.dart';
 import '../../controllers/auth_controller.dart';
 import 'package:intl/intl.dart';
 
 class SignupScreen extends StatefulWidget {
+  final bool isEdit;
+  final String title;
+  const SignupScreen({super.key,this.isEdit = false,this.title = 'Create account'});
+
   @override
   _SignupScreenState createState() => _SignupScreenState();
 }
@@ -31,15 +36,7 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Create account", textAlign: TextAlign.center),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Get.back(),
-        ),
-      ),
+      appBar: CustomAppbar(title: widget.title),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -121,7 +118,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 onChanged: (value) => authController.confirmPassword.value = value,
               ),
               const SizedBox(height: 20),
+              if(widget.isEdit)
+                CustomButton(text: "Save Changes", onPressed: (){}),
+              if(!widget.isEdit)
               CustomButton(text: "SIGN UP", onPressed: (){}),
+              if(!widget.isEdit)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

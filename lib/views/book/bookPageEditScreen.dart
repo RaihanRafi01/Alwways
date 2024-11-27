@@ -13,12 +13,14 @@ class BookEditPage extends StatefulWidget {
   final String chapterTitle;
   final String chapterContent;
   final int index;
+  final bool isCover;
 
   const BookEditPage({
     super.key,
     required this.index,
     required this.chapterTitle,
     required this.chapterContent,
+    this.isCover = false
   });
 
   @override
@@ -84,7 +86,7 @@ class _BookEditPageState extends State<BookEditPage> {
             ),
             // Display the image if available
             Obx(() {
-              final imagePath = controller.bookImages[widget.index];
+              final imagePath = controller.allPageImages[widget.index];
               if (imagePath != null) {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
@@ -112,36 +114,28 @@ class _BookEditPageState extends State<BookEditPage> {
               ),
             ),
             const SizedBox(height: 16),
-            // Save Button
-            CustomButton(
-              text: "Save",
-              onPressed: () {
-                controller.updateChapterTitle(widget.index, _titleController.text.trim());
-                controller.updateChapterContent(widget.index, _contentController.text.trim());
-                Get.back();
-              },
-            ),
-            const SizedBox(height: 10),
+
             // Icons for navigation and attachment
             Row(
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Get.back();
-                  },
-                  child: SvgPicture.asset(
-                    "assets/images/book/back_icon.svg",
-                    height: 20,
-                    width: 20,
+                Expanded(
+                  child: CustomButton(
+                    text: "Save",
+                    onPressed: () {
+                      controller.updateChapterTitle(widget.index, _titleController.text.trim());
+                      controller.updateChapterContent(widget.index, _contentController.text.trim());
+                      Get.back();
+                    },
+                    isEditPage: true, // Use outlined button for edit pages
                   ),
                 ),
-                const Spacer(),
-                GestureDetector(
+                const SizedBox(width: 16), // Add spacing between button and icon
+                if(widget.isCover)GestureDetector(
                   onTap: _pickImage, // Pick an image on tap
                   child: SvgPicture.asset(
                     "assets/images/chat/att_icon.svg",
-                    height: 20,
-                    width: 20,
+                    height: 35,
+                    width: 35,
                   ),
                 ),
               ],

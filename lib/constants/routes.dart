@@ -7,14 +7,18 @@ import 'package:playground_02/views/authentication/signup_screen.dart';
 import 'package:playground_02/views/authentication/verify_code_screen.dart';
 import 'package:playground_02/views/book/bookDetailsScreen.dart';
 import 'package:playground_02/views/chatWithAI/chatScreen.dart';
+import 'package:playground_02/views/dashboard/views/dashboard_view.dart';
 import 'package:playground_02/views/home/book_overview.dart';
 import 'package:playground_02/views/home/home_landing.dart';
 import 'package:playground_02/views/onboarding/onboardingScreen.dart';
 import 'package:playground_02/views/onboarding/splashScreen_1.dart';
 
+import '../views/book/addBook.dart';
 import '../views/book/bookCoverEditScreen.dart';
 import '../views/book/book_landing.dart';
+import '../views/profile/profile_landing.dart';
 class AppRoutes {
+  static const String dashboard = '/dashboard';
   static const String splash1 = '/splash1';
   static const String onboarding = '/onboarding';
   static const String login = '/login';
@@ -28,6 +32,8 @@ class AppRoutes {
   static const String bookLanding = '/bookLanding';
   static const String bookDetailsScreen = '/bookDetailsScreen';
   static const String bookCoverEditScreen = '/bookCoverEditScreen';
+  static const String bookAddScreen = '/bookAddScreen';
+  static const String profileScreen = '/profileScreen';
 
 
   static const String chat = '/chat';
@@ -37,6 +43,7 @@ class AppRoutes {
     ///// ONBOARDING
     GetPage(name: splash1, page: () => const Splashscreen1()),
     GetPage(name: onboarding, page: () => const OnboardingScreen()),
+    GetPage(name: dashboard, page: () => const DashboardView()),
 
     ///// AUTH
     GetPage(name: login, page: () => LoginScreen()),
@@ -63,11 +70,38 @@ class AppRoutes {
     GetPage(name: bookDetailsScreen, page: () => const BookDetailsScreen()),
     GetPage(name: bookLanding, page: () => const BookLandingScreen()),
     GetPage(name: bookCoverEditScreen, page: () => const BookCoverEditScreen()),
+    GetPage(name: bookAddScreen, page: () => const AddBook()),
 
 
+    /////////////// PROFILE
+
+    GetPage(name: profileScreen, page: () => ProfileScreen()),
 
 
 
 
   ];
 }
+
+class NavigationController extends GetxController {
+  var selectedIndex = 0.obs; // Reactive variable for selected index
+
+  // Method to update selected index and navigate
+  void changePage(int index) {
+    selectedIndex.value = index;
+    switch (index) {
+      case 0:
+        Get.toNamed(AppRoutes.homePageLanding);
+        break;
+      case 1:
+        Get.toNamed(AppRoutes.bookLanding);
+        break;
+      case 2:
+        Get.toNamed(AppRoutes.profileScreen);
+        break;
+      default:
+        Get.toNamed(AppRoutes.homePageLanding);
+    }
+  }
+}
+

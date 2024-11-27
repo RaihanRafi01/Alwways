@@ -11,6 +11,9 @@ class CustomButton extends StatelessWidget {
   final double borderRadius;
   final EdgeInsets padding;
   final bool isEditPage;
+  final double width;
+  final double height;
+  final double fontSize;
 
   const CustomButton({
     super.key,
@@ -20,14 +23,18 @@ class CustomButton extends StatelessWidget {
     this.borderColor = const Color(0xFF8CAB91),
     this.textColor = const Color(0xFFFAF1E6),
     this.borderRadius = 20.0,
-    this.padding = const EdgeInsets.symmetric(vertical: 15),
-    this.isEditPage = false
+    this.padding = const EdgeInsets.symmetric(vertical: 5),
+    this.isEditPage = false,
+    this.width = double.maxFinite,
+    this.height = 45,
+    this.fontSize = 16
   });
 
   @override
   Widget build(BuildContext context) {
     return  SizedBox(
-      width: double.infinity, // Full-width button
+      height: height,
+      width: width, // Full-width button
       child: !isEditPage ? ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
@@ -40,7 +47,7 @@ class CustomButton extends StatelessWidget {
         child: Text(
           textAlign: TextAlign.center,
           text.toUpperCase(),
-          style: TextStyle(fontSize: 16, color: textColor),
+          style: TextStyle(fontSize: fontSize, color: textColor),
         ),
       ) : OutlinedButton(
         onPressed: onPressed,
@@ -53,7 +60,7 @@ class CustomButton extends StatelessWidget {
           child: Text(
             textAlign: TextAlign.center,
             text.toUpperCase(),
-            style: TextStyle(fontSize: 16, color: textColor),
+            style: TextStyle(fontSize: fontSize, color: textColor),
           ),
         ),
       )

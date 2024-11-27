@@ -106,7 +106,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           // If it's the first page, display a GIF, else display an SVG or static image
           showGif
               ? Gif(image: AssetImage(mediaPath),

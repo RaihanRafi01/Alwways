@@ -4,6 +4,7 @@ import 'package:playground_02/widgets/authentication/appLogo.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/authentication/pinCode_InputField.dart';
 import 'package:playground_02/widgets/authentication/signupWithOther.dart';
+import 'package:playground_02/widgets/customAppBar.dart';
 import '../../controllers/auth_controller.dart';
 
 class VerifyCodeScreen extends StatelessWidget {
@@ -12,7 +13,7 @@ class VerifyCodeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Verify Code")),
+      appBar: const CustomAppbar(title: 'Verify Code'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -31,7 +32,7 @@ class VerifyCodeScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 16,),
-              CustomButton(text: "VERIFY NOW", onPressed: () => Get.toNamed('/set-new-password'),),
+              CustomButton(text: "VERIFY NOW", onPressed: () => Get.offAllNamed('/set-new-password'),),
               const SizedBox(height: 16),
               const SignupWithOther(),
             ],
