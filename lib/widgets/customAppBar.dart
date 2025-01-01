@@ -12,12 +12,14 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   final bool isEdit;
   final String title;
   final bool isback;
+  final Color bgColor;
 
   const CustomAppbar({
     super.key,
     this.isHome = false,
     this.isEdit = false,
     this.isback = false,
+    this.bgColor = Colors.transparent,
     this.showIcon = true, // Default to true
     required this.title,
   });
@@ -27,7 +29,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       scrolledUnderElevation: 0,
       elevation: 0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: bgColor,
       leading: isback? IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.black),
         onPressed: () {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:playground_02/widgets/customAppBar.dart';
 
 import '../../constants/color/app_colors.dart';
 import '../../widgets/authentication/custom_button.dart';
@@ -18,6 +19,7 @@ class CouponView extends GetView {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: const CustomAppbar(title: 'ORDER',bgColor: AppColors.appColor,),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -30,7 +32,7 @@ class CouponView extends GetView {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 10),
                       Image.asset("assets/images/logo_white.png"),
                       const SizedBox(height: 8),
                       Image.asset("assets/images/app_name_white.png"),
