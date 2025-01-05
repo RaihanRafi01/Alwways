@@ -26,7 +26,7 @@ class BookProgressBar extends StatelessWidget {
             ),
             Container(
               height: 10,
-              width: MediaQuery.of(context).size.width * 0.7 * progress,
+              width: MediaQuery.of(context).size.width * 0.4 * progress,
               decoration: BoxDecoration(
                 color: AppColors.appColor,
                 borderRadius: BorderRadius.horizontal(
