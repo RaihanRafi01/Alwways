@@ -45,14 +45,6 @@ class MessageInput extends StatelessWidget {
                     width: 2.0,
                   ),
                 ),
-                suffixIcon: IconButton(
-                  icon: SvgPicture.asset(
-                    'assets/images/chat/att_icon.svg',
-                  ),
-                  onPressed: () {
-                    // Handle attachment button press
-                  },
-                ),
               ),
             ),
           ),
