@@ -26,7 +26,7 @@ class ChatLandingScreen extends StatelessWidget {
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold,color: AppColors.bookTextColor),
             ),
             const SizedBox(height: 28),
-            CustomButton(text: 'Add Book', onPressed: ()=> Get.to(() => const AddBook())),
+            //CustomButton(text: 'Add Book', onPressed: ()=> Get.to(() => const AddBook())),
             const SizedBox(height: 28),
             const Text(
               'I’m here to help you create a beautiful memoir of your life. 😊',

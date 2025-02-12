@@ -53,7 +53,9 @@ class LoginScreen extends StatelessWidget {
               // Login Button
               CustomButton(
                 text: "LOG IN",
-                onPressed: authController.login,
+                onPressed: (){
+                  authController.login(authController.email.value, authController.password.value);
+                },
                 borderRadius: 20.0,
               ),
 
