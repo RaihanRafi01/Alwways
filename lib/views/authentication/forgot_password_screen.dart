@@ -9,7 +9,10 @@ import 'package:playground_02/widgets/customAppBar.dart';
 import '../../controllers/auth_controller.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
-  final AuthController authController = Get.find();
+  final AuthController authController = Get.put(AuthController());
+  final TextEditingController emailController = TextEditingController();
+
+  ForgotPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +26,32 @@ class ForgotPasswordScreen extends StatelessWidget {
             children: [
               const AppLogo(),
               const SizedBox(height: 20),
-              const Text("Enter your email to reset your password.",style: TextStyle(fontWeight: FontWeight.bold),),
+              const Text(
+                "Enter your email to reset your password.",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 16),
-              const CustomTextField(label: "Email"),
-              const SizedBox(height: 16,),
-              CustomButton(text: "CONTINUE", onPressed: () => Get.to(VerifyCodeScreen()),),
+              CustomTextField(
+                label: "Email",
+                controller: emailController, // Pass controller to capture input
+              ),
+              const SizedBox(height: 16),
+              Obx(() => authController.isLoading.value
+                  ? const CircularProgressIndicator() // Show loading indicator
+                  : CustomButton(
+                text: "CONTINUE",
+                onPressed: () {
+                  String email = emailController.text.trim();
+                  if (email.isEmpty) {
+                    Get.snackbar('Warning!', 'Please enter an email');
+                  } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                      .hasMatch(email)) {
+                    Get.snackbar('Warning!', 'Please enter a valid email');
+                  } else {
+                    authController.sendOtp(email); // Call sendOtp
+                  }
+                },
+              )),
               const SizedBox(height: 16),
               const SignupWithOther(),
             ],

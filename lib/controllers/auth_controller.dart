@@ -2,16 +2,19 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:playground_02/views/authentication/forgot_password_screen.dart';
 import 'package:playground_02/views/authentication/login_screen.dart';
+import 'package:playground_02/views/authentication/set_new_password_screen.dart';
 import 'package:playground_02/views/home/home_splash.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service/api_service.dart';
+import '../views/authentication/verify_code_screen.dart';
 
 class AuthController extends GetxController {
   final ApiService _service = ApiService();
-  final FlutterSecureStorage _storage = FlutterSecureStorage();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   var isLoading = false.obs;
 
   // Reactive variables for user input
@@ -116,8 +119,110 @@ class AuthController extends GetxController {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true); // User is logged in
 
+        Get.offAll(const HomeSplashscreen());
+
 
       } else {
+        final responseBody = jsonDecode(response.body);
+        Get.snackbar('Error', responseBody['message'] ?? 'Sign-up failed');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'An unexpected error occurred');
+      print('Error: $e');
+    } finally {
+      isLoading.value = false; // Hide the loading screen
+    }
+  }
+
+  Future<void> sendOtp(String email) async {
+    isLoading.value = true; // Show the loading screen
+    try {
+      final http.Response response = await _service.forgotPasswordOTP(email);
+
+      print(':::::::::::::::RESPONSE:::::::::::::::::::::${response.body
+          .toString()}');
+      print(':::::::::::::::CODE:::::::::::::::::::::${response.statusCode}');
+      print(':::::::::::::::REQUEST:::::::::::::::::::::${response.request}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Assuming the server responds with success on code 200 or 201
+        final responseBody = jsonDecode(response.body);
+
+        print(':::::::::::::::responseBody:::::::::::::::::::::${responseBody}');
+
+        Get.offAll(VerifyCodeScreen(email: email));
+
+      }else if (response.statusCode == 404){
+        Get.snackbar('Warning!', 'User not found in this Email');
+      }
+      else {
+        final responseBody = jsonDecode(response.body);
+        Get.snackbar('Error', responseBody['message'] ?? 'Sign-up failed');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'An unexpected error occurred');
+      print('Error: $e');
+    } finally {
+      isLoading.value = false; // Hide the loading screen
+    }
+  }
+
+  Future<void> verifyOtp(String email,String otp) async {
+    isLoading.value = true; // Show the loading screen
+    try {
+      final http.Response response = await _service.verifyOtp(email,otp);
+
+      print(':::::::::::::::RESPONSE:::::::::::::::::::::${response.body
+          .toString()}');
+      print(':::::::::::::::CODE:::::::::::::::::::::${response.statusCode}');
+      print(':::::::::::::::REQUEST:::::::::::::::::::::${response.request}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Assuming the server responds with success on code 200 or 201
+        final responseBody = jsonDecode(response.body);
+
+        print(':::::::::::::::responseBody:::::::::::::::::::::${responseBody}');
+
+        Get.offAll(SetNewPasswordScreen(email: email,otp: otp,));
+
+      }else if (response.statusCode == 404){
+        Get.snackbar('Warning!', 'User not found in this Email');
+      }
+      else if (response.statusCode == 400){
+        Get.snackbar('Warning!', 'Invalid verification code');
+      }
+      else {
+        final responseBody = jsonDecode(response.body);
+        Get.snackbar('Error', responseBody['message'] ?? 'Sign-up failed');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'An unexpected error occurred');
+      print('Error: $e');
+    } finally {
+      isLoading.value = false; // Hide the loading screen
+    }
+  }
+
+  Future<void> resetPassword(String email,String otp,String password) async {
+    isLoading.value = true; // Show the loading screen
+    try {
+      final http.Response response = await _service.resetPassword(email,otp,password);
+
+      print(':::::::::::::::RESPONSE:::::::::::::::::::::${response.body
+          .toString()}');
+      print(':::::::::::::::CODE:::::::::::::::::::::${response.statusCode}');
+      print(':::::::::::::::REQUEST:::::::::::::::::::::${response.request}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Assuming the server responds with success on code 200 or 201
+        final responseBody = jsonDecode(response.body);
+
+        print(':::::::::::::::responseBody:::::::::::::::::::::${responseBody}');
+
+        Get.offAll(LoginScreen());
+
+      }
+      else {
         final responseBody = jsonDecode(response.body);
         Get.snackbar('Error', responseBody['message'] ?? 'Sign-up failed');
       }

@@ -31,7 +31,6 @@ class AppRoutes {
   static const String bookOverView = '/bookOverView';
   static const String bookLanding = '/bookLanding';
   static const String bookDetailsScreen = '/bookDetailsScreen';
-  static const String bookCoverEditScreen = '/bookCoverEditScreen';
   static const String bookAddScreen = '/bookAddScreen';
   static const String profileScreen = '/profileScreen';
 
@@ -48,8 +47,6 @@ class AppRoutes {
     ///// AUTH
     GetPage(name: login, page: () => LoginScreen()),
     GetPage(name: forgotPassword, page: () => ForgotPasswordScreen()),
-    GetPage(name: verifyCode, page: () => VerifyCodeScreen()),
-    GetPage(name: setNewPassword, page: () => SetNewPasswordScreen()),
     GetPage(name: signup, page: () => const SignupScreen()),
     GetPage(name: language, page: () => LanguageScreen()),
 
@@ -69,7 +66,6 @@ class AppRoutes {
     GetPage(name: bookLanding, page: () => const BookLandingScreen()),
     GetPage(name: bookDetailsScreen, page: () => const BookDetailsScreen()),
     GetPage(name: bookLanding, page: () => const BookLandingScreen()),
-    GetPage(name: bookCoverEditScreen, page: () => const BookCoverEditScreen()),
     GetPage(name: bookAddScreen, page: () => const AddBook()),
 
 

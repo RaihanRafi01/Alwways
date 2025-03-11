@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:playground_02/views/book/bookCoverEditScreen.dart';
 
 import '../../constants/routes.dart';
 import '../../controllers/book/book_controller.dart';
@@ -11,12 +12,16 @@ class BookCover extends StatelessWidget {
   final bool isGrid;
   final bool isEdit;
   final bool isCoverEdit;
+  final String title; // Dynamic book title
+  final String coverImage; // Dynamic cover image (URL or local path)
 
   const BookCover({
     Key? key,
     required this.isGrid,
     this.isEdit = false,
     this.isCoverEdit = false,
+    required this.title,
+    required this.coverImage,
   }) : super(key: key);
 
   @override
@@ -27,11 +32,10 @@ class BookCover extends StatelessWidget {
     Future<void> _pickImage() async {
       final ImagePicker picker = ImagePicker();
       final XFile? pickedFile =
-          await picker.pickImage(source: ImageSource.gallery);
+      await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        bookController
-            .updateSelectedCoverImage(pickedFile.path); // Update the cover
+        bookController.updateSelectedCoverImage(pickedFile.path); // Update the cover
       }
     }
 
@@ -40,8 +44,7 @@ class BookCover extends StatelessWidget {
       children: [
         // Book Cover Background
         Obx(
-          () {
-            // Check if a PNG/JPG or SVG is selected
+              () {
             final coverPath = bookController.selectedCover.value;
             if (coverPath.endsWith('.png') || coverPath.endsWith('.jpg')) {
               // Display uploaded PNG/JPG from file
@@ -69,14 +72,14 @@ class BookCover extends StatelessWidget {
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Obx(() => Text(
-                  bookController.title.value,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: isGrid ? 14 : 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )),
+            Text(
+              title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isGrid ? 14 : 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 4),
             SvgPicture.asset(
               "assets/images/book/book_underline_1.svg",
@@ -86,9 +89,9 @@ class BookCover extends StatelessWidget {
             Obx(() {
               final selectedImage = bookController.selectedCoverImage.value;
               if (selectedImage.isNotEmpty) {
-                // Show image only if selectedCoverImage is not empty
+                // Show locally picked image if available
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.only(top: 8.0),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: Image.file(
@@ -99,8 +102,25 @@ class BookCover extends StatelessWidget {
                     ),
                   ),
                 );
+              } else if (coverImage.startsWith('http')) {
+                // Show remote cover image from URL if no local image is selected
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      coverImage,
+                      height: isGrid ? 90 : 172,
+                      width: isGrid ? 70 : 142,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const SizedBox.shrink(); // Hide if URL fails
+                      },
+                    ),
+                  ),
+                );
               }
-              return const SizedBox.shrink(); // Hide if no image selected
+              return const SizedBox.shrink(); // Hide if no image available
             }),
             // Conditional UI for editing or adding
             if (isCoverEdit)
@@ -110,18 +130,17 @@ class BookCover extends StatelessWidget {
                   const SizedBox(height: 20),
                   // Add/Edit button
                   GestureDetector(
-                    onTap: _pickImage, // Call the image picker on tap
+                    onTap: _pickImage,
                     child: Obx(() {
                       final isImageSelected = bookController
-                              .selectedCoverImage.value
-                              .endsWith('.png') ||
+                          .selectedCoverImage.value
+                          .endsWith('.png') ||
                           bookController.selectedCoverImage.value
                               .endsWith('.jpg');
                       return SvgPicture.asset(
                         isImageSelected
-                            ? "assets/images/book/edit_icon.svg" // Edit icon after upload
+                            ? "assets/images/book/edit_icon.svg"
                             : "assets/images/book/add_icon.svg",
-                        // Add icon before upload
                         height: 22.72,
                         width: 22.72,
                       );
@@ -131,13 +150,12 @@ class BookCover extends StatelessWidget {
               ),
           ],
         ),
-
         if (isEdit)
           Positioned(
             right: 6,
             bottom: 6,
             child: GestureDetector(
-              onTap: () => Get.toNamed(AppRoutes.bookCoverEditScreen),
+              onTap: () => Get.to(BookCoverEditScreen(title: title, image: coverImage,)),
               child: SvgPicture.asset(
                 "assets/images/book/edit_icon.svg",
                 height: 24,

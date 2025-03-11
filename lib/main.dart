@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       translations: AppTranslations(),
       locale: const Locale('en', 'US'),
       fallbackLocale: const Locale('en', 'US'),
-      initialRoute: AppRoutes.login,  // splash1
+      initialRoute: AppRoutes.splash1,  // splash1
       getPages: AppRoutes.pages,
       theme: ThemeData(
         fontFamily: 'Visby',

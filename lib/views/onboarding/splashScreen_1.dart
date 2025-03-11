@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/constants/routes.dart';
-import 'package:playground_02/views/onboarding/onboardingScreen.dart'; // Import the second splash screen
+import 'package:playground_02/views/authentication/login_screen.dart';
+import 'package:playground_02/views/dashboard/views/dashboard_view.dart';
+import 'package:playground_02/views/home/home_landing.dart';
+import 'package:playground_02/views/onboarding/onboardingScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import the second splash screen
 
 class Splashscreen1 extends StatefulWidget {
   const Splashscreen1({super.key});
@@ -16,8 +20,22 @@ class _Splashscreen1State extends State<Splashscreen1> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () {
-      Get.offNamed(AppRoutes.onboarding);// Navigate to the second splash screen
+      _checkLoginStatus();
     });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    // Get the SharedPreferences instance
+    final prefs = await SharedPreferences.getInstance();
+    // Retrieve the 'isLoggedIn' value, default to false if not set
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    // Navigate based on login status
+    if (isLoggedIn) {
+      Get.offAll(const DashboardView()); // Navigate to home and clear stack
+    } else {
+      Get.offAll(LoginScreen()); // Navigate to login and clear stack
+    }
   }
 
   @override

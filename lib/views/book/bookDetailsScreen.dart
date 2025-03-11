@@ -25,7 +25,7 @@ class BookDetailsScreen extends StatelessWidget {
           child: Column(
             children: [
               SizedBox(height: 50,),
-              const BookCover(isGrid: false),
+              const BookCover(isGrid: false, title: '', coverImage: '',),
               /*Center(
                 child: Stack(
                   alignment: Alignment.bottomRight,
@@ -47,7 +47,7 @@ class BookDetailsScreen extends StatelessWidget {
               ),*/
               SizedBox(height: 20,),
               CustomButton(text: 'VIEW BOOK', onPressed: (){
-                Get.to(BookPageView());
+                Get.to(BookPageView(title: 'gfd',));
               }),
               SizedBox(height: 20,),
               CustomButton(text: 'GET BOOK', onPressed: (){

@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/constants/routes.dart';
+import 'package:playground_02/views/book/bookCoverEditScreen.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/book/bookCover.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
@@ -13,11 +14,14 @@ import '../../views/book/bookPageEditScreen.dart';
 
 class BookPageView extends StatelessWidget {
   final BookChapterController controller = Get.put(BookChapterController());
+  final String title;
+
+  BookPageView({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppbar(title: ''),
+      appBar: const CustomAppbar(title: ''),
       body: Column(
         children: [
           // Display chapter info only when currentPage is not 0
@@ -71,12 +75,12 @@ class BookPageView extends StatelessWidget {
                     child: Stack(
                       alignment: Alignment.bottomRight,
                       children: [
-                        const BookCover(isGrid: false),
+                        BookCover(isGrid: false, title: title, coverImage: '',),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 170, right: 16),
                           child: GestureDetector(
                             onTap: () =>
-                                Get.toNamed(AppRoutes.bookCoverEditScreen),
+                                Get.to(BookCoverEditScreen(title: title, image: '',)),
                             child: SvgPicture.asset(
                               "assets/images/book/edit_icon.svg",
                               height: 24,

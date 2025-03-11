@@ -12,41 +12,57 @@ class BookProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Stack(
+    // Debug the input value
+    print('Progress value received: $progress');
+
+    // Normalize progress from percentage (0-100) to fraction (0.0-1.0)
+    final normalizedProgress = (progress / 100).clamp(0.0, 1.0);
+    final percentage = progress.toInt(); // Use raw progress as percentage
+
+    // Debug the calculated values
+    print('Normalized progress: $normalizedProgress');
+    print('Displayed percentage: $percentage');
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 10,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            Container(
-              height: 10,
-              width: MediaQuery.of(context).size.width * 0.4 * progress,
-              decoration: BoxDecoration(
-                color: AppColors.appColor,
-                borderRadius: BorderRadius.horizontal(
-                  left: const Radius.circular(10),
-                  right: Radius.circular(progress == 1.0 ? 10 : 0),
+            Stack(
+              children: [
+                Container(
+                  height: 10,
+                  width: constraints.maxWidth, // Full width of parent
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
+                Container(
+                  height: 10,
+                  width: constraints.maxWidth * normalizedProgress, // Scale with normalized progress
+                  decoration: BoxDecoration(
+                    color: AppColors.appColor,
+                    borderRadius: BorderRadius.horizontal(
+                      left: const Radius.circular(10),
+                      right: Radius.circular(normalizedProgress == 1.0 ? 10 : 0),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$percentage% complete',
+              style: const TextStyle(
+                color: AppColors.textColor,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 8),
-        Text(
-          '${(progress * 100).toInt()}% complete',
-          style: const TextStyle(
-            color: AppColors.textColor,
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
