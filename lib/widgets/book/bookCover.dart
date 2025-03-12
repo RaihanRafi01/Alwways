@@ -10,8 +10,8 @@ class BookCover extends StatelessWidget {
   final bool isGrid;
   final bool isEdit;
   final bool isCoverEdit;
-  final String title;
-  final String coverImage; // Default or initial cover image (could be URL or local path)
+  final String title; // Initial title, fallback if not in books
+  final String coverImage;
   final String bookId;
 
   const BookCover({
@@ -33,7 +33,8 @@ class BookCover extends StatelessWidget {
       final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        bookController.updateCoverImage(bookId, pickedFile.path); // Local file path
+        bookController.updateCoverImage(bookId, pickedFile.path);
+        print("Picked image path: ${pickedFile.path}");
       }
     }
 
@@ -41,34 +42,27 @@ class BookCover extends StatelessWidget {
       alignment: Alignment.center,
       children: [
         Obx(() {
-          final coverPath = bookController.selectedCover.value;
-          if (coverPath.endsWith('.png') || coverPath.endsWith('.jpg')) {
-            return Image.file(
-              File(coverPath),
-              height: isGrid ? 300 : 350,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            );
-          } else {
-            return SvgPicture.asset(
-              coverPath.isNotEmpty ? coverPath : 'assets/images/book/cover_image_1.svg',
-              height: isGrid ? 300 : 350,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            );
-          }
+          final coverPath = bookController.getBackgroundCover(bookId);
+          return SvgPicture.asset(
+            coverPath.isNotEmpty ? coverPath : 'assets/images/book/cover_image_1.svg',
+            height: isGrid ? 300 : 350,
+            width: double.infinity,
+            fit: BoxFit.cover,
+          );
         }),
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              title,
+            Obx(() => Text(
+              bookController.getTitle(bookId).isNotEmpty
+                  ? bookController.getTitle(bookId)
+                  : title,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: isGrid ? 14 : 24,
                 fontWeight: FontWeight.bold,
               ),
-            ),
+            )),
             const SizedBox(height: 4),
             SvgPicture.asset(
               "assets/images/book/book_underline_1.svg",

@@ -221,6 +221,7 @@ class ApiService {
 
     // Add the cover image (if provided)
     if (coverImage != null) {
+      print('::::::::::::::::::::::::::::NOT NULL IMAGE');
       request.files.add(
         await http.MultipartFile.fromPath(
           'coverImage', // Field name expected by your API
