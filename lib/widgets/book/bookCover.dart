@@ -47,7 +47,8 @@ class BookCover extends StatelessWidget {
             coverPath.isNotEmpty ? coverPath : 'assets/images/book/cover_image_1.svg',
             height: isGrid ? 300 : 350,
             width: double.infinity,
-            fit: BoxFit.cover,
+            fit: BoxFit.fill,
+
           );
         }),
         Column(
@@ -128,8 +129,8 @@ class BookCover extends StatelessWidget {
         ),
         if (isEdit)
           Positioned(
-            right: 6,
-            bottom: 6,
+            right: 10,
+            bottom: 10,
             child: GestureDetector(
               onTap: () => Get.to(
                 BookCoverEditScreen(title: title, image: coverImage, bookId: bookId),
