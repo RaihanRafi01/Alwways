@@ -4,16 +4,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:playground_02/views/book/bookCoverEditScreen.dart';
-
-import '../../constants/routes.dart';
 import '../../controllers/book/book_controller.dart';
 
 class BookCover extends StatelessWidget {
   final bool isGrid;
   final bool isEdit;
   final bool isCoverEdit;
-  final String title; // Dynamic book title
-  final String coverImage; // Dynamic cover image (URL or local path)
+  final String title;
+  final String coverImage;
+  final String bookId;
 
   const BookCover({
     Key? key,
@@ -22,53 +21,43 @@ class BookCover extends StatelessWidget {
     this.isCoverEdit = false,
     required this.title,
     required this.coverImage,
+    required this.bookId,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final bookController = Get.find<BookController>();
+    final BookController bookController = Get.find<BookController>(); // Use Get.find()
 
-    // Function to pick an image
     Future<void> _pickImage() async {
       final ImagePicker picker = ImagePicker();
-      final XFile? pickedFile =
-      await picker.pickImage(source: ImageSource.gallery);
+      final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        bookController.updateSelectedCoverImage(pickedFile.path); // Update the cover
+        bookController.updateSelectedCoverImage(pickedFile.path);
       }
     }
 
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Book Cover Background
-        Obx(
-              () {
-            final coverPath = bookController.selectedCover.value;
-            if (coverPath.endsWith('.png') || coverPath.endsWith('.jpg')) {
-              // Display uploaded PNG/JPG from file
-              return Image.file(
-                File(coverPath),
-                height: isGrid ? 300 : 350,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              );
-            } else {
-              // Display default or selected SVG
-              return SvgPicture.asset(
-                coverPath.isNotEmpty
-                    ? coverPath
-                    : 'assets/images/book/cover_image_1.svg',
-                // Default SVG cover
-                height: isGrid ? 300 : 350,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              );
-            }
-          },
-        ),
-        // Book Title and Underline
+        Obx(() {
+          final coverPath = bookController.selectedCover.value;
+          if (coverPath.endsWith('.png') || coverPath.endsWith('.jpg')) {
+            return Image.file(
+              File(coverPath),
+              height: isGrid ? 300 : 350,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            );
+          } else {
+            return SvgPicture.asset(
+              coverPath.isNotEmpty ? coverPath : 'assets/images/book/cover_image_1.svg',
+              height: isGrid ? 300 : 350,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            );
+          }
+        }),
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -89,7 +78,6 @@ class BookCover extends StatelessWidget {
             Obx(() {
               final selectedImage = bookController.selectedCoverImage.value;
               if (selectedImage.isNotEmpty) {
-                // Show locally picked image if available
                 return Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: ClipRRect(
@@ -103,7 +91,6 @@ class BookCover extends StatelessWidget {
                   ),
                 );
               } else if (coverImage.startsWith('http')) {
-                // Show remote cover image from URL if no local image is selected
                 return Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: ClipRRect(
@@ -114,29 +101,25 @@ class BookCover extends StatelessWidget {
                       width: isGrid ? 70 : 142,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return const SizedBox.shrink(); // Hide if URL fails
+                        return const SizedBox.shrink();
                       },
                     ),
                   ),
                 );
               }
-              return const SizedBox.shrink(); // Hide if no image available
+              return const SizedBox.shrink();
             }),
-            // Conditional UI for editing or adding
             if (isCoverEdit)
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 20),
-                  // Add/Edit button
                   GestureDetector(
                     onTap: _pickImage,
                     child: Obx(() {
-                      final isImageSelected = bookController
-                          .selectedCoverImage.value
-                          .endsWith('.png') ||
-                          bookController.selectedCoverImage.value
-                              .endsWith('.jpg');
+                      final isImageSelected =
+                          bookController.selectedCoverImage.value.endsWith('.png') ||
+                              bookController.selectedCoverImage.value.endsWith('.jpg');
                       return SvgPicture.asset(
                         isImageSelected
                             ? "assets/images/book/edit_icon.svg"
@@ -155,7 +138,9 @@ class BookCover extends StatelessWidget {
             right: 6,
             bottom: 6,
             child: GestureDetector(
-              onTap: () => Get.to(BookCoverEditScreen(title: title, image: coverImage,)),
+              onTap: () => Get.to(
+                BookCoverEditScreen(title: title, image: coverImage, bookId: bookId),
+              ),
               child: SvgPicture.asset(
                 "assets/images/book/edit_icon.svg",
                 height: 24,

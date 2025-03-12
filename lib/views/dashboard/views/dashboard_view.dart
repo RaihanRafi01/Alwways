@@ -4,6 +4,7 @@ import 'package:playground_02/views/book/book_landing.dart';
 import 'package:playground_02/views/home/home_landing.dart';
 import 'package:playground_02/views/profile/profile_landing.dart';
 import '../../../constants/color/app_colors.dart';
+import '../../../controllers/book/book_controller.dart';
 import '../../../widgets/customNavigationBar.dart';
 import '../controllers/dashboard_controller.dart';
 
@@ -15,6 +16,7 @@ class DashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Initialize the DashboardController
     final controller = Get.put(DashboardController());
+    Get.put(BookController());
 
     controller.currentIndex.value = index;
 

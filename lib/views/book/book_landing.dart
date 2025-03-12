@@ -83,7 +83,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
         return GestureDetector(
           onTap: () {
             if (isEpisode) {
-              Get.to(BookPageView(title: item.title), arguments: {"episodeIndex": index});
+              Get.to(BookPageView(title: item.title, bookId: item.id, coverImage: item.coverImage,), arguments: {"episodeIndex": index});
             } else {
               Get.to(
                 const BookLandingScreen(isEpisode: true),
@@ -95,7 +95,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
             title: item.title,
             coverImage: item.coverImage,
             progress: item.percentage,
-            isGrid: true,
+            isGrid: true, bookId: item.id,
           ),
         );
       },

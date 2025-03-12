@@ -15,8 +15,10 @@ import '../../views/book/bookPageEditScreen.dart';
 class BookPageView extends StatelessWidget {
   final BookChapterController controller = Get.put(BookChapterController());
   final String title;
+  final String bookId;
+  final String coverImage;
 
-  BookPageView({super.key, required this.title});
+  BookPageView({super.key, required this.title, required this.bookId, required this.coverImage});
 
   @override
   Widget build(BuildContext context) {
@@ -75,12 +77,12 @@ class BookPageView extends StatelessWidget {
                     child: Stack(
                       alignment: Alignment.bottomRight,
                       children: [
-                        BookCover(isGrid: false, title: title, coverImage: '',),
+                        BookCover(isGrid: false, title: title, coverImage: coverImage, bookId: bookId,),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 170, right: 16),
                           child: GestureDetector(
                             onTap: () =>
-                                Get.to(BookCoverEditScreen(title: title, image: '',)),
+                                Get.to(BookCoverEditScreen(title: title, image: coverImage, bookId: bookId,)),
                             child: SvgPicture.asset(
                               "assets/images/book/edit_icon.svg",
                               height: 24,
