@@ -9,7 +9,7 @@ import '../../widgets/customAppBar.dart';
 
 class BookCoverEditScreen extends StatelessWidget {
   final String title;
-  final String image;
+  final String image; // Initial cover image for this book
   final String bookId;
 
   const BookCoverEditScreen({
@@ -28,15 +28,12 @@ class BookCoverEditScreen extends StatelessWidget {
       if (bookController.title.value != title) {
         bookController.updateTitle(title);
       }
-      if (bookController.selectedCoverImage.value != image) {
-        bookController.updateSelectedCoverImage(image);
+      if (bookController.getCoverImage(bookId, image) != image) {
+        bookController.updateCoverImage(bookId, image);
       }
     });
 
-    // Initialize TextEditingController with the passed title (not reactive yet)
     final TextEditingController titleController = TextEditingController(text: title);
-
-    // Sync controller with observable changes
     ever(bookController.title, (newTitle) {
       if (titleController.text != newTitle) {
         titleController.text = newTitle;
@@ -56,9 +53,7 @@ class BookCoverEditScreen extends StatelessWidget {
                   isGrid: false,
                   isCoverEdit: true,
                   title: bookController.title.value,
-                  coverImage: bookController.selectedCoverImage.value.isNotEmpty
-                      ? bookController.selectedCoverImage.value
-                      : image,
+                  coverImage: bookController.getCoverImage(bookId, image),
                   bookId: bookId,
                 ),
               ),
@@ -70,7 +65,7 @@ class BookCoverEditScreen extends StatelessWidget {
                 suffixIcon: Icons.edit,
                 radius: 20,
                 onChanged: (value) {
-                  bookController.updateTitle(value); // Update on user input
+                  bookController.updateTitle(value);
                 },
                 label: '',
               ),

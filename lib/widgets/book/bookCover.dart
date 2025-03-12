@@ -11,7 +11,7 @@ class BookCover extends StatelessWidget {
   final bool isEdit;
   final bool isCoverEdit;
   final String title;
-  final String coverImage;
+  final String coverImage; // Default or initial cover image (could be URL or local path)
   final String bookId;
 
   const BookCover({
@@ -26,14 +26,14 @@ class BookCover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BookController bookController = Get.find<BookController>(); // Use Get.find()
+    final BookController bookController = Get.find<BookController>();
 
     Future<void> _pickImage() async {
       final ImagePicker picker = ImagePicker();
       final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        bookController.updateSelectedCoverImage(pickedFile.path);
+        bookController.updateCoverImage(bookId, pickedFile.path); // Local file path
       }
     }
 
@@ -76,8 +76,24 @@ class BookCover extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Obx(() {
-              final selectedImage = bookController.selectedCoverImage.value;
-              if (selectedImage.isNotEmpty) {
+              final selectedImage = bookController.getCoverImage(bookId, coverImage);
+              if (selectedImage.startsWith('http')) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      selectedImage,
+                      height: isGrid ? 90 : 172,
+                      width: isGrid ? 70 : 142,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
+                );
+              } else if (selectedImage.endsWith('.png') || selectedImage.endsWith('.jpg')) {
                 return Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: ClipRRect(
@@ -87,22 +103,6 @@ class BookCover extends StatelessWidget {
                       height: isGrid ? 90 : 172,
                       width: isGrid ? 70 : 142,
                       fit: BoxFit.cover,
-                    ),
-                  ),
-                );
-              } else if (coverImage.startsWith('http')) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      coverImage,
-                      height: isGrid ? 90 : 172,
-                      width: isGrid ? 70 : 142,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const SizedBox.shrink();
-                      },
                     ),
                   ),
                 );
@@ -117,9 +117,8 @@ class BookCover extends StatelessWidget {
                   GestureDetector(
                     onTap: _pickImage,
                     child: Obx(() {
-                      final isImageSelected =
-                          bookController.selectedCoverImage.value.endsWith('.png') ||
-                              bookController.selectedCoverImage.value.endsWith('.jpg');
+                      final selectedImage = bookController.getCoverImage(bookId, coverImage);
+                      final isImageSelected = selectedImage.endsWith('.png') || selectedImage.endsWith('.jpg');
                       return SvgPicture.asset(
                         isImageSelected
                             ? "assets/images/book/edit_icon.svg"

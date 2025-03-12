@@ -9,7 +9,9 @@ class BookController extends GetxController {
   TextEditingController bookNameController = TextEditingController(); // Controller for book name
   var title = ''.obs;
   var selectedCover = 'assets/images/book/cover_image_1.svg'.obs; // Default SVG
-  var selectedCoverImage = ''.obs; // For locally picked image
+  //var selectedCoverImage = ''.obs; // For locally picked image
+  var coverImages = <String, String>{}.obs;
+  var bookCoverImage = ''.obs;
   final ApiService apiService = ApiService();
 
   List<String> bookCovers = [
@@ -29,8 +31,13 @@ class BookController extends GetxController {
     title.value = newTitle;
   }
 
-  void updateSelectedCoverImage(String coverPath) {
-    selectedCoverImage.value = coverPath;
+  String getCoverImage(String bookId, String defaultImage) {
+    return coverImages[bookId] ?? defaultImage; // Return book-specific image or default
+  }
+
+  void updateCoverImage(String bookId, String imagePath) {
+    coverImages[bookId] = imagePath; // Update cover image for specific book
+    bookCoverImage.value = imagePath; // Update selected cover for editing
   }
 
   Future<void> createBook() async {
@@ -51,18 +58,15 @@ class BookController extends GetxController {
     }
   }
 
-  // New method to update the book cover via API
   Future<void> updateBookCoverApi(String bookId) async {
     try {
-      XFile? coverImage = selectedCoverImage.value.isNotEmpty
-          ? XFile(selectedCoverImage.value)
+      XFile? coverImage = coverImages[bookId]?.isNotEmpty == true
+          ? XFile(coverImages[bookId]!)
           : null;
-
+      // Assuming apiService is defined elsewhere
       final response = await apiService.updateBookCover(bookId, title.value, coverImage);
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.snackbar('Success', 'Book cover updated successfully');
-        // Optionally, refresh the book list or navigate back
         Get.back();
       } else {
         Get.snackbar('Error', 'Failed to update book cover: ${response.body}');
