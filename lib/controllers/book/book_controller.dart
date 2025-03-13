@@ -177,18 +177,10 @@ class BookController extends GetxController {
     }
     try {
       final response = await apiService.createBook(bookNameController.text);
+
+      print(':::::::::::::::::::::statusCode : ${response.statusCode}');
+      print(':::::::::::::::::::::body : ${response.body}');
       if (response.statusCode == 201 || response.statusCode == 200) {
-        final newBookJson = jsonDecode(response.body);
-        final newBook = Book.fromJson(newBookJson);
-        final localBook = newBook.copyWith(backgroundCover: 'assets/images/book/cover_image_1.svg');
-        await dbHelper.insertBook(localBook);
-        books.add(localBook);
-        backgroundCovers[localBook.id] = localBook.backgroundCover;
-        coverImages[localBook.id] = localBook.coverImage;
-        for (var episode in localBook.episodes) {
-          backgroundCovers[episode.id] = episode.backgroundCover ?? 'assets/images/book/cover_image_1.svg';
-          coverImages[episode.id] = episode.coverImage;
-        }
         Get.offAll(const DashboardView(index: 1));
       } else {
         Get.snackbar('Error', 'Failed to create book: ${response.body}');
