@@ -1,7 +1,7 @@
+import 'package:playground_02/controllers/book/book_controller.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:async';
-
 import '../model/bookModel.dart';
 
 class DatabaseHelper {
@@ -20,10 +20,9 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'books.db');
-
     return await openDatabase(
       path,
-      version: 2, // Increment version for migration
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE books (
@@ -38,14 +37,13 @@ class DatabaseHelper {
             updatedAt TEXT
           )
         ''');
-
         await db.execute('''
           CREATE TABLE episodes (
             id TEXT PRIMARY KEY,
             bookId TEXT,
             title TEXT,
             coverImage TEXT,
-            backgroundCover TEXT, -- Added for episodes
+            backgroundCover TEXT,
             percentage REAL,
             conversations TEXT,
             FOREIGN KEY (bookId) REFERENCES books (id)
@@ -62,9 +60,29 @@ class DatabaseHelper {
 
   Future<void> insertBook(Book book) async {
     final db = await database;
-    await db.insert('books', book.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    print("Inserting/Updating book: ${book.id}, title: ${book.title}");
+
+    // Check if book exists, update if it does, insert if it doesn’t
+    final existingBook = (await db.query('books', where: 'id = ?', whereArgs: [book.id])).firstOrNull;
+    if (existingBook != null) {
+      await db.update('books', book.toMap(), where: 'id = ?', whereArgs: [book.id]);
+    } else {
+      await db.insert('books', book.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    }
+
+    // Merge episodes
     for (var episode in book.episodes) {
-      await db.insert('episodes', episode.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      print("Inserting/Updating episode: ${episode.id}, bookId: ${episode.bookId}, title: ${episode.title}");
+      final existingEpisode = (await db.query('episodes', where: 'id = ?', whereArgs: [episode.id])).firstOrNull;
+      if (existingEpisode != null) {
+        final existingEpisodeObj = Episode.fromMap(existingEpisode);
+        final mergedEpisode = episode.copyWith(
+          backgroundCover: existingEpisodeObj.backgroundCover, // Preserve local backgroundCover
+        );
+        await db.update('episodes', mergedEpisode.toMap(), where: 'id = ?', whereArgs: [episode.id]);
+      } else {
+        await db.insert('episodes', episode.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      }
     }
   }
 
@@ -72,10 +90,10 @@ class DatabaseHelper {
     final db = await database;
     final bookMaps = await db.query('books');
     final books = <Book>[];
-
     for (var bookMap in bookMaps) {
       final episodeMaps = await db.query('episodes', where: 'bookId = ?', whereArgs: [bookMap['id']]);
       final episodes = episodeMaps.map((e) => Episode.fromMap(e)).toList();
+      print("Fetched episodes for book ${bookMap['id']}: ${episodeMaps.map((e) => e['id']).toList()}");
       books.add(Book(
         id: bookMap['id'] as String,
         userId: bookMap['userId'] as String,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:playground_02/views/authentication/login_screen.dart';
 import 'package:playground_02/views/subscription/cupon_view.dart';
 import '../../../constants/color/app_colors.dart';
 import '../../../widgets/settings/customDeletePopUp.dart';
@@ -195,6 +196,7 @@ class SettingView extends GetView<SettingController> {
                             onPressed: () {
                               Navigator.pop(context);
                               // Add your logout logic here
+
                               //logout();
                             },
                             child: const Text(

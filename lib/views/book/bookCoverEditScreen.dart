@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:playground_02/controllers/book/book_controller.dart';
-import 'package:playground_02/controllers/book/bookChapter_controller.dart'; // Add this
+import 'package:playground_02/controllers/book/bookChapter_controller.dart';
 import 'package:playground_02/widgets/authentication/custom_textField.dart';
 import '../../constants/color/app_colors.dart';
 import '../../widgets/book/bookCover.dart';
 import '../../widgets/customAppBar.dart';
 
-class BookCoverEditScreen extends StatelessWidget {
+class BookCoverEditScreen extends StatefulWidget {
   final String title;
   final String image;
-  final String bookId; // For books: book ID; for episodes: episode ID or book ID
+  final String bookId;
   final bool isEpisode;
 
   const BookCoverEditScreen({
@@ -19,41 +20,111 @@ class BookCoverEditScreen extends StatelessWidget {
     required this.title,
     required this.image,
     required this.bookId,
-    this.isEpisode = false, // Default to false (book editing)
+    this.isEpisode = false,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final BookController bookController = Get.find<BookController>();
-    final BookChapterController chapterController = Get.put(BookChapterController());
+  _BookCoverEditScreenState createState() => _BookCoverEditScreenState();
+}
 
-    // Determine if we're editing a book or an episode
-    final isEpisodeEdit = isEpisode && Get.arguments != null && Get.arguments['episodeIndex'] != null;
-    final episodeIndex = isEpisodeEdit ? Get.arguments['episodeIndex'] as int : 0;
+class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
+  late BookController bookController;
+  late BookChapterController chapterController;
+  String? errorMessage;
+  bool isEpisodeEdit = false;
+  int episodeIndex = 0;
+  final ImagePicker _picker = ImagePicker();
 
-    // Initialize controller with the appropriate title
-    final TextEditingController titleController = TextEditingController(
-      text: isEpisodeEdit
-          ? chapterController.allPageChapters[episodeIndex]
-          : bookController.getTitle(bookId),
-    );
+  @override
+  void initState() {
+    super.initState();
+    print("Initializing BookCoverEditScreen - bookId: ${widget.bookId}, isEpisode: ${widget.isEpisode}");
+    bookController = Get.find<BookController>();
+    chapterController = Get.put(BookChapterController());
+    _checkContent();
+  }
 
-    // Sync controller with the appropriate data source
-    if (isEpisodeEdit) {
-      ever(chapterController.allPageChapters, (_) {
-        final currentTitle = chapterController.allPageChapters[episodeIndex];
-        if (titleController.text != currentTitle) {
-          titleController.text = currentTitle;
+  void _checkContent() {
+    print("Checking content for bookId: ${widget.bookId}, isEpisode: ${widget.isEpisode}");
+    try {
+      print("Books: ${bookController.books.map((b) => {'id': b.id, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
+      if (widget.isEpisode) {
+        final book = bookController.books.firstWhereOrNull((b) => b.episodes.any((e) => e.id == widget.bookId));
+        if (book == null) {
+          print("Episode ${widget.bookId} not found");
+          setState(() {
+            errorMessage = "Episode ${widget.bookId} not found in any book";
+          });
+          return;
         }
-      });
-    } else {
-      ever(bookController.books, (_) {
-        final currentTitle = bookController.getTitle(bookId);
-        if (titleController.text != currentTitle) {
-          titleController.text = currentTitle;
+        episodeIndex = book.episodes.indexWhere((e) => e.id == widget.bookId);
+        isEpisodeEdit = episodeIndex != -1;
+      } else {
+        final book = bookController.books.firstWhereOrNull((b) => b.id == widget.bookId);
+        if (book == null) {
+          print("Book ${widget.bookId} not found");
+          setState(() {
+            errorMessage = "Book ${widget.bookId} not found";
+          });
+          return;
         }
+        isEpisodeEdit = false;
+        episodeIndex = 0;
+      }
+      print("Content check passed - isEpisodeEdit: $isEpisodeEdit, episodeIndex: $episodeIndex");
+    } catch (e) {
+      print("Exception in _checkContent: $e");
+      setState(() {
+        errorMessage = "Error: $e";
       });
     }
+  }
+
+  Future<void> _pickCoverImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      bookController.updateCoverImage(widget.bookId, image.path);
+      if (isEpisodeEdit) {
+        chapterController.allPageImages[episodeIndex] = image.path;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print("Building UI for bookId: ${widget.bookId}");
+    if (errorMessage != null) {
+      return Scaffold(
+        appBar: CustomAppbar(title: "Error", showIcon: false),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                errorMessage!,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Get.back(),
+                child: const Text("Go Back"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final TextEditingController titleController = TextEditingController(
+      text: bookController.getTitle(widget.bookId),
+    );
+
+    ever(bookController.books, (_) {
+      final currentTitle = bookController.getTitle(widget.bookId);
+      if (titleController.text != currentTitle) {
+        titleController.text = currentTitle;
+      }
+    });
 
     return Scaffold(
       appBar: CustomAppbar(title: isEpisodeEdit ? "Edit Episode Cover" : "Edit Cover", showIcon: false),
@@ -69,38 +140,36 @@ class BookCoverEditScreen extends StatelessWidget {
                         () => BookCover(
                       isGrid: false,
                       isCoverEdit: true,
-                      title: isEpisodeEdit
-                          ? chapterController.allPageChapters[episodeIndex]
-                          : bookController.getTitle(bookId),
+                      title: bookController.getTitle(widget.bookId),
                       coverImage: isEpisodeEdit
-                          ? chapterController.allPageImages[episodeIndex] ?? image
-                          : bookController.getCoverImage(bookId, image),
-                      bookId: bookId,
+                          ? (chapterController.allPageImages[episodeIndex] ?? widget.image)
+                          : bookController.getCoverImage(widget.bookId, widget.image),
+                      bookId: widget.bookId,
                       isEpisode: isEpisodeEdit,
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                  child: CustomTextField(
-                    controller: titleController,
-                    suffixIcon: Icons.edit,
-                    radius: 20,
-                    onChanged: (value) {
-                      if (isEpisodeEdit) {
-                        chapterController.allPageChapters[episodeIndex] = value;
-                      } else {
-                        bookController.updateTitle(bookId, value);
-                      }
-                    },
-                    label: '',
+                if (!isEpisodeEdit)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                    child: CustomTextField(
+                      controller: titleController,
+                      suffixIcon: Icons.edit,
+                      radius: 20,
+                      onChanged: (value) {
+                        bookController.updateTitle(widget.bookId, value);
+                        if (isEpisodeEdit) {
+                          chapterController.allPageChapters[episodeIndex] = value;
+                        }
+                      },
+                      label: '',
+                    ),
                   ),
-                ),
                 const SizedBox(height: 20),
                 const Padding(
                   padding: EdgeInsets.only(left: 10.0),
                   child: Text(
-                    'Select Cover',
+                    'Select Background Cover',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -116,19 +185,13 @@ class BookCoverEditScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: GestureDetector(
                           onTap: () {
+                            bookController.updateSelectedCover(widget.bookId, bookCover);
                             if (isEpisodeEdit) {
-                              // For episodes, update background cover in chapter controller if needed
-                              // Here we assume episode background cover isn't stored; adjust if needed
-                              print("Selected background cover for episode: $bookCover");
-                            } else {
-                              bookController.updateSelectedCover(bookId, bookCover);
+                              chapterController.allPageImages[episodeIndex] = bookCover;
                             }
                           },
                           child: Obx(() {
-                            bool isSelected = bookCover ==
-                                (isEpisodeEdit
-                                    ? chapterController.allPageImages[episodeIndex] // Adjust if episode background differs
-                                    : bookController.getBackgroundCover(bookId));
+                            bool isSelected = bookCover == bookController.getBackgroundCover(widget.bookId);
                             return Stack(
                               children: [
                                 SvgPicture.asset(
@@ -164,12 +227,13 @@ class BookCoverEditScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: bookController.isLoading.value
                         ? null
-                        : () {
+                        : () async {
                       if (isEpisodeEdit) {
-                        // Save episode changes (no API call for now; adjust if needed)
-                        Get.back(); // Simply return to BookPageView
+                        print('::::::::::::::::::::::::::::::: hit episode');
+                        await bookController.updateEpisodeCoverApi(widget.bookId, episodeIndex);
                       } else {
-                        bookController.updateBookCoverApi(bookId);
+                        print('::::::::::::::::::::::::::::::: hit book');
+                        await bookController.updateBookCoverApi(widget.bookId);
                       }
                     },
                     style: ElevatedButton.styleFrom(

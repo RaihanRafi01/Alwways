@@ -80,7 +80,7 @@ class BookPageView extends StatelessWidget {
                       children: [
                         BookCover(isGrid: false, title: title, coverImage: coverImage, bookId: bookId, isEpisode: isEpisode,),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 170, right: 16),
+                          padding: const EdgeInsets.only(bottom: 210, right: 16),
                           child: GestureDetector(
                             onTap: () =>
                                 Get.to(BookCoverEditScreen(title: title, image: coverImage, bookId: bookId, isEpisode: isEpisode,)),

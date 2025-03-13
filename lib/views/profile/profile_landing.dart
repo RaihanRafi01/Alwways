@@ -9,6 +9,7 @@ import 'package:playground_02/widgets/customAppBar.dart';
 import '../../constants/routes.dart';
 import '../../widgets/authentication/profileImage.dart';
 import '../../widgets/home/custom_bottom_navigation_bar.dart';
+import '../authentication/login_screen.dart';
 
 class ProfileController extends GetxController {
   // Example state variables
@@ -130,7 +131,7 @@ class ProfileScreen extends StatelessWidget {
                 'Log Out',
               ),
               onTap: () {
-                // Log out logic
+                Get.offAll(LoginScreen());
               },
             ),
             const SizedBox(height: 60),

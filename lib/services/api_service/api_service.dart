@@ -236,4 +236,42 @@ class ApiService {
     return await http.Response.fromStream(streamedResponse);
   }
 
+  Future<http.Response> updateEpisodeCover(String bookId, XFile? coverImage, int episode_number) async {
+    String? token = await _storage.read(key: 'access_token');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    print(' ::::::::::::::::::::::::::  bookId : $bookId');
+    print(' ::::::::::::::::::::::::::  number : $episode_number');
+
+    // Construct the endpoint URL (adjust based on your API documentation)
+    final Uri url = Uri.parse('${baseUrl}book/$bookId/episode/$episode_number');
+
+    // Create a multipart request
+    var request = http.MultipartRequest('PUT', url);
+
+    // Add headers
+    request.headers.addAll({
+      "Authorization": "Bearer $token",
+      "Content-Type": "multipart/form-data",
+    });
+
+
+    // Add the cover image (if provided)
+    if (coverImage != null) {
+      print('::::::::::::::::::::::::::::NOT NULL IMAGE');
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'coverImage', // Field name expected by your API
+          coverImage.path,
+          contentType: MediaType('image', 'jpeg'), // Adjust MIME type as needed
+        ),
+      );
+    }
+
+    // Send the request and convert to http.Response
+    var streamedResponse = await request.send();
+    return await http.Response.fromStream(streamedResponse);
+  }
+
 }

@@ -31,10 +31,9 @@ class Book {
       userId: json['userId'],
       title: json['title'],
       episodes: (json['episodes'] as List)
-          .map((e) => Episode.fromJson(e))
+          .map((e) => Episode.fromJson(e, bookId: json['_id'])) // Pass bookId to Episode
           .toList(),
       coverImage: json['coverImage'] ?? '',
-      // backgroundCover not included in API, defaults to local value
       status: json['status'],
       percentage: json['percentage'].toDouble(),
       createdAt: DateTime.parse(json['createdAt']),
@@ -49,7 +48,6 @@ class Book {
       'title': title,
       'episodes': episodes.map((e) => e.toJson()).toList(),
       'coverImage': coverImage,
-      // Don’t include backgroundCover since it’s local-only
       'status': status,
       'percentage': percentage,
       'createdAt': createdAt.toIso8601String(),
@@ -63,7 +61,7 @@ class Book {
       'userId': userId,
       'title': title,
       'coverImage': coverImage,
-      'backgroundCover': backgroundCover, // Stored locally
+      'backgroundCover': backgroundCover,
       'status': status,
       'percentage': percentage,
       'createdAt': createdAt.toIso8601String(),
@@ -76,7 +74,9 @@ class Book {
       id: map['id'] as String,
       userId: map['userId'] as String,
       title: map['title'] as String,
-      episodes: map['episodes'] as List<Episode>? ?? [], // Use provided episodes or empty list
+      episodes: (map['episodes'] as List<dynamic>? ?? [])
+          .map((e) => Episode.fromMap(e as Map<String, dynamic>))
+          .toList(), // Ensure episodes are parsed correctly
       coverImage: map['coverImage'] as String? ?? '',
       backgroundCover: map['backgroundCover'] as String? ?? 'assets/images/book/cover_image_1.svg',
       status: map['status'] as String,
@@ -106,13 +106,12 @@ class Episode {
     required this.conversations,
   });
 
-  factory Episode.fromJson(Map<String, dynamic> json) {
+  factory Episode.fromJson(Map<String, dynamic> json, {String? bookId}) {
     return Episode(
       id: json['_id'],
-      bookId: json['bookId'] ?? '', // Assuming bookId might come from API; adjust if not
+      bookId: bookId ?? json['bookId'] ?? '', // Use provided bookId or fallback
       title: json['title'],
       coverImage: json['coverImage'] ?? '',
-      // backgroundCover not included in API, defaults to local value
       percentage: json['percentage'].toDouble(),
       conversations: json['conversations'] ?? [],
     );
@@ -124,7 +123,6 @@ class Episode {
       'bookId': bookId,
       'title': title,
       'coverImage': coverImage,
-      // Don’t include backgroundCover since it’s local-only
       'percentage': percentage,
       'conversations': conversations,
     };
@@ -136,9 +134,9 @@ class Episode {
       'bookId': bookId, // Correct foreign key
       'title': title,
       'coverImage': coverImage,
-      'backgroundCover': backgroundCover, // Store locally
+      'backgroundCover': backgroundCover,
       'percentage': percentage,
-      'conversations': jsonEncode(conversations), // Store as JSON string
+      'conversations': jsonEncode(conversations),
     };
   }
 

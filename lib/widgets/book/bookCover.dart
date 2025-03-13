@@ -10,7 +10,7 @@ class BookCover extends StatelessWidget {
   final bool isGrid;
   final bool isEdit;
   final bool isCoverEdit;
-  final String title; // Initial title, fallback if not in books
+  final String title;
   final String coverImage;
   final String bookId;
   final bool isEpisode;
@@ -50,7 +50,6 @@ class BookCover extends StatelessWidget {
             height: isGrid ? 300 : 350,
             width: double.infinity,
             fit: BoxFit.fill,
-
           );
         }),
         Column(
@@ -134,9 +133,15 @@ class BookCover extends StatelessWidget {
             right: 10,
             bottom: 10,
             child: GestureDetector(
-              onTap: () => Get.to(
-                BookCoverEditScreen(title: title, image: coverImage, bookId: bookId, isEpisode: isEpisode,),
-              ),
+              onTap: () {
+                print("Navigating to edit screen - bookId: $bookId, isEpisode: $isEpisode");
+                Get.to(BookCoverEditScreen(
+                  title: title,
+                  image: coverImage,
+                  bookId: bookId,
+                  isEpisode: isEpisode,
+                ));
+              },
               child: SvgPicture.asset(
                 "assets/images/book/edit_icon.svg",
                 height: 24,
