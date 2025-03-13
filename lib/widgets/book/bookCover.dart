@@ -13,6 +13,7 @@ class BookCover extends StatelessWidget {
   final String title; // Initial title, fallback if not in books
   final String coverImage;
   final String bookId;
+  final bool isEpisode;
 
   const BookCover({
     Key? key,
@@ -22,6 +23,7 @@ class BookCover extends StatelessWidget {
     required this.title,
     required this.coverImage,
     required this.bookId,
+    required this.isEpisode,
   }) : super(key: key);
 
   @override
@@ -133,7 +135,7 @@ class BookCover extends StatelessWidget {
             bottom: 10,
             child: GestureDetector(
               onTap: () => Get.to(
-                BookCoverEditScreen(title: title, image: coverImage, bookId: bookId),
+                BookCoverEditScreen(title: title, image: coverImage, bookId: bookId, isEpisode: isEpisode,),
               ),
               child: SvgPicture.asset(
                 "assets/images/book/edit_icon.svg",

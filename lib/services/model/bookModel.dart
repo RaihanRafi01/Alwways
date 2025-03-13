@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Book {
   final String id;
   final String userId;
@@ -71,74 +73,86 @@ class Book {
 
   factory Book.fromMap(Map<String, dynamic> map) {
     return Book(
-      id: map['id'],
-      userId: map['userId'],
-      title: map['title'],
-      episodes: [], // Episodes handled separately
-      coverImage: map['coverImage'],
-      backgroundCover: map['backgroundCover'], // Retrieved from local DB
-      status: map['status'],
-      percentage: map['percentage'],
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: DateTime.parse(map['updatedAt']),
+      id: map['id'] as String,
+      userId: map['userId'] as String,
+      title: map['title'] as String,
+      episodes: map['episodes'] as List<Episode>? ?? [], // Use provided episodes or empty list
+      coverImage: map['coverImage'] as String? ?? '',
+      backgroundCover: map['backgroundCover'] as String? ?? 'assets/images/book/cover_image_1.svg',
+      status: map['status'] as String,
+      percentage: map['percentage'] as double,
+      createdAt: DateTime.parse(map['createdAt'] as String),
+      updatedAt: DateTime.parse(map['updatedAt'] as String),
     );
   }
 }
 
-// Episode class remains unchanged
 class Episode {
+  final String id;
+  final String bookId; // Foreign key to Book
   final String title;
   final String coverImage;
+  final String? backgroundCover; // Added for consistency with Book
   final double percentage;
   final List<dynamic> conversations;
-  final String id;
 
   Episode({
+    required this.id,
+    required this.bookId,
     required this.title,
     required this.coverImage,
+    this.backgroundCover = 'assets/images/book/cover_image_1.svg', // Default local value
     required this.percentage,
     required this.conversations,
-    required this.id,
   });
 
   factory Episode.fromJson(Map<String, dynamic> json) {
     return Episode(
+      id: json['_id'],
+      bookId: json['bookId'] ?? '', // Assuming bookId might come from API; adjust if not
       title: json['title'],
       coverImage: json['coverImage'] ?? '',
+      // backgroundCover not included in API, defaults to local value
       percentage: json['percentage'].toDouble(),
-      conversations: json['conversations'],
-      id: json['_id'],
+      conversations: json['conversations'] ?? [],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      '_id': id,
+      'bookId': bookId,
       'title': title,
       'coverImage': coverImage,
+      // Don’t include backgroundCover since it’s local-only
       'percentage': percentage,
       'conversations': conversations,
-      '_id': id,
     };
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'bookId': bookId, // Correct foreign key
       'title': title,
       'coverImage': coverImage,
+      'backgroundCover': backgroundCover, // Store locally
       'percentage': percentage,
-      'conversations': conversations.toString(), // Store as string for simplicity
-      'bookId': id, // Foreign key to link to Book
+      'conversations': jsonEncode(conversations), // Store as JSON string
     };
   }
 
   factory Episode.fromMap(Map<String, dynamic> map) {
     return Episode(
-      id: map['id'],
-      title: map['title'],
-      coverImage: map['coverImage'],
-      percentage: map['percentage'],
-      conversations: [], // Parse this as needed
+      id: map['id'] as String,
+      bookId: map['bookId'] as String,
+      title: map['title'] as String,
+      coverImage: map['coverImage'] as String? ?? '',
+      backgroundCover: map['backgroundCover'] as String? ?? 'assets/images/book/cover_image_1.svg',
+      percentage: map['percentage'] as double,
+      conversations: map['conversations'] != null
+          ? jsonDecode(map['conversations'] as String)
+          : [],
     );
   }
 }

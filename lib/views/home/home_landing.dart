@@ -33,7 +33,7 @@ class _HomePageLandingState extends State<HomePageLanding> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 50),
-              const Center(child: BookCover(isGrid: false, title: '', coverImage: '', bookId: '',)),
+              const Center(child: BookCover(isGrid: false, title: '', coverImage: '', bookId: '', isEpisode: false,)),
               const SizedBox(height: 20),
               const Text(
                 'Hi Alex!',

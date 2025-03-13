@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2, // Increment version for migration
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE books (
@@ -45,11 +45,17 @@ class DatabaseHelper {
             bookId TEXT,
             title TEXT,
             coverImage TEXT,
+            backgroundCover TEXT, -- Added for episodes
             percentage REAL,
             conversations TEXT,
             FOREIGN KEY (bookId) REFERENCES books (id)
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE episodes ADD COLUMN backgroundCover TEXT');
+        }
       },
     );
   }
@@ -98,5 +104,10 @@ class DatabaseHelper {
     final db = await database;
     await db.delete('books');
     await db.delete('episodes');
+  }
+
+  Future<void> updateEpisode(Episode episode) async {
+    final db = await database;
+    await db.update('episodes', episode.toMap(), where: 'id = ?', whereArgs: [episode.id]);
   }
 }

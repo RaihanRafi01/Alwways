@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,10 +10,10 @@ import '../../services/model/bookModel.dart';
 
 class BookController extends GetxController {
   TextEditingController bookNameController = TextEditingController();
-  var backgroundCovers = <String, String>{}.obs;
-  var coverImages = <String, String>{}.obs;
+  var backgroundCovers = <String, String>{}.obs; // Key: bookId or episodeId
+  var coverImages = <String, String>{}.obs; // Key: bookId or episodeId
   var books = <Book>[].obs;
-  var bookCoverImage = ''.obs; // Tracks newly picked image
+  var bookCoverImage = ''.obs; // Tracks picked image for both books and episodes
   var isLoading = false.obs;
   final ApiService apiService = ApiService();
   final DatabaseHelper dbHelper = DatabaseHelper();
@@ -39,6 +38,10 @@ class BookController extends GetxController {
     for (var book in localBooks) {
       backgroundCovers[book.id] = book.backgroundCover;
       coverImages[book.id] = book.coverImage;
+      for (var episode in book.episodes) {
+        backgroundCovers[episode.id] = episode.backgroundCover ?? 'assets/images/book/cover_image_1.svg';
+        coverImages[episode.id] = episode.coverImage;
+      }
     }
 
     try {
@@ -60,6 +63,10 @@ class BookController extends GetxController {
         await dbHelper.insertBook(localBook);
         backgroundCovers[localBook.id] = localBook.backgroundCover;
         coverImages[localBook.id] = localBook.coverImage;
+        for (var episode in localBook.episodes) {
+          backgroundCovers[episode.id] = episode.backgroundCover ?? 'assets/images/book/cover_image_1.svg';
+          coverImages[episode.id] = episode.coverImage;
+        }
       }
       books.value = await dbHelper.getBooks();
     } catch (e) {
@@ -69,32 +76,52 @@ class BookController extends GetxController {
     }
   }
 
-  void updateSelectedCover(String bookId, String cover) {
-    backgroundCovers[bookId] = cover;
+  void updateSelectedCover(String id, String cover) {
+    backgroundCovers[id] = cover;
   }
 
-  void updateTitle(String bookId, String newTitle) {
-    final bookIndex = books.indexWhere((b) => b.id == bookId);
+  void updateTitle(String id, String newTitle) {
+    final bookIndex = books.indexWhere((b) => b.id == id);
     if (bookIndex != -1) {
+      // Update book title
       books[bookIndex] = books[bookIndex].copyWith(title: newTitle);
+    } else {
+      // Update episode title
+      for (var book in books) {
+        final episodeIndex = book.episodes.indexWhere((e) => e.id == id);
+        if (episodeIndex != -1) {
+          book.episodes[episodeIndex] = book.episodes[episodeIndex].copyWith(title: newTitle);
+          books.refresh(); // Trigger UI update
+          break;
+        }
+      }
     }
   }
 
-  String getBackgroundCover(String bookId) {
-    return backgroundCovers[bookId] ?? 'assets/images/book/cover_image_1.svg';
+  String getBackgroundCover(String id) {
+    return backgroundCovers[id] ?? 'assets/images/book/cover_image_1.svg';
   }
 
-  String getCoverImage(String bookId, String defaultImage) {
-    return coverImages[bookId] ?? defaultImage;
+  String getCoverImage(String id, String defaultImage) {
+    return coverImages[id] ?? defaultImage;
   }
 
-  String getTitle(String bookId) {
-    final book = books.firstWhereOrNull((b) => b.id == bookId);
-    return book?.title ?? '';
+  String getTitle(String id) {
+    final book = books.firstWhereOrNull((b) => b.id == id);
+    if (book != null) {
+      return book.title;
+    }
+    for (var b in books) {
+      final episode = b.episodes.firstWhereOrNull((e) => e.id == id);
+      if (episode != null) {
+        return episode.title;
+      }
+    }
+    return '';
   }
 
-  void updateCoverImage(String bookId, String imagePath) {
-    coverImages[bookId] = imagePath;
+  void updateCoverImage(String id, String imagePath) {
+    coverImages[id] = imagePath;
     bookCoverImage.value = imagePath;
   }
 
@@ -103,7 +130,7 @@ class BookController extends GetxController {
     final updatedBook = Book(
       id: book.id,
       userId: book.userId,
-      title: book.title, // Use the updated title from books list
+      title: book.title,
       episodes: book.episodes,
       coverImage: coverImages[bookId] ?? book.coverImage,
       backgroundCover: backgroundCovers[bookId] ?? book.backgroundCover,
@@ -115,6 +142,23 @@ class BookController extends GetxController {
     await dbHelper.updateBook(updatedBook);
     books[books.indexWhere((b) => b.id == bookId)] = updatedBook;
     print("Database updated for bookId: $bookId with title: ${updatedBook.title}, coverImage: ${updatedBook.coverImage}, backgroundCover: ${updatedBook.backgroundCover}");
+  }
+
+  Future<void> _updateEpisodeInDb(String episodeId) async {
+    for (var book in books) {
+      final episodeIndex = book.episodes.indexWhere((e) => e.id == episodeId);
+      if (episodeIndex != -1) {
+        final updatedEpisode = book.episodes[episodeIndex].copyWith(
+          coverImage: coverImages[episodeId] ?? book.episodes[episodeIndex].coverImage,
+          backgroundCover: backgroundCovers[episodeId] ?? book.episodes[episodeIndex].backgroundCover,
+        );
+        book.episodes[episodeIndex] = updatedEpisode;
+        await dbHelper.updateEpisode(updatedEpisode);
+        books.refresh();
+        print("Database updated for episodeId: $episodeId with title: ${updatedEpisode.title}, coverImage: ${updatedEpisode.coverImage}, backgroundCover: ${updatedEpisode.backgroundCover}");
+        break;
+      }
+    }
   }
 
   Future<void> createBook() async {
@@ -144,6 +188,10 @@ class BookController extends GetxController {
         books.add(localBook);
         backgroundCovers[localBook.id] = localBook.backgroundCover;
         coverImages[localBook.id] = localBook.coverImage;
+        for (var episode in localBook.episodes) {
+          backgroundCovers[episode.id] = episode.backgroundCover ?? 'assets/images/book/cover_image_1.svg';
+          coverImages[episode.id] = episode.coverImage;
+        }
         Get.offAll(const DashboardView(index: 1));
       } else {
         Get.snackbar('Error', 'Failed to create book: ${response.body}');
@@ -153,36 +201,73 @@ class BookController extends GetxController {
     }
   }
 
-  Future<void> updateBookCoverApi(String bookId) async {
+  Future<void> updateBookCoverApi(String id) async {
     try {
       isLoading.value = true;
-      final originalBook = books.firstWhere((b) => b.id == bookId);
-      final bookTitle = originalBook.title; // Use the updated title from books list
-      XFile? coverImage;
+      final book = books.firstWhereOrNull((b) => b.id == id);
+      if (book != null) {
+        // Update book
+        final bookTitle = book.title;
+        XFile? coverImage;
 
-      if (bookCoverImage.value.isNotEmpty && bookCoverImage.value != originalBook.coverImage) {
-        coverImage = XFile(bookCoverImage.value);
-        print("Sending coverImage: ${bookCoverImage.value}");
+        if (bookCoverImage.value.isNotEmpty && bookCoverImage.value != book.coverImage) {
+          coverImage = XFile(bookCoverImage.value);
+          print("Sending coverImage for book: ${bookCoverImage.value}");
+        } else {
+          print("No new coverImage to send for book");
+        }
+
+        final response = await apiService.updateBookCover(
+          id,
+          bookTitle,
+          coverImage,
+        );
+        print('::::::::::::statusCode:::::::::::::: ${response.statusCode}');
+        print('::::::::::::::body:::::::::::: ${response.body}');
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          await _updateBookInDb(id);
+          Get.snackbar('Success', 'Book cover updated successfully');
+          Get.back();
+          bookCoverImage.value = '';
+        } else {
+          Get.snackbar('Error', 'Failed to update book cover: ${response.body}');
+        }
       } else {
-        print("No new coverImage to send");
-      }
+        // Update episode
+        for (var book in books) {
+          final episode = book.episodes.firstWhereOrNull((e) => e.id == id);
+          if (episode != null) {
+            final episodeTitle = episode.title;
+            XFile? coverImage;
 
-      print('hit');
-      final response = await apiService.updateBookCover(
-        bookId,
-        bookTitle,
-        coverImage,
-      );
-      print('::::::::::::statusCode:::::::::::::: ${response.statusCode}');
-      print('::::::::::::::body:::::::::::: ${response.body}');
+            if (bookCoverImage.value.isNotEmpty && bookCoverImage.value != episode.coverImage) {
+              coverImage = XFile(bookCoverImage.value);
+              print("Sending coverImage for episode: ${bookCoverImage.value}");
+            } else {
+              print("No new coverImage to send for episode");
+            }
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        await _updateBookInDb(bookId); // Update DB with specific book's title
-        Get.snackbar('Success', 'Book cover updated successfully');
-        Get.back();
-        bookCoverImage.value = '';
-      } else {
-        Get.snackbar('Error', 'Failed to update book cover: ${response.body}');
+            // Assuming API supports episode cover updates; adjust if different
+            final response = await apiService.updateBookCover(
+              id, // Use episode ID here; ensure API accepts it
+              episodeTitle,
+              coverImage,
+            );
+            print('::::::::::::statusCode:::::::::::::: ${response.statusCode}');
+            print('::::::::::::::body:::::::::::: ${response.body}');
+
+            if (response.statusCode == 200 || response.statusCode == 201) {
+              await _updateEpisodeInDb(id);
+              Get.snackbar('Success', 'Episode cover updated successfully');
+              Get.back();
+              bookCoverImage.value = '';
+            } else {
+              Get.snackbar('Error', 'Failed to update episode cover: ${response.body}');
+            }
+            break;
+          }
+        }
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e');
@@ -192,24 +277,42 @@ class BookController extends GetxController {
   }
 }
 
-// Add a copyWith method to Book model for easier updates
 extension BookExtension on Book {
   Book copyWith({
     String? title,
     String? coverImage,
     String? backgroundCover,
+    List<Episode>? episodes,
   }) {
     return Book(
       id: id,
       userId: userId,
       title: title ?? this.title,
-      episodes: episodes,
+      episodes: episodes ?? this.episodes,
       coverImage: coverImage ?? this.coverImage,
       backgroundCover: backgroundCover ?? this.backgroundCover,
       status: status,
       percentage: percentage,
       createdAt: createdAt,
       updatedAt: updatedAt,
+    );
+  }
+}
+
+extension EpisodeExtension on Episode {
+  Episode copyWith({
+    String? title,
+    String? coverImage,
+    String? backgroundCover,
+  }) {
+    return Episode(
+      id: id,
+      bookId: bookId,
+      title: title ?? this.title,
+      coverImage: coverImage ?? this.coverImage,
+      backgroundCover: backgroundCover ?? this.backgroundCover,
+      percentage: percentage,
+      conversations: conversations,
     );
   }
 }

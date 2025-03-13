@@ -17,8 +17,9 @@ class BookPageView extends StatelessWidget {
   final String title;
   final String bookId;
   final String coverImage;
+  final bool isEpisode;
 
-  BookPageView({super.key, required this.title, required this.bookId, required this.coverImage});
+  BookPageView({super.key, required this.title, required this.bookId, required this.coverImage, required this.isEpisode});
 
   @override
   Widget build(BuildContext context) {
@@ -77,12 +78,12 @@ class BookPageView extends StatelessWidget {
                     child: Stack(
                       alignment: Alignment.bottomRight,
                       children: [
-                        BookCover(isGrid: false, title: title, coverImage: coverImage, bookId: bookId,),
+                        BookCover(isGrid: false, title: title, coverImage: coverImage, bookId: bookId, isEpisode: isEpisode,),
                         Padding(
                           padding: const EdgeInsets.only(bottom: 170, right: 16),
                           child: GestureDetector(
                             onTap: () =>
-                                Get.to(BookCoverEditScreen(title: title, image: coverImage, bookId: bookId,)),
+                                Get.to(BookCoverEditScreen(title: title, image: coverImage, bookId: bookId, isEpisode: isEpisode,)),
                             child: SvgPicture.asset(
                               "assets/images/book/edit_icon.svg",
                               height: 24,

@@ -33,7 +33,7 @@ class _HomePageLandingState extends State<BookOverView> {
                   child: GestureDetector(
                     //TODO Change the route
                     onTap: () => Get.toNamed(AppRoutes.bookLanding),
-                      child: BookCard(progress: progress, title: '', coverImage: '', bookId: '',)),
+                      child: BookCard(progress: progress, title: '', coverImage: '', bookId: '', isEpisode: false,)),
                 ),
                 const SizedBox(height: 20),
                 const Text(

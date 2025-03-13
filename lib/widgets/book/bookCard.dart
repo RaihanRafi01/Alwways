@@ -13,13 +13,14 @@ class BookCard extends StatelessWidget {
   final double progress;
   final bool isGrid;
   final String bookId;
+  final bool isEpisode;
 
   const BookCard({
     super.key,
     required this.title, // Required parameter for title
     required this.coverImage, // Required parameter for cover image
     required this.progress,
-    this.isGrid = false, required this.bookId,
+    this.isGrid = false, required this.bookId, required this.isEpisode,
   });
 
   @override
@@ -42,7 +43,7 @@ class BookCard extends StatelessWidget {
               isGrid: isGrid,
               isEdit: true,
               title: title, // Pass the title to BookCover
-              coverImage: coverImage, bookId: bookId, // Pass the cover image to BookCover
+              coverImage: coverImage, bookId: bookId, isEpisode: isEpisode, // Pass the cover image to BookCover
             ),
           ),
           const SizedBox(height: 16),
