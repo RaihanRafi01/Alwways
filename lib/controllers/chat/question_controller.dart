@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:playground_02/services/api_service/api_service.dart';
 import 'package:playground_02/services/database/databaseHelper.dart';
 
+import '../../services/model/bookModel.dart';
+
 class QuestionController extends GetxController {
   final ApiService apiService = ApiService();
   final DatabaseHelper dbHelper = DatabaseHelper();

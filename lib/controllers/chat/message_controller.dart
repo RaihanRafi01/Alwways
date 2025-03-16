@@ -7,6 +7,7 @@ import 'package:playground_02/services/api_service/api_service.dart';
 import 'package:playground_02/widgets/chat/userMessage.dart';
 import 'package:playground_02/widgets/chat/botMessage.dart';
 import 'botLanding_controller.dart';
+import '../../services/database/databaseHelper.dart';
 
 class MessageController extends GetxController {
   var messages = <Widget>[].obs;
@@ -14,17 +15,39 @@ class MessageController extends GetxController {
   final QuestionController questionController = Get.put(QuestionController());
   final BotController botController = Get.find<BotController>();
   final ApiService apiService = ApiService();
+  final DatabaseHelper dbHelper = DatabaseHelper();
 
   @override
   void onInit() {
     super.onInit();
-    final sectionId = botController.selectedSectionId.value; // Use ID for fetching questions
+    final sectionId = botController.selectedSectionId.value;
     print("Initializing MessageController with sectionId: $sectionId");
-    fetchQuestionsAndAsk(sectionId);
+    fetchQuestionsAndLoadHistory(sectionId);
   }
 
-  Future<void> fetchQuestionsAndAsk(String sectionId) async {
+  Future<void> fetchQuestionsAndLoadHistory(String sectionId) async {
+    // Fetch questions
     await questionController.fetchQuestions(sectionId);
+
+    // Load chat history
+    final bookId = botController.selectedBookId.value;
+    final history = await dbHelper.getChatHistory(bookId, sectionId);
+    print("Chat history for bookId: $bookId, sectionId: $sectionId: $history");
+
+    // Add history to messages
+    for (var entry in history) {
+      messages.add(BotMessage(message: entry['question']!));
+      messages.add(UserMessage(message: entry['answer']!));
+      userAnswers.add({'question': entry['question']!, 'answer': entry['answer']!});
+    }
+
+    // Skip answered questions
+    final answeredQuestions = history.map((e) => e['question']).toList();
+    questionController.currentQuestionIndex.value = answeredQuestions.length;
+    if (questionController.currentQuestionIndex.value >= questionController.questions.length) {
+      questionController.currentQuestionIndex.value = questionController.questions.length;
+    }
+
     askQuestion();
   }
 
@@ -53,22 +76,33 @@ class MessageController extends GetxController {
   }
 
   Future<void> _handleGenerateSubQuestion(String question, String answer) async {
+    print(':::::::::::::: HIT _handleGenerateSubQuestion ');
     final response = await apiService.generateSubQuestion(question, answer);
     print(':::::::::::::: Status Code: ${response.statusCode}');
     print('::::::::::::::: Response Body: ${response.body}');
     if (response.statusCode == 200) {
       final saveResponse = await apiService.saveAnswer(
         botController.selectedBookId.value,
-        botController.getSelectedSectionId(), // Now returns the index as a string
+        botController.getSelectedSectionId(),
         question,
         answer,
       );
       print(':::saveResponse::::::::::: Status Code: ${saveResponse.statusCode}');
       print('::::saveResponse::::::::::: Response Body: ${saveResponse.body}');
-      final data = jsonDecode(response.body);
-      final subQuestions = List<String>.from(data['content']);
-      questionController.setSubQuestions(subQuestions);
-      askQuestion();
+      if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
+        await dbHelper.insertChatHistory(
+          botController.selectedBookId.value,
+          botController.selectedSectionId.value,
+          question,
+          answer,
+        );
+        final data = jsonDecode(response.body);
+        final subQuestions = List<String>.from(data['content']);
+        questionController.setSubQuestions(subQuestions);
+        askQuestion();
+      } else {
+        Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
+      }
     } else if (response.statusCode == 400) {
       messages.add(const BotMessage(message: "Could you please elaborate more?"));
     } else {
@@ -83,13 +117,19 @@ class MessageController extends GetxController {
     if (relevancyResponse.statusCode == 200) {
       final saveResponse = await apiService.saveAnswer(
         botController.selectedBookId.value,
-        botController.getSelectedSectionId(), // Now returns the index as a string
+        botController.getSelectedSectionId(),
         subQuestion,
         answer,
       );
       print(':::saveResponse::::::::::: Status Code: ${saveResponse.statusCode}');
       print('::::saveResponse::::::::::: Response Body: ${saveResponse.body}');
       if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
+        await dbHelper.insertChatHistory(
+          botController.selectedBookId.value,
+          botController.selectedSectionId.value,
+          subQuestion,
+          answer,
+        );
         questionController.nextQuestion();
         askQuestion();
       } else {

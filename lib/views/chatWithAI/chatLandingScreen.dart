@@ -5,6 +5,7 @@ import 'package:playground_02/widgets/authentication/custom_button.dart';
 import '../../constants/color/app_colors.dart';
 import '../../controllers/chat/botLanding_controller.dart';
 import '../../services/database/databaseHelper.dart';
+import '../../services/model/bookModel.dart';
 import 'chatScreen.dart';
 
 class ChatLandingScreen extends StatelessWidget {

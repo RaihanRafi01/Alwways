@@ -5,6 +5,8 @@ import 'package:playground_02/controllers/book/book_controller.dart';
 import 'package:playground_02/services/api_service/api_service.dart';
 import 'package:playground_02/services/database/databaseHelper.dart';
 
+import '../../services/model/bookModel.dart';
+
 class BotController extends GetxController {
   var selectedBookId = ''.obs;
   var selectedSectionId = ''.obs;
