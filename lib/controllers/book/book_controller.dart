@@ -34,10 +34,11 @@ class BookController extends GetxController {
 
   Future<void> initializeBooks() async {
     final localBooks = await dbHelper.getBooks();
-    print("Initial local books with episodes: ${localBooks.map((b) => {'id': b.id, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
+    print("Initial local books: ${localBooks.map((b) => {'id': b.id, 'title': b.title, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
     for (var book in localBooks) {
       backgroundCovers[book.id] = book.backgroundCover;
       coverImages[book.id] = book.coverImage;
+      // Only populate episode covers if episodes are still relevant
       for (var episode in book.episodes) {
         backgroundCovers[episode.id] = episode.backgroundCover ?? 'assets/images/book/cover_image_1.svg';
         coverImages[episode.id] = episode.coverImage;
@@ -47,14 +48,14 @@ class BookController extends GetxController {
 
     try {
       final serverBooks = await apiService.getAllBooks();
-      print("Server books with episodes: ${serverBooks.map((b) => {'id': b.id, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
+      print("Server books: ${serverBooks.map((b) => {'id': b.id, 'title': b.title, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
       for (var serverBook in serverBooks) {
         final existingBook = localBooks.firstWhereOrNull((b) => b.id == serverBook.id);
         final mergedBook = Book(
           id: serverBook.id,
           userId: serverBook.userId,
           title: serverBook.title,
-          episodes: _mergeEpisodes(existingBook?.episodes ?? [], serverBook.episodes),
+          episodes: _mergeEpisodes(existingBook?.episodes ?? [], serverBook.episodes), // Adjust if episodes are deprecated
           coverImage: serverBook.coverImage,
           backgroundCover: existingBook?.backgroundCover ?? 'assets/images/book/cover_image_1.svg',
           status: serverBook.status,
@@ -71,7 +72,7 @@ class BookController extends GetxController {
         }
       }
       books.value = await dbHelper.getBooks();
-      print("Updated books with episodes: ${books.map((b) => {'id': b.id, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
+      print("Updated books: ${books.map((b) => {'id': b.id, 'title': b.title, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
     } catch (e) {
       print("Error fetching books from server: $e");
       Get.snackbar('Error', 'Failed to load books from server: $e');
@@ -99,12 +100,12 @@ class BookController extends GetxController {
   }
 
   void updateSelectedCover(String id, String cover) {
-    backgroundCovers[id] = cover; // Only updates backgroundCover
+    backgroundCovers[id] = cover;
   }
 
   void updateCoverImage(String id, String imagePath) {
-    coverImages[id] = imagePath; // Only updates coverImage
-    bookCoverImage.value = imagePath; // Tracks user-uploaded image for API
+    coverImages[id] = imagePath;
+    bookCoverImage.value = imagePath;
   }
 
   void updateTitle(String id, String newTitle) {
@@ -177,10 +178,10 @@ class BookController extends GetxController {
     }
     try {
       final response = await apiService.createBook(bookNameController.text);
-
-      print(':::::::::::::::::::::statusCode : ${response.statusCode}');
-      print(':::::::::::::::::::::body : ${response.body}');
+      print('::::::::::::::::::::: Status Code: ${response.statusCode}');
+      print('::::::::::::::::::::: Body: ${response.body}');
       if (response.statusCode == 201 || response.statusCode == 200) {
+        await initializeBooks(); // Refresh books after creation
         Get.offAll(const DashboardView(index: 1));
       } else {
         Get.snackbar('Error', 'Failed to create book: ${response.body}');
@@ -197,20 +198,12 @@ class BookController extends GetxController {
         final episode = book.episodes.firstWhereOrNull((e) => e.id == episodeId);
         if (episode != null) {
           XFile? coverImage;
-
-          // Only send coverImage if it’s explicitly updated (not backgroundCover)
           if (bookCoverImage.value.isNotEmpty && bookCoverImage.value != episode.coverImage) {
             coverImage = XFile(bookCoverImage.value);
             print("Sending coverImage for episode: ${bookCoverImage.value}, bookId: ${book.id}, episodeNumber: $episodeNumber");
-
-            final response = await apiService.updateEpisodeCover(
-              book.id,
-              coverImage,
-              episodeNumber,
-            );
-            print('::::::::::::statusCode:::::::::::::: ${response.statusCode}');
-            print('::::::::::::::body:::::::::::: ${response.body}');
-
+            final response = await apiService.updateEpisodeCover(book.id, coverImage, episodeNumber);
+            print(':::::::::::: Status Code: ${response.statusCode}');
+            print(':::::::::::: Body: ${response.body}');
             if (response.statusCode == 200 || response.statusCode == 201) {
               await updateEpisodeInDb(episodeId);
               Get.snackbar('Success', 'Episode cover updated successfully');
@@ -220,7 +213,7 @@ class BookController extends GetxController {
               Get.snackbar('Error', 'Failed to update episode cover: ${response.body}');
             }
           } else {
-            print("No new coverImage for episode, saving locally (backgroundCover may have changed)");
+            print("No new coverImage for episode, saving locally");
             await updateEpisodeInDb(episodeId);
             Get.snackbar('Success', 'Episode updated successfully');
             Get.back();
@@ -242,23 +235,15 @@ class BookController extends GetxController {
       if (book != null) {
         final bookTitle = book.title;
         XFile? coverImage;
-
-        // Only send coverImage if it’s explicitly updated
         if (bookCoverImage.value.isNotEmpty && bookCoverImage.value != book.coverImage) {
           coverImage = XFile(bookCoverImage.value);
           print("Sending coverImage for book: ${bookCoverImage.value}");
         } else {
-          print("No new coverImage for book, saving locally (backgroundCover may have changed)");
+          print("No new coverImage for book, saving locally");
         }
-
-        final response = await apiService.updateBookCover(
-          id,
-          bookTitle,
-          coverImage,
-        );
-        print('::::::::::::statusCode:::::::::::::: ${response.statusCode}');
-        print('::::::::::::::body:::::::::::: ${response.body}');
-
+        final response = await apiService.updateBookCover(id, bookTitle, coverImage);
+        print(':::::::::::: Status Code: ${response.statusCode}');
+        print(':::::::::::: Body: ${response.body}');
         if (response.statusCode == 200 || response.statusCode == 201) {
           await _updateBookInDb(id);
           Get.snackbar('Success', 'Book cover updated successfully');
@@ -266,7 +251,7 @@ class BookController extends GetxController {
           bookCoverImage.value = '';
         } else {
           Get.snackbar('Error', 'Failed to update book cover: ${response.body}');
-          await _updateBookInDb(id); // Save backgroundCover changes locally even if API fails
+          await _updateBookInDb(id); // Save local changes even if API fails
           Get.back();
         }
       } else {

@@ -1,40 +1,64 @@
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:playground_02/controllers/book/book_controller.dart';
+import 'package:playground_02/services/api_service/api_service.dart';
+import 'package:playground_02/services/database/databaseHelper.dart';
 
 class BotController extends GetxController {
-  var selectedBook = ''.obs;
-  var selectedEpisode = ''.obs;
+  var selectedBookId = ''.obs;
+  var selectedSectionId = ''.obs;
+  var selectedSectionIndex = (-1).obs; // -1 means no selection
 
   late final BookController bookController;
+  final ApiService apiService = ApiService();
+  final DatabaseHelper dbHelper = DatabaseHelper();
+
+  var sections = <Section>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    // Inject BookController
     bookController = Get.find<BookController>();
+    fetchSections();
   }
 
-  // Dynamically get book titles from BookController
-  List<String> get books => bookController.books.map((book) => book.title).toList();
+  List<Map<String, String>> get books => bookController.books.map((book) => {'id': book.id, 'title': book.title}).toList();
 
-  // Dynamically get episodes for the selected book
-  Map<String, List<String>> get episodesByBook {
-    final Map<String, List<String>> episodesMap = {};
-    for (var book in bookController.books) {
-      episodesMap[book.title] = book.episodes.map((episode) => episode.title).toList();
+  List<String> get episodes => sections.map((section) => section.name).toList();
+
+  Future<void> fetchSections() async {
+    sections.value = await dbHelper.getSections();
+    final response = await apiService.getSections();
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      final fetchedSections = data.map((json) => Section.fromJson(json)).toList();
+      for (var fetchedSection in fetchedSections) {
+        final existingSection = sections.firstWhereOrNull((s) => s.id == fetchedSection.id);
+        if (existingSection == null || existingSection.updatedAt != fetchedSection.updatedAt) {
+          await dbHelper.updateSection(fetchedSection);
+        }
+      }
+      await dbHelper.insertSections(fetchedSections);
+      sections.value = await dbHelper.getSections();
+    } else {
+      Get.snackbar('Error', 'Failed to fetch sections: ${response.statusCode}');
     }
-    return episodesMap;
   }
 
-  // Get episodes for the currently selected book
-  List<String> get episodes => episodesByBook[selectedBook.value] ?? [];
-
-  void selectBook(String bookTitle) {
-    selectedBook.value = bookTitle;
-    selectedEpisode.value = ''; // Reset selected episode when book changes
+  void selectBook(String bookId) {
+    selectedBookId.value = bookId;
+    selectedSectionId.value = '';
+    selectedSectionIndex.value = -1;
   }
 
-  void selectEpisode(String episodeTitle) {
-    selectedEpisode.value = episodeTitle;
+  void selectEpisode(String sectionId) {
+    selectedSectionId.value = sectionId;
+    selectedSectionIndex.value = sections.indexWhere((section) => section.id == sectionId);
+    print("Selected section index: ${selectedSectionIndex.value}, ID: $sectionId");
+  }
+
+  String getSelectedSectionId() {
+    return selectedSectionIndex.value >= 0 ? selectedSectionIndex.value.toString() : '';
   }
 }

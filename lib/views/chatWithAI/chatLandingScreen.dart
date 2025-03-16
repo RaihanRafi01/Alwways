@@ -4,6 +4,7 @@ import 'package:playground_02/views/book/addBook.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import '../../constants/color/app_colors.dart';
 import '../../controllers/chat/botLanding_controller.dart';
+import '../../services/database/databaseHelper.dart';
 import 'chatScreen.dart';
 
 class ChatLandingScreen extends StatelessWidget {
@@ -41,24 +42,24 @@ class ChatLandingScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Obx(() => DropdownButton<String>(
-              value: controller.selectedBook.value.isEmpty ? null : controller.selectedBook.value,
+              value: controller.selectedBookId.value.isEmpty ? null : controller.selectedBookId.value,
               hint: const Text('Select a book'),
               items: controller.books.isEmpty
                   ? [const DropdownMenuItem<String>(value: null, child: Text('No books available'))]
-                  : controller.books.map((String book) {
+                  : controller.books.map((Map<String, String> book) {
                 return DropdownMenuItem<String>(
-                  value: book,
-                  child: Text(book),
+                  value: book['id'],
+                  child: Text(book['title']!),
                 );
               }).toList(),
-              onChanged: (selectedBook) {
-                if (selectedBook != null && selectedBook.isNotEmpty) {
-                  controller.selectBook(selectedBook);
+              onChanged: (selectedBookId) {
+                if (selectedBookId != null && selectedBookId.isNotEmpty) {
+                  controller.selectBook(selectedBookId);
                 }
               },
             )),
             Obx(() {
-              if (controller.selectedBook.value.isEmpty) {
+              if (controller.selectedBookId.value.isEmpty) {
                 return const SizedBox.shrink();
               }
               return Column(
@@ -66,28 +67,30 @@ class ChatLandingScreen extends StatelessWidget {
                 children: [
                   const SizedBox(height: 24),
                   const Text(
-                    'Select an episode',
+                    'Select a section',
                     style: TextStyle(fontSize: 18, color: AppColors.botTextColor),
                   ),
                   const SizedBox(height: 8),
-                  DropdownButton<String>(
-                    value: controller.selectedEpisode.value.isEmpty ? null : controller.selectedEpisode.value,
-                    hint: const Text('Select an episode'),
+                  Obx(() => DropdownButton<String>(
+                    value: controller.selectedSectionId.value.isEmpty ? null : controller.selectedSectionId.value,
+                    hint: const Text('Select a section'),
                     items: controller.episodes.isEmpty
-                        ? [const DropdownMenuItem<String>(value: null, child: Text('No episodes available'))]
-                        : controller.episodes.map((String episode) {
+                        ? [const DropdownMenuItem<String>(value: null, child: Text('No sections available'))]
+                        : controller.sections
+                        .map<DropdownMenuItem<String>>((Section section) {
                       return DropdownMenuItem<String>(
-                        value: episode,
-                        child: Text(episode),
+                        value: section.id,
+                        child: Text(section.name),
                       );
-                    }).toList(),
-                    onChanged: (selectedEpisode) {
-                      if (selectedEpisode != null && selectedEpisode.isNotEmpty) {
-                        controller.selectEpisode(selectedEpisode);
+                    })
+                        .toList(),
+                    onChanged: (selectedSectionId) {
+                      if (selectedSectionId != null && selectedSectionId.isNotEmpty) {
+                        controller.selectEpisode(selectedSectionId);
                         Get.off(() => const ChatScreen());
                       }
                     },
-                  ),
+                  )),
                 ],
               );
             }),

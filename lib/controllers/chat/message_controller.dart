@@ -2,69 +2,109 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:playground_02/controllers/chat/question_controller.dart';
+import 'package:playground_02/services/api_service/api_service.dart';
 import 'package:playground_02/widgets/chat/userMessage.dart';
 import 'package:playground_02/widgets/chat/botMessage.dart';
+import 'botLanding_controller.dart';
 
 class MessageController extends GetxController {
   var messages = <Widget>[].obs;
-  var userMessages = <String>[]; // Store all user messages for batch processing
-  var isPromptVisible = true.obs; // Track the visibility of the prompt
-  var hasText = false.obs; // Track if there's text in the input field
+  var userAnswers = <Map<String, String>>[].obs;
+  final QuestionController questionController = Get.put(QuestionController());
+  final BotController botController = Get.find<BotController>();
+  final ApiService apiService = ApiService();
+
+  @override
+  void onInit() {
+    super.onInit();
+    final sectionId = botController.selectedSectionId.value; // Use ID for fetching questions
+    print("Initializing MessageController with sectionId: $sectionId");
+    fetchQuestionsAndAsk(sectionId);
+  }
+
+  Future<void> fetchQuestionsAndAsk(String sectionId) async {
+    await questionController.fetchQuestions(sectionId);
+    askQuestion();
+  }
+
+  void askQuestion() {
+    final currentQuestion = questionController.getCurrentQuestion();
+    print("Asking question: $currentQuestion");
+    if (currentQuestion != 'No more questions') {
+      messages.add(BotMessage(message: currentQuestion));
+    } else {
+      messages.add(const BotMessage(message: "All questions answered!"));
+    }
+  }
+
+  void sendMessage(String userAnswer) {
+    if (userAnswer.trim().isEmpty) return;
+
+    final currentQuestion = questionController.getCurrentQuestion();
+    messages.add(UserMessage(message: userAnswer));
+    userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
+
+    if (questionController.isSubQuestionMode.value) {
+      _handleSubQuestionAnswer(currentQuestion, userAnswer);
+    } else {
+      _handleGenerateSubQuestion(currentQuestion, userAnswer);
+    }
+  }
+
+  Future<void> _handleGenerateSubQuestion(String question, String answer) async {
+    final response = await apiService.generateSubQuestion(question, answer);
+    print(':::::::::::::: Status Code: ${response.statusCode}');
+    print('::::::::::::::: Response Body: ${response.body}');
+    if (response.statusCode == 200) {
+      final saveResponse = await apiService.saveAnswer(
+        botController.selectedBookId.value,
+        botController.getSelectedSectionId(), // Now returns the index as a string
+        question,
+        answer,
+      );
+      print(':::saveResponse::::::::::: Status Code: ${saveResponse.statusCode}');
+      print('::::saveResponse::::::::::: Response Body: ${saveResponse.body}');
+      final data = jsonDecode(response.body);
+      final subQuestions = List<String>.from(data['content']);
+      questionController.setSubQuestions(subQuestions);
+      askQuestion();
+    } else if (response.statusCode == 400) {
+      messages.add(const BotMessage(message: "Could you please elaborate more?"));
+    } else {
+      Get.snackbar('Error', 'Failed to generate sub-questions');
+    }
+  }
+
+  Future<void> _handleSubQuestionAnswer(String subQuestion, String answer) async {
+    final relevancyResponse = await apiService.checkRelevancy(subQuestion, answer);
+    print(':::relevancyResponse::::::::::: Status Code: ${relevancyResponse.statusCode}');
+    print(':::::relevancyResponse:::::::::: Response Body: ${relevancyResponse.body}');
+    if (relevancyResponse.statusCode == 200) {
+      final saveResponse = await apiService.saveAnswer(
+        botController.selectedBookId.value,
+        botController.getSelectedSectionId(), // Now returns the index as a string
+        subQuestion,
+        answer,
+      );
+      print(':::saveResponse::::::::::: Status Code: ${saveResponse.statusCode}');
+      print('::::saveResponse::::::::::: Response Body: ${saveResponse.body}');
+      if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
+        questionController.nextQuestion();
+        askQuestion();
+      } else {
+        Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
+      }
+    } else if (relevancyResponse.statusCode == 400) {
+      messages.add(const BotMessage(message: "Could you provide a more relevant answer?"));
+    } else {
+      Get.snackbar('Error', 'Failed to check relevancy: ${relevancyResponse.statusCode}');
+    }
+  }
+
+  var hasText = false.obs;
 
   void updateHasText(String text) {
     hasText.value = text.isNotEmpty;
   }
-
-  void sendBotMessage(String botMessage) {
-    messages.add(BotMessage(message: botMessage));
-  }
-
-
-  void sendMessage(String message) {
-    if (message.trim().isNotEmpty) {
-      userMessages.add(message); // Store the message for API request
-      messages.add(UserMessage(message: message)); // Display user message
-
-      // Show Yes/No prompt after each user message
-      if (isPromptVisible.value) {
-        messages.add(
-          const BotMessage(
-            message: "Would you like to generate a book from your stories?",
-            /*actions: [
-              TextButton(
-                onPressed: () {
-                  _handleButtonClick(false); // Handle No button click
-                },
-                child: const Text("No"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  _handleButtonClick(true); // Handle Yes button click
-                },
-                child: const Text("Yes"),
-              ),
-            ],*/
-          ),
-        );
-      }
-    }
-  }
-
-  /*void _handleButtonClick(bool isYes) {
-    // Remove the Yes/No prompt after a button click
-    isPromptVisible.value = false; // Hide the prompt
-    messages.removeWhere((message) =>
-    message is BotMessage &&
-        message.message == "Would you like to generate a book from your stories?");
-
-    // Add the corresponding response message
-    if (isYes) {
-      generateBook(); // Call generateBook if the user clicked Yes
-      messages.add(const BotMessage(message: "Generating the book... 📖"));
-    } else {
-      messages.add(const BotMessage(message: "Alright, no problem! Let me know if you change your mind."));
-    }
-  }*/
-
-
 }

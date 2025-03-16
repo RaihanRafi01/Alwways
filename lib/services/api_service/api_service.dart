@@ -8,16 +8,91 @@ import 'package:image_picker/image_picker.dart';
 import '../model/bookModel.dart';
 
 class ApiService {
-  final FlutterSecureStorage _storage = FlutterSecureStorage(); // For secure storage
+  final FlutterSecureStorage _storage =
+      FlutterSecureStorage(); // For secure storage
   // Base URL for the API
   final String baseUrl = 'http://164.92.65.230:5002/api/';
+  final String baseUrl2 = 'http://144.126.209.250/';
+
+  Future<http.Response> getQuestionsForSection(String episodeId) async {
+    String? token = await _storage.read(key: 'access_token');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final url = '${baseUrl}question/questions/$episodeId';
+    return await http.get(
+      Uri.parse(url),
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+    );
+  }
+
+  Future<http.Response> getSections() async {
+    String? token = await _storage.read(key: 'access_token');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = '${baseUrl}section/sections';
+    return await http.get(
+      Uri.parse(url),
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+    );
+  }
+
+  // Generate sub-questions based on main question and answer
+  Future<http.Response> generateSubQuestion(
+      String mainQuestion, String mainAnswer) async {
+    final url = '${baseUrl2}generate_sub_question/';
+    return await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'M_Q': mainQuestion, 'M_Q_A': mainAnswer}),
+    );
+  }
+
+  // Save an answer for a book and episode
+  Future<http.Response> saveAnswer(
+      String bookId, String episodeId, String question, String answer) async {
+    String? token = await _storage.read(key: 'access_token');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = '${baseUrl}book/$bookId/episode/$episodeId/answer';
+    return await http.post(
+      Uri.parse(url),
+      headers: {
+        "Authorization": "Bearer $token",
+        'Content-Type': 'application/json'
+      },
+      body: jsonEncode({'question': question, 'userAnswer': answer}),
+    );
+  }
+
+  // Check relevancy of a sub-question and answer
+  Future<http.Response> checkRelevancy(String question, String answer) async {
+    final url = '${baseUrl2}CQ_relevancy_check/';
+    return await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'C_Q': question, 'C_Q_A': answer}),
+    );
+  }
 
   // Sign-up method with userData and profile picture
   Future<http.Response> signUp(
-      String firstname, String lastname, String email, String mobile,
-      String location, String gender, String dateOfBirth, String password,
+      String firstname,
+      String lastname,
+      String email,
+      String mobile,
+      String location,
+      String gender,
+      String dateOfBirth,
+      String password,
       XFile profilePicture) async {
-
     // Construct the endpoint URL
     final Uri url = Uri.parse('${baseUrl}user/register/');
 
@@ -46,11 +121,10 @@ class ApiService {
     // Add the profile picture (if available)
     if (profilePicture != null) {
       request.files.add(
-        await http.MultipartFile.fromPath(
-            'profilePicture',
-            profilePicture.path,
-            contentType: MediaType('image', 'jpeg') // Adjust MIME type if necessary
-        ),
+        await http.MultipartFile.fromPath('profilePicture', profilePicture.path,
+            contentType:
+                MediaType('image', 'jpeg') // Adjust MIME type if necessary
+            ),
       );
     }
 
@@ -107,7 +181,7 @@ class ApiService {
     );
   }
 
-  Future<http.Response> verifyOtp(String email,String otp) async {
+  Future<http.Response> verifyOtp(String email, String otp) async {
     // Construct the endpoint URL
     final Uri url = Uri.parse('${baseUrl}user/verify-code-user/');
 
@@ -130,7 +204,8 @@ class ApiService {
     );
   }
 
-  Future<http.Response> resetPassword(String email,String otp,String password) async {
+  Future<http.Response> resetPassword(
+      String email, String otp, String password) async {
     // Construct the endpoint URL
     final Uri url = Uri.parse('${baseUrl}user/reset-password/');
 
@@ -162,7 +237,8 @@ class ApiService {
       throw Exception('No token found');
     }
 
-    final Uri url = Uri.parse('${baseUrl}book/create/'); // Adjust endpoint as per API docs
+    final Uri url =
+        Uri.parse('${baseUrl}book/create/'); // Adjust endpoint as per API docs
     var request = http.MultipartRequest('POST', url);
 
     // Add headers
@@ -198,7 +274,8 @@ class ApiService {
     }
   }
 
-  Future<http.Response> updateBookCover(String bookId, String title, XFile? coverImage) async {
+  Future<http.Response> updateBookCover(
+      String bookId, String title, XFile? coverImage) async {
     String? token = await _storage.read(key: 'access_token');
     if (token == null) {
       throw Exception('No token found');
@@ -236,7 +313,8 @@ class ApiService {
     return await http.Response.fromStream(streamedResponse);
   }
 
-  Future<http.Response> updateEpisodeCover(String bookId, XFile? coverImage, int episode_number) async {
+  Future<http.Response> updateEpisodeCover(
+      String bookId, XFile? coverImage, int episode_number) async {
     String? token = await _storage.read(key: 'access_token');
     if (token == null) {
       throw Exception('No token found');
@@ -256,7 +334,6 @@ class ApiService {
       "Content-Type": "multipart/form-data",
     });
 
-
     // Add the cover image (if provided)
     if (coverImage != null) {
       print('::::::::::::::::::::::::::::NOT NULL IMAGE');
@@ -273,5 +350,4 @@ class ApiService {
     var streamedResponse = await request.send();
     return await http.Response.fromStream(streamedResponse);
   }
-
 }
