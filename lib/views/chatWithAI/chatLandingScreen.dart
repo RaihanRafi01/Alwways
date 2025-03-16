@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/views/book/addBook.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
-
 import '../../constants/color/app_colors.dart';
 import '../../controllers/chat/botLanding_controller.dart';
 import 'chatScreen.dart';
@@ -23,35 +22,37 @@ class ChatLandingScreen extends StatelessWidget {
           children: [
             const Text(
               'Hello, and welcome!',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold,color: AppColors.bookTextColor),
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.bookTextColor),
             ),
             const SizedBox(height: 28),
-            //CustomButton(text: 'Add Book', onPressed: ()=> Get.to(() => const AddBook())),
+            CustomButton(
+              text: 'Add Book',
+              onPressed: () => Get.to(() => const AddBook()),
+            ),
             const SizedBox(height: 28),
             const Text(
               'I’m here to help you create a beautiful memoir of your life. 😊',
-              style: TextStyle(fontSize: 16,color: AppColors.botTextColor2),
+              style: TextStyle(fontSize: 16, color: AppColors.botTextColor2),
             ),
             const SizedBox(height: 28),
-            // Book Selection Dropdown
             const Text(
               'Select a book',
               style: TextStyle(fontSize: 18, color: AppColors.botTextColor),
             ),
             const SizedBox(height: 8),
             Obx(() => DropdownButton<String>(
-              value: controller.selectedBook.value.isEmpty
-                  ? null
-                  : controller.selectedBook.value,
+              value: controller.selectedBook.value.isEmpty ? null : controller.selectedBook.value,
               hint: const Text('Select a book'),
-              items: controller.books.map((String book) {
+              items: controller.books.isEmpty
+                  ? [const DropdownMenuItem<String>(value: null, child: Text('No books available'))]
+                  : controller.books.map((String book) {
                 return DropdownMenuItem<String>(
                   value: book,
                   child: Text(book),
                 );
               }).toList(),
               onChanged: (selectedBook) {
-                if (selectedBook != null) {
+                if (selectedBook != null && selectedBook.isNotEmpty) {
                   controller.selectBook(selectedBook);
                 }
               },
@@ -66,31 +67,24 @@ class ChatLandingScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   const Text(
                     'Select an episode',
-                    style: TextStyle(
-                        fontSize: 18, color: AppColors.botTextColor),
+                    style: TextStyle(fontSize: 18, color: AppColors.botTextColor),
                   ),
                   const SizedBox(height: 8),
-                  // Episode Selection Dropdown
                   DropdownButton<String>(
-                    value: controller.selectedEpisode.value.isEmpty
-                        ? null
-                        : controller.selectedEpisode.value,
+                    value: controller.selectedEpisode.value.isEmpty ? null : controller.selectedEpisode.value,
                     hint: const Text('Select an episode'),
-                    items: controller.episodes.map((String episode) {
+                    items: controller.episodes.isEmpty
+                        ? [const DropdownMenuItem<String>(value: null, child: Text('No episodes available'))]
+                        : controller.episodes.map((String episode) {
                       return DropdownMenuItem<String>(
                         value: episode,
                         child: Text(episode),
                       );
                     }).toList(),
                     onChanged: (selectedEpisode) {
-                      if (selectedEpisode != null) {
+                      if (selectedEpisode != null && selectedEpisode.isNotEmpty) {
                         controller.selectEpisode(selectedEpisode);
                         Get.off(() => const ChatScreen());
-                        /*Get.snackbar(
-                          'Selection',
-                          'You selected "$selectedEpisode" from "${controller.selectedBook.value}"',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );*/
                       }
                     },
                   ),
