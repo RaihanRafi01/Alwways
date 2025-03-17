@@ -4,16 +4,16 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:playground_02/controllers/chat/question_controller.dart';
 import 'package:playground_02/services/api_service/api_service.dart';
+import 'package:playground_02/services/database/databaseHelper.dart';
 import 'package:playground_02/widgets/chat/userMessage.dart';
 import 'package:playground_02/widgets/chat/botMessage.dart';
 import 'botLanding_controller.dart';
-import '../../services/database/databaseHelper.dart';
 
 class MessageController extends GetxController {
   var messages = <Widget>[].obs;
   var userAnswers = <Map<String, String>>[].obs;
   final QuestionController questionController = Get.put(QuestionController());
-  final BotController botController = Get.find<BotController>();
+  final BotController botController = Get.put(BotController());
   final ApiService apiService = ApiService();
   final DatabaseHelper dbHelper = DatabaseHelper();
 
@@ -26,28 +26,25 @@ class MessageController extends GetxController {
   }
 
   Future<void> fetchQuestionsAndLoadHistory(String sectionId) async {
-    // Fetch questions
     await questionController.fetchQuestions(sectionId);
-
-    // Load chat history
     final bookId = botController.selectedBookId.value;
     final history = await dbHelper.getChatHistory(bookId, sectionId);
     print("Chat history for bookId: $bookId, sectionId: $sectionId: $history");
 
-    // Add history to messages
     for (var entry in history) {
       messages.add(BotMessage(message: entry['question']!));
       messages.add(UserMessage(message: entry['answer']!));
       userAnswers.add({'question': entry['question']!, 'answer': entry['answer']!});
     }
 
-    // Skip answered questions
-    final answeredQuestions = history.map((e) => e['question']).toList();
-    questionController.currentQuestionIndex.value = answeredQuestions.length;
+    final mainQuestions = questionController.questions.map((q) => q.text).toList();
+    final answeredMainQuestions = history.where((entry) => mainQuestions.contains(entry['question'])).length;
+    questionController.currentQuestionIndex.value = answeredMainQuestions;
     if (questionController.currentQuestionIndex.value >= questionController.questions.length) {
       questionController.currentQuestionIndex.value = questionController.questions.length;
     }
 
+    await _calculateAndPrintCompletionPercentage(sectionId, answeredMainQuestions);
     askQuestion();
   }
 
@@ -61,25 +58,55 @@ class MessageController extends GetxController {
     }
   }
 
-  void sendMessage(String userAnswer) {
+  Future<void> sendMessage(String userAnswer) async {
     if (userAnswer.trim().isEmpty) return;
 
     final currentQuestion = questionController.getCurrentQuestion();
     messages.add(UserMessage(message: userAnswer));
     userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
 
+    final bookId = botController.selectedBookId.value;
+    final sectionId = botController.selectedSectionId.value;
+
     if (questionController.isSubQuestionMode.value) {
-      _handleSubQuestionAnswer(currentQuestion, userAnswer);
+      await _handleSubQuestionAnswer(currentQuestion, userAnswer);
     } else {
-      _handleGenerateSubQuestion(currentQuestion, userAnswer);
+      await _handleGenerateSubQuestion(currentQuestion, userAnswer);
+    }
+
+    final history = await dbHelper.getChatHistory(bookId, sectionId);
+    final mainQuestions = questionController.questions.map((q) => q.text).toList();
+    final answeredMainQuestions = history.where((entry) => mainQuestions.contains(entry['question'])).length;
+    await _calculateAndPrintCompletionPercentage(sectionId, answeredMainQuestions);
+  }
+
+  Future<void> _calculateAndPrintCompletionPercentage(String sectionId, int answeredMainQuestions) async {
+    final sections = await dbHelper.getSections();
+    final currentSection = sections.firstWhere((section) => section.id == sectionId);
+    final totalQuestions = currentSection.questionsCount ?? 0;
+    final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions / totalQuestions) * 100 : 0;
+    print("Section: ${currentSection.name}, Total Questions: $totalQuestions, Answered Main: $answeredMainQuestions, Completion: ${completionPercentage.toStringAsFixed(2)}%");
+
+    // Update percentage via API
+    final bookId = botController.selectedBookId.value;
+    final episodeIndex = botController.getSelectedSectionId(); // Dynamic index (e.g., "0")
+    try {
+      final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
+      print(':::updateEpisodePercentage::: Status Code: ${response.statusCode}');
+      print(':::updateEpisodePercentage::: Response Body: ${response.body}');
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        Get.snackbar('Error', 'Failed to update percentage: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error updating percentage: $e");
+      Get.snackbar('Error', 'Failed to update percentage: $e');
     }
   }
 
   Future<void> _handleGenerateSubQuestion(String question, String answer) async {
-    print(':::::::::::::: HIT _handleGenerateSubQuestion ');
     final response = await apiService.generateSubQuestion(question, answer);
-    print(':::::::::::::: Status Code: ${response.statusCode}');
-    print('::::::::::::::: Response Body: ${response.body}');
+    print(':::::1111::::::::: Status Code: ${response.statusCode}');
+    print('::::::11111::::::::: Response Body: ${response.body}');
     if (response.statusCode == 200) {
       final saveResponse = await apiService.saveAnswer(
         botController.selectedBookId.value,

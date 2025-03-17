@@ -22,7 +22,6 @@ class BotController extends GetxController {
   void onInit() {
     super.onInit();
     bookController = Get.find<BookController>();
-    fetchSections();
   }
 
   List<Map<String, String>> get books => bookController.books.map((book) => {'id': book.id, 'title': book.title}).toList();
@@ -30,8 +29,11 @@ class BotController extends GetxController {
   List<String> get episodes => sections.map((section) => section.name).toList();
 
   Future<void> fetchSections() async {
+    print('::::::::::fetchSections:::::::::::::::okkkkk');
     sections.value = await dbHelper.getSections();
     final response = await apiService.getSections();
+    print('::::::fetchSections:::::statusCode:::::::::::::::: ${response.statusCode}');
+    print('::::::fetchSections:::::body:::::::::::::::: ${response.body}');
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       final fetchedSections = data.map((json) => Section.fromJson(json)).toList();

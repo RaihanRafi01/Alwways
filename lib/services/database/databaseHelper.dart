@@ -20,120 +20,73 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'books.db');
+
     return await openDatabase(
       path,
-      version: 5, // Incremented version for chat_history table
+      version: 1, // Start with version 1 since it's a new database
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE books (
-            id TEXT PRIMARY KEY,
-            userId TEXT,
-            title TEXT,
-            coverImage TEXT,
-            backgroundCover TEXT,
-            status TEXT,
-            percentage REAL,
-            createdAt TEXT,
-            updatedAt TEXT
-          )
-        ''');
+        CREATE TABLE books (
+          id TEXT PRIMARY KEY,
+          userId TEXT,
+          title TEXT,
+          coverImage TEXT,
+          backgroundCover TEXT,
+          status TEXT,
+          percentage REAL,
+          createdAt TEXT,
+          updatedAt TEXT
+        )
+      ''');
         await db.execute('''
-          CREATE TABLE episodes (
-            id TEXT PRIMARY KEY,
-            bookId TEXT,
-            title TEXT,
-            coverImage TEXT,
-            backgroundCover TEXT,
-            percentage REAL,
-            conversations TEXT,
-            FOREIGN KEY (bookId) REFERENCES books (id)
-          )
-        ''');
+        CREATE TABLE episodes (
+          id TEXT PRIMARY KEY,
+          bookId TEXT,
+          title TEXT,
+          coverImage TEXT,
+          backgroundCover TEXT,
+          percentage REAL,
+          conversations TEXT,
+          FOREIGN KEY (bookId) REFERENCES books (id)
+        )
+      ''');
         await db.execute('''
-          CREATE TABLE questions (
-            id TEXT PRIMARY KEY,
-            episodeId TEXT,
-            sectionId TEXT,
-            text TEXT,
-            v INTEGER,
-            createdAt TEXT,
-            updatedAt TEXT,
-            FOREIGN KEY (episodeId) REFERENCES episodes (id)
-          )
-        ''');
+        CREATE TABLE questions (
+          id TEXT PRIMARY KEY,
+          episodeId TEXT,
+          sectionId TEXT,
+          text TEXT,
+          v INTEGER,
+          createdAt TEXT,
+          updatedAt TEXT,
+          FOREIGN KEY (episodeId) REFERENCES episodes (id)
+        )
+      ''');
         await db.execute('''
-          CREATE TABLE sections (
-            id TEXT PRIMARY KEY,
-            name TEXT,
-            numberOfQuestions INTEGER,
-            published INTEGER,
-            createdAt TEXT,
-            updatedAt TEXT,
-            v INTEGER,
-            questionsCount INTEGER,
-            episodeIndex INTEGER
-          )
-        ''');
+        CREATE TABLE sections (
+          id TEXT PRIMARY KEY,
+          name TEXT,
+          numberOfQuestions INTEGER,
+          published INTEGER,
+          createdAt TEXT,
+          updatedAt TEXT,
+          v INTEGER,
+          questionsCount INTEGER,
+          episodeIndex INTEGER
+        )
+      ''');
         await db.execute('''
-          CREATE TABLE chat_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            bookId TEXT,
-            sectionId TEXT,
-            question TEXT,
-            answer TEXT,
-            timestamp TEXT,
-            FOREIGN KEY (bookId) REFERENCES books (id),
-            FOREIGN KEY (sectionId) REFERENCES sections (id)
-          )
-        ''');
-      },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute('ALTER TABLE episodes ADD COLUMN backgroundCover TEXT');
-        }
-        if (oldVersion < 3) {
-          await db.execute('''
-            CREATE TABLE questions (
-              id TEXT PRIMARY KEY,
-              episodeId TEXT,
-              sectionId TEXT,
-              text TEXT,
-              v INTEGER,
-              createdAt TEXT,
-              updatedAt TEXT,
-              FOREIGN KEY (episodeId) REFERENCES episodes (id)
-            )
-          ''');
-        }
-        if (oldVersion < 4) {
-          await db.execute('''
-            CREATE TABLE sections (
-              id TEXT PRIMARY KEY,
-              name TEXT,
-              numberOfQuestions INTEGER,
-              published INTEGER,
-              createdAt TEXT,
-              updatedAt TEXT,
-              v INTEGER,
-              questionsCount INTEGER,
-              episodeIndex INTEGER
-            )
-          ''');
-        }
-        if (oldVersion < 5) {
-          await db.execute('''
-            CREATE TABLE chat_history (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              bookId TEXT,
-              sectionId TEXT,
-              question TEXT,
-              answer TEXT,
-              timestamp TEXT,
-              FOREIGN KEY (bookId) REFERENCES books (id),
-              FOREIGN KEY (sectionId) REFERENCES sections (id)
-            )
-          ''');
-        }
+        CREATE TABLE chat_history (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          bookId TEXT,
+          sectionId TEXT,
+          question TEXT,
+          answer TEXT,
+          timestamp TEXT,
+          FOREIGN KEY (bookId) REFERENCES books (id),
+          FOREIGN KEY (sectionId) REFERENCES sections (id)
+        )
+      ''');
       },
     );
   }
