@@ -153,6 +153,27 @@ class Episode {
           : [],
     );
   }
+
+  // Added copyWith method
+  Episode copyWith({
+    String? id,
+    String? bookId,
+    String? title,
+    String? coverImage,
+    String? backgroundCover,
+    double? percentage,
+    List<dynamic>? conversations,
+  }) {
+    return Episode(
+      id: id ?? this.id,
+      bookId: bookId ?? this.bookId,
+      title: title ?? this.title,
+      coverImage: coverImage ?? this.coverImage,
+      backgroundCover: backgroundCover ?? this.backgroundCover,
+      percentage: percentage ?? this.percentage,
+      conversations: conversations ?? this.conversations,
+    );
+  }
 }
 
 class Section {

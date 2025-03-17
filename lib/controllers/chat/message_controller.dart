@@ -7,6 +7,8 @@ import 'package:playground_02/services/api_service/api_service.dart';
 import 'package:playground_02/services/database/databaseHelper.dart';
 import 'package:playground_02/widgets/chat/userMessage.dart';
 import 'package:playground_02/widgets/chat/botMessage.dart';
+import '../../services/model/bookModel.dart';
+import '../book/bookLanding_controller.dart';
 import 'botLanding_controller.dart';
 
 class MessageController extends GetxController {
@@ -94,7 +96,27 @@ class MessageController extends GetxController {
       final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
       print(':::updateEpisodePercentage::: Status Code: ${response.statusCode}');
       print(':::updateEpisodePercentage::: Response Body: ${response.body}');
-      if (response.statusCode != 200 && response.statusCode != 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Step 1: Update the episode percentage in the local database
+        final db = await dbHelper.database;
+        final episodeMaps = await db.query(
+          'episodes',
+          where: 'bookId = ? AND id = ?',
+          whereArgs: [bookId, episodeIndex],
+        );
+
+        if (episodeMaps.isNotEmpty) {
+          final episode = Episode.fromMap(episodeMaps.first);
+          final updatedEpisode = episode.copyWith(percentage: completionPercentage.toDouble());
+          await dbHelper.updateEpisode(updatedEpisode);
+          print("Updated episode percentage in database: ${updatedEpisode.percentage}");
+        }
+
+        // Step 2: Sync with BookLandingController to update UI
+        final bookController = Get.find<BookLandingController>();
+        await bookController.fetchBooks(); // Refresh the books list from the database
+        print("Refreshed BookLandingController with updated data");
+      } else {
         Get.snackbar('Error', 'Failed to update percentage: ${response.statusCode}');
       }
     } catch (e) {
