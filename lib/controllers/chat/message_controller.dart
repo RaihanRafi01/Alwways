@@ -19,6 +19,18 @@ class MessageController extends GetxController {
   final ApiService apiService = ApiService();
   final DatabaseHelper dbHelper = DatabaseHelper();
 
+  // Show loading message with animated dots
+  void _showLoadingMessage() {
+    messages.add(const BotMessage(message: "", isLoading: true));
+  }
+
+  // Remove the loading message
+  void _removeLoadingMessage() {
+    if (messages.isNotEmpty && messages.last is BotMessage && (messages.last as BotMessage).isLoading) {
+      messages.removeLast();
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -51,6 +63,7 @@ class MessageController extends GetxController {
   }
 
   void askQuestion() {
+    _removeLoadingMessage(); // Ensure loading is removed before adding a new question
     final currentQuestion = questionController.getCurrentQuestion();
     print("Asking question: $currentQuestion");
     if (currentQuestion != 'No more questions') {
@@ -69,6 +82,8 @@ class MessageController extends GetxController {
 
     final bookId = botController.selectedBookId.value;
     final sectionId = botController.selectedSectionId.value;
+
+    _showLoadingMessage(); // Show loading animation before API call
 
     if (questionController.isSubQuestionMode.value) {
       await _handleSubQuestionAnswer(currentQuestion, userAnswer);
@@ -89,15 +104,13 @@ class MessageController extends GetxController {
     final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions / totalQuestions) * 100 : 0;
     print("Section: ${currentSection.name}, Total Questions: $totalQuestions, Answered Main: $answeredMainQuestions, Completion: ${completionPercentage.toStringAsFixed(2)}%");
 
-    // Update percentage via API
     final bookId = botController.selectedBookId.value;
-    final episodeIndex = botController.getSelectedSectionId(); // Dynamic index (e.g., "0")
+    final episodeIndex = botController.getSelectedSectionId();
     try {
       final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
       print(':::updateEpisodePercentage::: Status Code: ${response.statusCode}');
       print(':::updateEpisodePercentage::: Response Body: ${response.body}');
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Step 1: Update the episode percentage in the local database
         final db = await dbHelper.database;
         final episodeMaps = await db.query(
           'episodes',
@@ -112,9 +125,8 @@ class MessageController extends GetxController {
           print("Updated episode percentage in database: ${updatedEpisode.percentage}");
         }
 
-        // Step 2: Sync with BookLandingController to update UI
         final bookController = Get.find<BookLandingController>();
-        await bookController.fetchBooks(); // Refresh the books list from the database
+        await bookController.fetchBooks();
         print("Refreshed BookLandingController with updated data");
       } else {
         Get.snackbar('Error', 'Failed to update percentage: ${response.statusCode}');
@@ -148,13 +160,16 @@ class MessageController extends GetxController {
         final data = jsonDecode(response.body);
         final subQuestions = List<String>.from(data['content']);
         questionController.setSubQuestions(subQuestions);
-        askQuestion();
+        askQuestion(); // Loading will be removed here
       } else {
+        _removeLoadingMessage();
         Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
     } else if (response.statusCode == 400) {
+      _removeLoadingMessage();
       messages.add(const BotMessage(message: "Could you please elaborate more?"));
     } else {
+      _removeLoadingMessage();
       Get.snackbar('Error', 'Failed to generate sub-questions');
     }
   }
@@ -180,13 +195,16 @@ class MessageController extends GetxController {
           answer,
         );
         questionController.nextQuestion();
-        askQuestion();
+        askQuestion(); // Loading will be removed here
       } else {
+        _removeLoadingMessage();
         Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
     } else if (relevancyResponse.statusCode == 400) {
+      _removeLoadingMessage();
       messages.add(const BotMessage(message: "Could you provide a more relevant answer?"));
     } else {
+      _removeLoadingMessage();
       Get.snackbar('Error', 'Failed to check relevancy: ${relevancyResponse.statusCode}');
     }
   }
