@@ -167,7 +167,7 @@ class MessageController extends GetxController {
       }
     } else if (response.statusCode == 400) {
       _removeLoadingMessage();
-      messages.add(const BotMessage(message: "Could you please elaborate more?"));
+      messages.add(BotMessage(message: "Could you please elaborate on : $question"));
     } else {
       _removeLoadingMessage();
       Get.snackbar('Error', 'Failed to generate sub-questions');
@@ -202,7 +202,7 @@ class MessageController extends GetxController {
       }
     } else if (relevancyResponse.statusCode == 400) {
       _removeLoadingMessage();
-      messages.add(const BotMessage(message: "Could you provide a more relevant answer?"));
+      messages.add(BotMessage(message: "Could you provide a more relevant answer on : $subQuestion"));
     } else {
       _removeLoadingMessage();
       Get.snackbar('Error', 'Failed to check relevancy: ${relevancyResponse.statusCode}');
