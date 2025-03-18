@@ -76,7 +76,21 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
         return GestureDetector(
           onTap: () {
             if (isEpisode) {
-              Get.to(BookPageView(title: item.title, bookId: item.id, coverImage: item.coverImage, isEpisode: isEpisode,), arguments: {"episodeIndex": index});
+              // Check episode percentage
+              final percentage = item.percentage ?? 0.0; // Default to 0 if null
+              if (percentage == 100.0) {
+                Get.to(
+                  BookPageView(
+                    title: item.title,
+                    bookId: item.id,
+                    coverImage: item.coverImage,
+                    isEpisode: isEpisode,
+                  ),
+                  arguments: {"episodeIndex": index},
+                );
+              } else {
+                print("Episode '${item.title}' cannot be opened. Completion: $percentage% (must be 100%)");
+              }
             } else {
               Get.to(
                 const BookLandingScreen(isEpisode: true),
@@ -88,7 +102,9 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
             title: item.title,
             coverImage: item.coverImage,
             progress: item.percentage,
-            isGrid: true, bookId: item.id, isEpisode: isEpisode,
+            isGrid: true,
+            bookId: item.id,
+            isEpisode: isEpisode,
           ),
         );
       },

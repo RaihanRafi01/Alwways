@@ -125,7 +125,7 @@ class MessageController extends GetxController {
           print("Updated episode percentage in database: ${updatedEpisode.percentage}");
         }
 
-        final bookController = Get.find<BookLandingController>();
+        final bookController = Get.put(BookLandingController());
         await bookController.fetchBooks();
         print("Refreshed BookLandingController with updated data");
       } else {
