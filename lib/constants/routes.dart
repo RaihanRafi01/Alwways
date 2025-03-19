@@ -58,7 +58,6 @@ class AppRoutes {
 
     //// CHAT BOT
 
-    GetPage(name: chat, page: () => const ChatScreen()),
 
 
     /////// BOOK

@@ -105,6 +105,18 @@ class DatabaseHelper {
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    print("Chat history inserted: bookId=$bookId, sectionId=$sectionId, question=$question");
+  }
+
+  Future<void> updateEpisode(Episode episode) async {
+    final db = await database;
+    await db.update(
+      'episodes',
+      episode.toMap(),
+      where: 'id = ?',
+      whereArgs: [episode.id],
+    );
+    print("Episode updated: id=${episode.id}, story=${episode.story?.substring(0, 50)}...");
   }
 
   Future<List<Map<String, String>>> getChatHistory(String bookId, String sectionId) async {
@@ -192,11 +204,6 @@ class DatabaseHelper {
       episode.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-  }
-
-  Future<void> updateEpisode(Episode episode) async {
-    final db = await database;
-    await db.update('episodes', episode.toMap(), where: 'id = ?', whereArgs: [episode.id]);
   }
 
   Future<List<Question>> getQuestionsForSection(String sectionId) async {

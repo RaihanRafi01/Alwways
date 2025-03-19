@@ -17,9 +17,9 @@ class QuestionController extends GetxController {
   var isSubQuestionMode = false.obs;
 
   Future<void> fetchQuestions(String sectionId) async {
-    print("Fetching questions for sectionId: $sectionId");
+    print(":::::::::::::::Fetching questions for sectionId: $sectionId");
     questions.value = await dbHelper.getQuestionsForSection(sectionId);
-    print("Questions from DB: ${questions.map((q) => q.text).toList()}");
+    print(":::::::::::::::::::::Questions from DB: ${questions.map((q) => q.text).toList()}");
 
     if (questions.isEmpty) {
       final response = await apiService.getQuestionsForSection(sectionId);

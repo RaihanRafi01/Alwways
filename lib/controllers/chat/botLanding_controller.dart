@@ -11,6 +11,7 @@ class BotController extends GetxController {
   var selectedBookId = ''.obs;
   var selectedSectionId = ''.obs;
   var selectedSectionIndex = (-1).obs; // -1 means no selection
+  var selectedEpisodeId = ''.obs;
 
   late final BookController bookController;
   final ApiService apiService = ApiService();
@@ -22,18 +23,20 @@ class BotController extends GetxController {
   void onInit() {
     super.onInit();
     bookController = Get.find<BookController>();
+    fetchSections();
   }
 
   List<Map<String, String>> get books => bookController.books.map((book) => {'id': book.id, 'title': book.title}).toList();
 
-  List<String> get episodes => sections.map((section) => section.name).toList();
+  List<Episode> get episodes => selectedBookId.value.isEmpty
+      ? []
+      : bookController.books.firstWhere((book) => book.id == selectedBookId.value).episodes;
 
   Future<void> fetchSections() async {
-    print('::::::::::fetchSections:::::::::::::::okkkkk');
+    print('Fetching sections...');
     sections.value = await dbHelper.getSections();
     final response = await apiService.getSections();
-    print('::::::fetchSections:::::statusCode:::::::::::::::: ${response.statusCode}');
-    print('::::::fetchSections:::::body:::::::::::::::: ${response.body}');
+    print('Sections fetch status: ${response.statusCode}, body: ${response.body}');
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       final fetchedSections = data.map((json) => Section.fromJson(json)).toList();
@@ -53,7 +56,28 @@ class BotController extends GetxController {
   void selectBook(String bookId) {
     selectedBookId.value = bookId;
     selectedSectionId.value = '';
+    selectedEpisodeId.value = ''; // Reset episode ID
     selectedSectionIndex.value = -1;
+  }
+
+  void selectSection(String sectionId) {
+    selectedSectionId.value = sectionId;
+    selectedSectionIndex.value = sections.indexWhere((section) => section.id == sectionId);
+
+    // Map section to episode (assuming episodeIndex relates to episode order)
+    if (selectedSectionIndex.value >= 0 && episodes.isNotEmpty) {
+      final section = sections[selectedSectionIndex.value];
+      final episodeIndex = section.episodeIndex ?? 0; // Default to first episode if no index
+      if (episodeIndex < episodes.length) {
+        selectedEpisodeId.value = episodes[episodeIndex].id;
+      }
+    }
+    print("Selected section: $sectionId, episode: ${selectedEpisodeId.value}");
+  }
+
+  Future<List<Map<String, String>>> getChatHistory() async {
+    if (selectedEpisodeId.value.isEmpty) return [];
+    return await dbHelper.getChatHistory(selectedBookId.value, selectedEpisodeId.value);
   }
 
   void selectEpisode(String sectionId) {

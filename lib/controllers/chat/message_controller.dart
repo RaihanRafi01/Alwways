@@ -42,8 +42,9 @@ class MessageController extends GetxController {
   Future<void> fetchQuestionsAndLoadHistory(String sectionId) async {
     await questionController.fetchQuestions(sectionId);
     final bookId = botController.selectedBookId.value;
-    final history = await dbHelper.getChatHistory(bookId, sectionId);
-    print("Chat history for bookId: $bookId, sectionId: $sectionId: $history");
+    final episodeID = botController.selectedEpisodeId.value;
+    final history = await dbHelper.getChatHistory(bookId, episodeID);
+    print("Chat history for bookId: $bookId, episodeId : $episodeID ,  sectionId: $sectionId: $history");
 
     for (var entry in history) {
       messages.add(BotMessage(message: entry['question']!));
@@ -106,6 +107,7 @@ class MessageController extends GetxController {
 
     final bookId = botController.selectedBookId.value;
     final episodeIndex = botController.getSelectedSectionId();
+    final episodeID = botController.selectedEpisodeId.value;
     try {
       final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
       print(':::updateEpisodePercentage::: Status Code: ${response.statusCode}');
@@ -115,7 +117,7 @@ class MessageController extends GetxController {
         final episodeMaps = await db.query(
           'episodes',
           where: 'bookId = ? AND id = ?',
-          whereArgs: [bookId, episodeIndex],
+          whereArgs: [bookId, episodeID],
         );
 
         if (episodeMaps.isNotEmpty) {

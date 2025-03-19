@@ -63,36 +63,42 @@ class ChatLandingScreen extends StatelessWidget {
               if (controller.selectedBookId.value.isEmpty) {
                 return const SizedBox.shrink();
               }
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Select a section',
-                    style: TextStyle(fontSize: 18, color: AppColors.botTextColor),
-                  ),
-                  const SizedBox(height: 8),
-                  Obx(() => DropdownButton<String>(
-                    value: controller.selectedSectionId.value.isEmpty ? null : controller.selectedSectionId.value,
-                    hint: const Text('Select a section'),
-                    items: controller.episodes.isEmpty
-                        ? [const DropdownMenuItem<String>(value: null, child: Text('No sections available'))]
-                        : controller.sections
-                        .map<DropdownMenuItem<String>>((Section section) {
-                      return DropdownMenuItem<String>(
-                        value: section.id,
-                        child: Text(section.name),
-                      );
-                    })
-                        .toList(),
-                    onChanged: (selectedSectionId) {
-                      if (selectedSectionId != null && selectedSectionId.isNotEmpty) {
-                        controller.selectEpisode(selectedSectionId);
-                        Get.off(() => const ChatScreen());
-                      }
-                    },
-                  )),
-                ],
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Select a section',
+                      style: TextStyle(fontSize: 18, color: AppColors.botTextColor),
+                    ),
+                    const SizedBox(height: 8),
+                    Obx(() => DropdownButton<String>(
+                      value: controller.selectedSectionId.value.isEmpty ? null : controller.selectedSectionId.value,
+                      hint: const Text('Select a section'),
+                      items: controller.episodes.isEmpty
+                          ? [const DropdownMenuItem<String>(value: null, child: Text('No sections available'))]
+                          : controller.sections
+                          .map<DropdownMenuItem<String>>((Section section) {
+                        return DropdownMenuItem<String>(
+                          value: section.id,
+                          child: Text(section.name),
+                        );
+                      })
+                          .toList(),
+                      onChanged: (selectedSectionId) {
+                        if (selectedSectionId != null && selectedSectionId.isNotEmpty) {
+                          controller.selectSection(selectedSectionId);
+                          Get.off(() => ChatScreen(
+                            bookId: controller.selectedBookId.value,
+                            sectionId: controller.selectedSectionId.value,
+                            episodeId: controller.selectedEpisodeId.value,
+                          ));
+                        }
+                      },
+                    )),
+                  ],
+                ),
               );
             }),
           ],

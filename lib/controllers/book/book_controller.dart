@@ -26,77 +26,138 @@ class BookController extends GetxController {
     'assets/images/book/cover_image_3.svg',
   ];
 
+  bool _hasInitialized = false; // Flag to prevent multiple initializations
+
   @override
   void onInit() {
     super.onInit();
-    initializeBooks();
+    if (!_hasInitialized) {
+      initializeBooks();
+      _hasInitialized = true;
+    }
   }
 
   Future<void> initializeBooks() async {
-    final localBooks = await dbHelper.getBooks();
-    print("Initial local books: ${localBooks.map((b) => {'id': b.id, 'title': b.title, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
-    for (var book in localBooks) {
+    isLoading.value = true;
+    try {
+      // Get local data first
+      final localBooks = await dbHelper.getBooks();
+      books.value = localBooks;
+      _populateCovers(localBooks);
+
+      // Fetch from server
+      final serverBooks = await apiService.getAllBooks();
+      print("Server books fetched: ${serverBooks.length}");
+
+      // Merge and update database
+      for (var serverBook in serverBooks) {
+        final existingBook = localBooks.firstWhereOrNull((b) => b.id == serverBook.id);
+        final mergedBook = _mergeBook(existingBook, serverBook);
+
+        // Insert or update book
+        await dbHelper.insertBook(mergedBook);
+
+        // Process conversations and update chat history + stories
+        await _processConversations(mergedBook);
+      }
+
+      // Refresh books from database
+      books.value = await dbHelper.getBooks();
+      _populateCovers(books);
+      print("Books initialized successfully");
+    } catch (e) {
+      print("Error initializing books: $e");
+      Get.snackbar('Error', 'Failed to initialize books: $e');
+      if (books.isEmpty) {
+        books.value = await dbHelper.getBooks();
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void _populateCovers(List<Book> bookList) {
+    for (var book in bookList) {
       backgroundCovers[book.id] = book.backgroundCover;
       coverImages[book.id] = book.coverImage;
-      // Only populate episode covers if episodes are still relevant
       for (var episode in book.episodes) {
         backgroundCovers[episode.id] = episode.backgroundCover ?? 'assets/images/book/cover_image_1.svg';
         coverImages[episode.id] = episode.coverImage;
       }
     }
-    books.value = localBooks;
+  }
 
-    try {
-      final serverBooks = await apiService.getAllBooks();
-      print("Server books: ${serverBooks.map((b) => {'id': b.id, 'title': b.title, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
-      for (var serverBook in serverBooks) {
-        final existingBook = localBooks.firstWhereOrNull((b) => b.id == serverBook.id);
-        final mergedBook = Book(
-          id: serverBook.id,
-          userId: serverBook.userId,
-          title: serverBook.title,
-          episodes: _mergeEpisodes(existingBook?.episodes ?? [], serverBook.episodes), // Adjust if episodes are deprecated
-          coverImage: serverBook.coverImage,
-          backgroundCover: existingBook?.backgroundCover ?? 'assets/images/book/cover_image_1.svg',
-          status: serverBook.status,
-          percentage: serverBook.percentage,
-          createdAt: serverBook.createdAt,
-          updatedAt: serverBook.updatedAt,
-        );
-        await dbHelper.insertBook(mergedBook);
-        backgroundCovers[mergedBook.id] = mergedBook.backgroundCover;
-        coverImages[mergedBook.id] = mergedBook.coverImage;
-        for (var episode in mergedBook.episodes) {
-          backgroundCovers[episode.id] = episode.backgroundCover ?? 'assets/images/book/cover_image_1.svg';
-          coverImages[episode.id] = episode.coverImage;
-        }
-      }
-      books.value = await dbHelper.getBooks();
-      print("Updated books: ${books.map((b) => {'id': b.id, 'title': b.title, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
-    } catch (e) {
-      print("Error fetching books from server: $e");
-      Get.snackbar('Error', 'Failed to load books from server: $e');
-      if (books.isEmpty) books.value = localBooks;
-    }
+  Book _mergeBook(Book? localBook, Book serverBook) {
+    return Book(
+      id: serverBook.id,
+      userId: serverBook.userId,
+      title: serverBook.title,
+      episodes: _mergeEpisodes(localBook?.episodes ?? [], serverBook.episodes),
+      coverImage: serverBook.coverImage,
+      backgroundCover: localBook?.backgroundCover ?? 'assets/images/book/cover_image_1.svg',
+      status: serverBook.status,
+      percentage: serverBook.percentage,
+      createdAt: serverBook.createdAt,
+      updatedAt: serverBook.updatedAt,
+    );
   }
 
   List<Episode> _mergeEpisodes(List<Episode> localEpisodes, List<Episode> serverEpisodes) {
-    final mergedEpisodes = <Episode>[];
-    for (var serverEpisode in serverEpisodes) {
+    return serverEpisodes.map((serverEpisode) {
       final localEpisode = localEpisodes.firstWhereOrNull((e) => e.id == serverEpisode.id);
-      mergedEpisodes.add(
-        Episode(
-          id: serverEpisode.id,
-          bookId: serverEpisode.bookId,
-          title: serverEpisode.title,
-          coverImage: serverEpisode.coverImage,
-          backgroundCover: localEpisode?.backgroundCover ?? 'assets/images/book/cover_image_1.svg',
-          percentage: serverEpisode.percentage,
-          conversations: serverEpisode.conversations,
-        ),
+      return Episode(
+        id: serverEpisode.id,
+        bookId: serverEpisode.bookId,
+        title: serverEpisode.title,
+        coverImage: serverEpisode.coverImage,
+        backgroundCover: localEpisode?.backgroundCover ?? 'assets/images/book/cover_image_1.svg',
+        percentage: serverEpisode.percentage,
+        conversations: serverEpisode.conversations,
+        story: localEpisode?.story, // Preserve local story if exists
       );
+    }).toList();
+  }
+
+  Future<void> _processConversations(Book book) async {
+    for (var episode in book.episodes) {
+      for (var convo in episode.conversations) {
+        final convoMap = convo as Map<String, dynamic>;
+        final question = convoMap['question'] as String;
+        final answer = convoMap['userAnswer'] as String;
+        final botResponse = convoMap['botResponse'] as String;
+        final storyGenerated = convoMap['storyGenerated'] as bool;
+
+        if (!storyGenerated) {
+          await dbHelper.insertChatHistory(
+            book.id,
+            episode.id, // Using episode ID as sectionId for simplicity
+            question,
+            answer,
+          );
+        }
+        // Insert into chat_history
+
+        // If storyGenerated is true, update episode story
+        if (storyGenerated) {
+          // Get the existing story (if any) and append the new botResponse
+          final existingStory = episode.story ?? ''; // Use empty string if no story exists
+          final updatedStory = existingStory.isEmpty ? botResponse : '$existingStory\n\n$botResponse'; // Add new line for separation
+          final updatedEpisode = episode.copyWith(story: updatedStory);
+
+          // Update the episode in the database
+          await dbHelper.updateEpisode(updatedEpisode);
+
+          // Update in memory
+          final bookIndex = books.indexWhere((b) => b.id == book.id);
+          if (bookIndex != -1) {
+            final episodeIndex = books[bookIndex].episodes.indexWhere((e) => e.id == episode.id);
+            if (episodeIndex != -1) {
+              books[bookIndex].episodes[episodeIndex] = updatedEpisode;
+            }
+          }
+        }
+      }
     }
-    return mergedEpisodes;
   }
 
   void updateSelectedCover(String id, String cover) {
