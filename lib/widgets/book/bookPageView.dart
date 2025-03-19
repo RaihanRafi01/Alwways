@@ -18,16 +18,27 @@ class BookPageView extends StatelessWidget {
   final String bookId;
   final String coverImage;
   final bool isEpisode;
+  final String episodeIndex;
 
-  BookPageView({super.key, required this.title, required this.bookId, required this.coverImage, required this.isEpisode});
+  BookPageView({
+    super.key,
+    required this.title,
+    required this.bookId,
+    required this.coverImage,
+    required this.isEpisode, required this.episodeIndex,
+  }) {
+    print("BookPageView - Raw Get.arguments: ${Get.arguments}");
+    print("BookPageView - bookId: $bookId, episodeIndex: $episodeIndex");
+    controller.loadStory(bookId, episodeIndex);
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Rest of the build method remains unchanged
     return Scaffold(
       appBar: const CustomAppbar(title: ''),
       body: Column(
         children: [
-          // Display chapter info only when currentPage is not 0
           Obx(() {
             if (controller.currentPage.value != 0) {
               return Container(
@@ -36,8 +47,7 @@ class BookPageView extends StatelessWidget {
                   children: [
                     Text(
                       controller.allPageChapters[controller.currentPage.value],
-                      style: const TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Container(
@@ -47,9 +57,10 @@ class BookPageView extends StatelessWidget {
                         child: Row(
                           children: [
                             SvgPicture.asset(
-                                "assets/images/book/pencil_icon.svg",
-                                height: 20,
-                                width: 20),
+                              "assets/images/book/pencil_icon.svg",
+                              height: 20,
+                              width: 20,
+                            ),
                             const SizedBox(width: 20),
                             const Flexible(
                               child: Text(
@@ -68,22 +79,32 @@ class BookPageView extends StatelessWidget {
             return const SizedBox.shrink();
           }),
           Expanded(
-            child: PageView.builder(
+            child: Obx(() => PageView.builder(
               controller: controller.pageController,
               itemCount: controller.allPages.length,
               itemBuilder: (context, index) {
+                // Rest of the itemBuilder remains unchanged
                 if (index == 0) {
-                  // Book cover page
                   return Center(
                     child: Stack(
                       alignment: Alignment.bottomRight,
                       children: [
-                        BookCover(isGrid: false, title: title, coverImage: coverImage, bookId: bookId, isEpisode: isEpisode,),
+                        BookCover(
+                          isGrid: false,
+                          title: title,
+                          coverImage: coverImage,
+                          bookId: bookId,
+                          isEpisode: isEpisode,
+                        ),
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 210, right: 16),
+                          padding: const EdgeInsets.only(top: 210, right: 16),
                           child: GestureDetector(
-                            onTap: () =>
-                                Get.to(BookCoverEditScreen(title: title, image: coverImage, bookId: bookId, isEpisode: isEpisode,)),
+                            onTap: () => Get.to(BookCoverEditScreen(
+                              title: title,
+                              image: coverImage,
+                              bookId: bookId,
+                              isEpisode: isEpisode,
+                            )),
                             child: SvgPicture.asset(
                               "assets/images/book/edit_icon.svg",
                               height: 24,
@@ -94,9 +115,7 @@ class BookPageView extends StatelessWidget {
                       ],
                     ),
                   );
-                }
-                else {
-                  // Chapter pages
+                } else {
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
                     child: Container(
@@ -108,20 +127,22 @@ class BookPageView extends StatelessWidget {
                             Column(
                               children: [
                                 const SizedBox(height: 30),
-                                Text(controller.allPageChapters[index],
-                                    style: const TextStyle(fontSize: 10)),
+                                Text(
+                                  controller.allPageChapters[index],
+                                  style: const TextStyle(fontSize: 10),
+                                ),
                                 const SizedBox(height: 20),
                                 SvgPicture.asset(
-                                    "assets/images/book/chapter_underline_1.svg",
-                                    width: 100),
-                                const SizedBox(height: 30),
-                                const Text('Motivation',
-                                    style: TextStyle(fontSize: 16)),
+                                  "assets/images/book/chapter_underline_1.svg",
+                                  width: 100,
+                                ),
+                                //const SizedBox(height: 30),
+                                //const Text('Motivation', style: TextStyle(fontSize: 16)),
                                 Obx(() {
                                   final imagePath = controller.allPageImages[index];
                                   if (imagePath != null) {
                                     return Padding(
-                                      padding: const EdgeInsets.only(bottom: 16.0),
+                                      padding: const EdgeInsets.only(top: 16.0),
                                       child: Image.file(
                                         File(imagePath),
                                         height: 100,
@@ -130,65 +151,21 @@ class BookPageView extends StatelessWidget {
                                       ),
                                     );
                                   }
-                                  return const SizedBox.shrink(); // Empty space if no image
+                                  return const SizedBox.shrink();
                                 }),
                                 Padding(
                                   padding: const EdgeInsets.all(16),
-                                  child: RichText(
-                                    textAlign: TextAlign.start,
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: controller.allPages[index]
-                                              [0],
-                                          style: const TextStyle(
-                                              fontSize: 18,
-                                              color: AppColors.bookTextColor),
-                                        ),
-                                        TextSpan(
-                                          text: controller.allPages[index]
-                                              .substring(1),
-                                          style: const TextStyle(
-                                              fontSize: 8,
-                                              color: AppColors.bookTextColor),
-                                        ),
-                                      ],
+                                  child: Text(
+                                    controller.allPages[index],
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.bookTextColor,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.only(bottom: 16, right: 16),
-                                child: GestureDetector(
-                                  onTap: () async {
-                                    final isCover = controller.allPages[index].contains("ChapterCover");
-                                    final result =
-                                        await Get.to(() => BookEditPage(
-                                          index: index,
-                                              chapterTitle:
-                                                  controller.allPageChapters[index],
-                                              chapterContent:
-                                              controller.allPages[index],
-                                          isCover: isCover,
-                                            ));
-                                    if (result != null) {
-                                      controller.allPageChapters[index] =
-                                          result["title"];
-                                      controller.allPages[index] =
-                                          result["content"];
-                                    }
-                                  },
-                                  child: SvgPicture.asset(
-                                      "assets/images/book/edit_icon.svg",
-                                      height: 24,
-                                      width: 24),
-                                ),
-                              ),
-                            ),
+                            // Rest of the widget tree...
                           ],
                         ),
                       ),
@@ -196,17 +173,8 @@ class BookPageView extends StatelessWidget {
                   );
                 }
               },
-            ),
+            )),
           ),
-          /*Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: CustomButton(
-              text: "Get Book",
-              onPressed: () {
-                // Add logic for the button
-              },
-            ),
-          ),*/
         ],
       ),
     );

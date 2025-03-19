@@ -23,7 +23,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1, // Start with version 1 since it's a new database
+      version: 1, // Keep version 1 since it’s a new database
       onCreate: (db, version) async {
         await db.execute('''
         CREATE TABLE books (
@@ -47,6 +47,7 @@ class DatabaseHelper {
           backgroundCover TEXT,
           percentage REAL,
           conversations TEXT,
+          story TEXT, -- Added story column
           FOREIGN KEY (bookId) REFERENCES books (id)
         )
       ''');
@@ -135,7 +136,11 @@ class DatabaseHelper {
       final existingEpisode = (await db.query('episodes', where: 'id = ?', whereArgs: [episode.id])).firstOrNull;
       if (existingEpisode != null) {
         final existingEpisodeObj = Episode.fromMap(existingEpisode);
-        final mergedEpisode = episode.copyWith(backgroundCover: existingEpisodeObj.backgroundCover);
+        // Preserve the story and backgroundCover from the existing episode
+        final mergedEpisode = episode.copyWith(
+          story: existingEpisodeObj.story ?? episode.story, // Preserve existing story
+          backgroundCover: existingEpisodeObj.backgroundCover ?? episode.backgroundCover,
+        );
         await db.update('episodes', mergedEpisode.toMap(), where: 'id = ?', whereArgs: [episode.id]);
       } else {
         await db.insert('episodes', episode.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
@@ -179,6 +184,14 @@ class DatabaseHelper {
     final db = await database;
     await db.delete('books');
     await db.delete('episodes');
+  }
+  Future<void> insertEpisode(Episode episode) async {
+    final db = await database;
+    await db.insert(
+      'episodes',
+      episode.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> updateEpisode(Episode episode) async {

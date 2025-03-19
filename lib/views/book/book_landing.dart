@@ -65,7 +65,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
       );
     }
     return GridView.builder(
-      padding: const EdgeInsets.only(bottom: 80),
+      padding: const EdgeInsets.only(top: 80),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.55,
@@ -76,25 +76,31 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
         return GestureDetector(
           onTap: () {
             if (isEpisode) {
-              // Check episode percentage
-              final percentage = item.percentage ?? 0.0; // Default to 0 if null
-              if (percentage == 100.0) {
+              final percentage = item.percentage ?? 0.0;
+              final bookId = item.bookId;
+              final episodeIndex = index.toString(); // Pass index as string
+              if (percentage != 100.0) {
                 Get.to(
                   BookPageView(
                     title: item.title,
-                    bookId: item.id,
+                    bookId: bookId,
                     coverImage: item.coverImage,
-                    isEpisode: isEpisode,
+                    isEpisode: isEpisode, episodeIndex: episodeIndex,
                   ),
-                  arguments: {"episodeIndex": index},
+                  arguments: {"episodeIndex": episodeIndex},
                 );
               } else {
-                print("Episode '${item.title}' cannot be opened. Completion: $percentage% (must be 100%)");
+                print(
+                    "Episode '${item.title}' cannot be opened. Completion: $percentage% (must be less than 100%)");
               }
             } else {
+              final bookId = item.id;
               Get.to(
                 const BookLandingScreen(isEpisode: true),
-                arguments: {'episodes': item.episodes},
+                arguments: {
+                  'episodes': item.episodes,
+                  'bookId': bookId,
+                },
               );
             }
           },

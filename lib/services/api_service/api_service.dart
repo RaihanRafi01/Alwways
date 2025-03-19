@@ -14,6 +14,20 @@ class ApiService {
   final String baseUrl = 'http://164.92.65.230:5002/api/';
   final String baseUrl2 = 'http://144.126.209.250/';
 
+  Future<http.Response> generateStory(String bookId, String episodeIndex) async {
+    String? token = await _storage.read(key: 'access_token');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = Uri.parse('${baseUrl}book/$bookId/episode/$episodeIndex/generate-story');
+    return await http.post(
+      url,
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+    );
+  }
+
 
   Future<http.Response> updateEpisodePercentage(String bookId, String episodeIndex, num percentage) async {
     String? token = await _storage.read(key: 'access_token');

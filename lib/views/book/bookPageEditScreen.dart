@@ -20,7 +20,7 @@ class BookEditPage extends StatefulWidget {
     required this.index,
     required this.chapterTitle,
     required this.chapterContent,
-    this.isCover = false
+    this.isCover = false,
   });
 
   @override
@@ -46,16 +46,6 @@ class _BookEditPageState extends State<BookEditPage> {
     super.dispose();
   }
 
-  // Function to pick an image
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      controller.updateChapterImage(widget.index, pickedFile.path);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,7 +59,6 @@ class _BookEditPageState extends State<BookEditPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title TextField
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
               child: TextField(
@@ -84,7 +73,6 @@ class _BookEditPageState extends State<BookEditPage> {
                 ),
               ),
             ),
-            // Display the image if available
             Obx(() {
               final imagePath = controller.allPageImages[widget.index];
               if (imagePath != null) {
@@ -98,9 +86,8 @@ class _BookEditPageState extends State<BookEditPage> {
                   ),
                 );
               }
-              return const SizedBox.shrink(); // Empty space if no image
+              return const SizedBox.shrink();
             }),
-            // Content TextField
             Expanded(
               child: TextField(
                 controller: _contentController,
@@ -114,8 +101,6 @@ class _BookEditPageState extends State<BookEditPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Icons for navigation and attachment
             Row(
               children: [
                 Expanded(
@@ -124,18 +109,12 @@ class _BookEditPageState extends State<BookEditPage> {
                     onPressed: () {
                       controller.updateChapterTitle(widget.index, _titleController.text.trim());
                       controller.updateChapterContent(widget.index, _contentController.text.trim());
-                      Get.back();
+                      Get.back(result: {
+                        "title": _titleController.text.trim(),
+                        "content": _contentController.text.trim(),
+                      });
                     },
-                    isEditPage: true, // Use outlined button for edit pages
-                  ),
-                ),
-                const SizedBox(width: 16), // Add spacing between button and icon
-                if(widget.isCover)GestureDetector(
-                  onTap: _pickImage, // Pick an image on tap
-                  child: SvgPicture.asset(
-                    "assets/images/chat/att_icon.svg",
-                    height: 35,
-                    width: 35,
+                    isEditPage: true,
                   ),
                 ),
               ],

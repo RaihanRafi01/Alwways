@@ -47,7 +47,7 @@ class BookDetailsScreen extends StatelessWidget {
               ),*/
               SizedBox(height: 20,),
               CustomButton(text: 'VIEW BOOK', onPressed: (){
-                Get.to(BookPageView(title: 'gfd', bookId: '', coverImage: '', isEpisode: false,));
+                Get.to(BookPageView(title: 'gfd', bookId: '', coverImage: '', isEpisode: false, episodeIndex: '',));
               }),
               SizedBox(height: 20,),
               CustomButton(text: 'GET BOOK', onPressed: (){

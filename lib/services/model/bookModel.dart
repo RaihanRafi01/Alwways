@@ -89,31 +89,34 @@ class Book {
 
 class Episode {
   final String id;
-  final String bookId; // Foreign key to Book
+  final String bookId;
   final String title;
   final String coverImage;
-  final String? backgroundCover; // Added for consistency with Book
+  final String? backgroundCover;
   final double percentage;
   final List<dynamic> conversations;
+  final String? story; // New field for the story
 
   Episode({
     required this.id,
     required this.bookId,
     required this.title,
     required this.coverImage,
-    this.backgroundCover = 'assets/images/book/cover_image_1.svg', // Default local value
+    this.backgroundCover = 'assets/images/book/cover_image_1.svg',
     required this.percentage,
     required this.conversations,
+    this.story, // Nullable, as it may not exist initially
   });
 
   factory Episode.fromJson(Map<String, dynamic> json, {String? bookId}) {
     return Episode(
       id: json['_id'],
-      bookId: bookId ?? json['bookId'] ?? '', // Use provided bookId or fallback
+      bookId: bookId ?? json['bookId'] ?? '',
       title: json['title'],
       coverImage: json['coverImage'] ?? '',
       percentage: json['percentage'].toDouble(),
       conversations: json['conversations'] ?? [],
+      story: json['story'], // From API response
     );
   }
 
@@ -125,18 +128,20 @@ class Episode {
       'coverImage': coverImage,
       'percentage': percentage,
       'conversations': conversations,
+      'story': story,
     };
   }
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'bookId': bookId, // Correct foreign key
+      'bookId': bookId,
       'title': title,
       'coverImage': coverImage,
       'backgroundCover': backgroundCover,
       'percentage': percentage,
       'conversations': jsonEncode(conversations),
+      'story': story, // Add to database
     };
   }
 
@@ -151,10 +156,10 @@ class Episode {
       conversations: map['conversations'] != null
           ? jsonDecode(map['conversations'] as String)
           : [],
+      story: map['story'] as String?,
     );
   }
 
-  // Added copyWith method
   Episode copyWith({
     String? id,
     String? bookId,
@@ -163,6 +168,7 @@ class Episode {
     String? backgroundCover,
     double? percentage,
     List<dynamic>? conversations,
+    String? story,
   }) {
     return Episode(
       id: id ?? this.id,
@@ -172,6 +178,7 @@ class Episode {
       backgroundCover: backgroundCover ?? this.backgroundCover,
       percentage: percentage ?? this.percentage,
       conversations: conversations ?? this.conversations,
+      story: story ?? this.story,
     );
   }
 }
