@@ -28,6 +28,19 @@ class ApiService {
     );
   }
 
+  Future<http.Response> updateBookPercentage(String bookId, num percentage) async {
+    String? token = await _storage.read(key: 'access_token');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = '${baseUrl}book/$bookId';
+    var request = http.MultipartRequest('PUT', Uri.parse(url))
+      ..headers['Authorization'] = 'Bearer $token'
+      ..fields['percentage'] = percentage.toString();
+
+    print("Updating book percentage: URL=$url, percentage=$percentage");
+    return await request.send().then(http.Response.fromStream);
+  }
 
   Future<http.Response> updateEpisodePercentage(String bookId, String episodeIndex, num percentage) async {
     String? token = await _storage.read(key: 'access_token');

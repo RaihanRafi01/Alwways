@@ -64,7 +64,28 @@ class BookController extends GetxController {
       // Refresh books from database
       books.value = await dbHelper.getBooks();
       _populateCovers(books);
-      print("Books initialized successfully");
+
+      // Calculate and update each book's percentage
+      for (var book in books) {
+        final calculatedPercentage = calculateBookPercentage(book);
+        print("Calculated percentage for book '${book.title}' (ID: ${book.id}): $calculatedPercentage%");
+
+        // Create an updated book object with the new percentage
+        final updatedBook = book.copyWith(percentage: calculatedPercentage);
+
+        // Update the database and confirm
+        await dbHelper.updateBook(updatedBook);
+        print("Database updated for book '${updatedBook.title}' (ID: ${updatedBook.id}) with percentage: ${updatedBook.percentage}%");
+
+        //// api
+        await apiService.updateBookPercentage(updatedBook.id, updatedBook.percentage);
+
+      }
+
+      // Refresh the observable list with the latest data from the database
+      books.value = await dbHelper.getBooks();
+      print("Books list refreshed with ${books.length} books after percentage updates");
+
     } catch (e) {
       print("Error initializing books: $e");
       Get.snackbar('Error', 'Failed to initialize books: $e');
@@ -74,6 +95,20 @@ class BookController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  double calculateBookPercentage(Book book) {
+    if (book.episodes.isEmpty) {
+      print("Book '${book.title}' (ID: ${book.id}) has no episodes, returning 0%");
+      return 0.0;
+    }
+    double totalPercentage = book.episodes.fold(0.0, (sum, episode) {
+      print("Episode '${episode.title}' (ID: ${episode.id}) percentage: ${episode.percentage}%");
+      return sum + episode.percentage;
+    });
+    double averagePercentage = totalPercentage / book.episodes.length;
+    print("Total percentage for book '${book.title}' (ID: ${book.id}): $totalPercentage, Average: $averagePercentage%");
+    return averagePercentage;
   }
 
   void _populateCovers(List<Book> bookList) {
