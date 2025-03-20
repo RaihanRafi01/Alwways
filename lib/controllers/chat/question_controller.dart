@@ -75,11 +75,28 @@ class QuestionController extends GetxController {
         currentSubQuestionIndex.value++;
       } else {
         isSubQuestionMode.value = false;
-        currentQuestionIndex.value++;
+        subQuestions.clear();
+        currentSubQuestionIndex.value = 0;
+        currentQuestionIndex.value++; // Move to next main question
       }
     } else if (currentQuestionIndex.value < questions.length - 1) {
       currentQuestionIndex.value++;
     }
+  }
+
+  void skipToNextUnansweredQuestion(List<Map<String, String>> chatHistory) {
+    final answeredQuestions = chatHistory.map((entry) => entry['question']).toList();
+    // Reset sub-question mode to ensure we’re checking main questions
+    if (isSubQuestionMode.value) {
+      isSubQuestionMode.value = false;
+      subQuestions.clear();
+      currentSubQuestionIndex.value = 0;
+    }
+    while (currentQuestionIndex.value < questions.length &&
+        answeredQuestions.contains(questions[currentQuestionIndex.value].text)) {
+      currentQuestionIndex.value++;
+    }
+    print("Skipped to next unanswered question: index=${currentQuestionIndex.value}");
   }
 
   void setSubQuestions(List<String> newSubQuestions) {

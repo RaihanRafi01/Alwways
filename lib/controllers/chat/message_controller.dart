@@ -18,6 +18,7 @@ class MessageController extends GetxController {
   final BotController botController = Get.put(BotController());
   final ApiService apiService = ApiService();
   final DatabaseHelper dbHelper = DatabaseHelper();
+  late final sectionId;
 
   // Show loading message with animated dots
   void _showLoadingMessage() {
@@ -34,7 +35,7 @@ class MessageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    final sectionId = botController.selectedSectionId.value;
+    sectionId = botController.selectedSectionId.value;
     print("Initializing MessageController with sectionId: $sectionId");
     fetchQuestionsAndLoadHistory(sectionId);
   }
@@ -44,7 +45,10 @@ class MessageController extends GetxController {
     final bookId = botController.selectedBookId.value;
     final episodeID = botController.selectedEpisodeId.value;
     final history = await dbHelper.getChatHistory(bookId, episodeID);
-    print("Chat history for bookId: $bookId, episodeId : $episodeID ,  sectionId: $sectionId: $history");
+    print("Chat history for bookId: $bookId, episodeId: $episodeID, sectionId: $sectionId: $history");
+
+    messages.clear();
+    userAnswers.clear();
 
     for (var entry in history) {
       messages.add(BotMessage(message: entry['question']!));
@@ -54,17 +58,15 @@ class MessageController extends GetxController {
 
     final mainQuestions = questionController.questions.map((q) => q.text).toList();
     final answeredMainQuestions = history.where((entry) => mainQuestions.contains(entry['question'])).length;
-    questionController.currentQuestionIndex.value = answeredMainQuestions;
-    if (questionController.currentQuestionIndex.value >= questionController.questions.length) {
-      questionController.currentQuestionIndex.value = questionController.questions.length;
-    }
+    questionController.currentQuestionIndex.value = 0; // Start at 0 and skip answered
+    questionController.skipToNextUnansweredQuestion(history); // Move to first unanswered question
 
     await _calculateAndPrintCompletionPercentage(sectionId, answeredMainQuestions);
     askQuestion();
   }
 
   void askQuestion() {
-    _removeLoadingMessage(); // Ensure loading is removed before adding a new question
+    _removeLoadingMessage();
     final currentQuestion = questionController.getCurrentQuestion();
     print("Asking question: $currentQuestion");
     if (currentQuestion != 'No more questions') {
@@ -82,32 +84,61 @@ class MessageController extends GetxController {
     userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
 
     final bookId = botController.selectedBookId.value;
-    final sectionId = botController.selectedSectionId.value;
-
-    _showLoadingMessage(); // Show loading animation before API call
+    //sectionId = botController.selectedSectionId.value;
+    _showLoadingMessage();
 
     if (questionController.isSubQuestionMode.value) {
       await _handleSubQuestionAnswer(currentQuestion, userAnswer);
+      // After sub-question, check if we’re done with sub-questions
+      if (!questionController.isSubQuestionMode.value) {
+        final history = await dbHelper.getChatHistory(bookId, sectionId);
+        questionController.skipToNextUnansweredQuestion(history);
+        askQuestion();
+      }
     } else {
       await _handleGenerateSubQuestion(currentQuestion, userAnswer);
+      // If no sub-questions were set, move to next main question
+      if (!questionController.isSubQuestionMode.value) {
+        final history = await dbHelper.getChatHistory(bookId, sectionId);
+        questionController.skipToNextUnansweredQuestion(history);
+        askQuestion();
+      }
+    }
+    final episodeID = botController.selectedEpisodeId.value;
+    final history = await dbHelper.getChatHistory(bookId, episodeID);
+    for (var entry in history) {
+      messages.add(BotMessage(message: entry['question']!));
+      messages.add(UserMessage(message: entry['answer']!));
+      userAnswers.add({'question': entry['question']!, 'answer': entry['answer']!});
     }
 
-    final history = await dbHelper.getChatHistory(bookId, sectionId);
     final mainQuestions = questionController.questions.map((q) => q.text).toList();
     final answeredMainQuestions = history.where((entry) => mainQuestions.contains(entry['question'])).length;
+    //final mainQuestions = questionController.questions.map((q) => q.text).toList();
+    //final answeredMainQuestions = history.where((entry) => mainQuestions.contains(entry['question'])).length;
     await _calculateAndPrintCompletionPercentage(sectionId, answeredMainQuestions);
   }
 
   Future<void> _calculateAndPrintCompletionPercentage(String sectionId, int answeredMainQuestions) async {
     final sections = await dbHelper.getSections();
-    final currentSection = sections.firstWhere((section) => section.id == sectionId);
+    Section? currentSection;
+
+    try {
+      currentSection = sections.firstWhere((section) => section.id == sectionId);
+    } catch (e) {
+      print("Error: No section found for sectionId: $sectionId. Sections available: ${sections.map((s) => s.id).toList()}");
+      Get.snackbar('Error', 'Section not found for percentage calculation');
+      return; // Exit early to avoid further errors
+    }
+
     final totalQuestions = currentSection.questionsCount ?? 0;
     final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions / totalQuestions) * 100 : 0;
     print("Section: ${currentSection.name}, Total Questions: $totalQuestions, Answered Main: $answeredMainQuestions, Completion: ${completionPercentage.toStringAsFixed(2)}%");
 
     final bookId = botController.selectedBookId.value;
-    final episodeIndex = botController.getSelectedSectionId();
+    final episodeIndex = botController.getSelectedSectionId(); // This might need adjustment based on your BotController
     final episodeID = botController.selectedEpisodeId.value;
+
     try {
       final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
       print(':::updateEpisodePercentage::: Status Code: ${response.statusCode}');
