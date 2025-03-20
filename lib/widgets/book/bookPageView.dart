@@ -29,6 +29,7 @@ class BookPageView extends StatelessWidget {
   }) {
     print("BookPageView - Raw Get.arguments: ${Get.arguments}");
     print("BookPageView - bookId: $bookId, episodeIndex: $episodeIndex");
+    print("BookPageView - episode name : $title");
     controller.loadStory(bookId, episodeIndex);
   }
 
@@ -90,6 +91,7 @@ class BookPageView extends StatelessWidget {
                       alignment: Alignment.bottomRight,
                       children: [
                         BookCover(
+                          haveTitle: true,
                           isGrid: false,
                           title: title,
                           coverImage: coverImage,

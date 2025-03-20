@@ -47,7 +47,7 @@ class BookChapterController extends GetxController {
     }
   }
 
-  void _splitContentIntoPages({int maxWordsPerPage = 120}) {
+  void _splitContentIntoPages({int maxWordsPerPage = 80}) {
     allPages.clear();
     allPageChapters.clear();
     allPageImages.clear();
@@ -116,8 +116,14 @@ class BookChapterController extends GetxController {
       }
     }
 
+    if(episodeMaps.isEmpty) {
+
+
+    }
+
     // Fetch from API if no story in database
     try {
+      print('::::::::::::::::::::::::::::::::::::::::::Fetch from API if no story in database');
       final response = await apiService.generateStory(bookId, episodeIndex);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

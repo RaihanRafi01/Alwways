@@ -127,32 +127,37 @@ class BookController extends GetxController {
         final botResponse = convoMap['botResponse'] as String;
         final storyGenerated = convoMap['storyGenerated'] as bool;
 
-        if (!storyGenerated) {
+        // Check if this conversation has already been processed
+        final existingChatHistory = await dbHelper.getChatHistoryByQuestion(book.id, episode.id, question);
+        if (existingChatHistory == null) {
+          // Insert into chat_history if not already processed
           await dbHelper.insertChatHistory(
             book.id,
-            episode.id, // Using episode ID as sectionId for simplicity
+            episode.id, // Using episode ID as sectionId
             question,
             answer,
           );
         }
-        // Insert into chat_history
 
         // If storyGenerated is true, update episode story
         if (storyGenerated) {
-          // Get the existing story (if any) and append the new botResponse
-          final existingStory = episode.story ?? ''; // Use empty string if no story exists
-          final updatedStory = existingStory.isEmpty ? botResponse : '$existingStory\n\n$botResponse'; // Add new line for separation
-          final updatedEpisode = episode.copyWith(story: updatedStory);
+          // Check if the botResponse is already part of the story
+          final existingStory = episode.story ?? '';
+          if (!existingStory.contains(botResponse)) {
+            // Append the new botResponse to the story
+            final updatedStory = existingStory.isEmpty ? botResponse : '$existingStory\n\n$botResponse';
+            final updatedEpisode = episode.copyWith(story: updatedStory);
 
-          // Update the episode in the database
-          await dbHelper.updateEpisode(updatedEpisode);
+            // Update the episode in the database
+            await dbHelper.updateEpisode(updatedEpisode);
 
-          // Update in memory
-          final bookIndex = books.indexWhere((b) => b.id == book.id);
-          if (bookIndex != -1) {
-            final episodeIndex = books[bookIndex].episodes.indexWhere((e) => e.id == episode.id);
-            if (episodeIndex != -1) {
-              books[bookIndex].episodes[episodeIndex] = updatedEpisode;
+            // Update in memory
+            final bookIndex = books.indexWhere((b) => b.id == book.id);
+            if (bookIndex != -1) {
+              final episodeIndex = books[bookIndex].episodes.indexWhere((e) => e.id == episode.id);
+              if (episodeIndex != -1) {
+                books[bookIndex].episodes[episodeIndex] = updatedEpisode;
+              }
             }
           }
         }

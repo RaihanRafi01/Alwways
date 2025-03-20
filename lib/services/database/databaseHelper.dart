@@ -92,6 +92,16 @@ class DatabaseHelper {
     );
   }
 
+  Future<Map<String, dynamic>?> getChatHistoryByQuestion(String bookId, String sectionId, String question) async {
+    final db = await database;
+    final result = await db.query(
+      'chat_history',
+      where: 'bookId = ? AND sectionId = ? AND question = ?',
+      whereArgs: [bookId, sectionId, question],
+    );
+    return result.isNotEmpty ? result.first : null;
+  }
+
   Future<void> insertChatHistory(String bookId, String sectionId, String question, String answer) async {
     final db = await database;
     await db.insert(

@@ -80,6 +80,8 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
               final bookId = item.bookId;
               final episodeIndex = index.toString(); // Pass index as string
               if (percentage != 100.0) {
+                print(
+                    "::::::::::::::::::::::::::::::::::::::::::::::Episode '${item.title}'");
                 Get.to(
                   BookPageView(
                     title: item.title,
