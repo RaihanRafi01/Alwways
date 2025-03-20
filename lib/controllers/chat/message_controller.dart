@@ -34,6 +34,7 @@ class MessageController extends GetxController {
   void onInit() {
     super.onInit();
     sectionId = botController.selectedSectionId.value;
+    print("Initializing MessageController with sectionId: $sectionId");
     fetchQuestionsAndLoadHistory(sectionId);
   }
 
@@ -42,6 +43,7 @@ class MessageController extends GetxController {
     final bookId = botController.selectedBookId.value;
     final episodeID = botController.selectedEpisodeId.value;
     final history = await dbHelper.getChatHistory(bookId, episodeID);
+    print("Chat history for bookId: $bookId, episodeId: $episodeID, sectionId: $sectionId: $history");
 
     messages.clear();
     userAnswers.clear();
@@ -54,13 +56,14 @@ class MessageController extends GetxController {
 
     questionController.currentQuestionIndex.value = 0;
     questionController.skipToNextUnansweredQuestion(history);
-    await _calculateAndPrintCompletionPercentage(sectionId); // Initial call on load
+    await _calculateAndPrintCompletionPercentage(sectionId);
     askQuestion();
   }
 
   void askQuestion() {
     _removeLoadingMessage();
     final currentQuestion = questionController.getCurrentQuestion();
+    print("Asking question: $currentQuestion");
     if (currentQuestion != 'No more questions') {
       messages.add(BotMessage(message: currentQuestion));
     } else {
@@ -72,6 +75,7 @@ class MessageController extends GetxController {
     if (userAnswer.trim().isEmpty) return;
 
     final currentQuestion = questionController.getCurrentQuestion();
+    print("User answered: $userAnswer to question: $currentQuestion");
     messages.add(UserMessage(message: userAnswer));
     userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
 
@@ -86,14 +90,13 @@ class MessageController extends GetxController {
         askQuestion();
       }
     } else {
-      await _handleGenerateSubQuestion(currentQuestion, userAnswer); // API call moved here
+      await _handleGenerateSubQuestion(currentQuestion, userAnswer);
       if (!questionController.isSubQuestionMode.value) {
         final history = await dbHelper.getChatHistory(bookId, sectionId);
         questionController.skipToNextUnansweredQuestion(history);
         askQuestion();
       }
     }
-    // Removed _calculateAndPrintCompletionPercentage from here
   }
 
   Future<void> _calculateAndPrintCompletionPercentage(String sectionId) async {
@@ -127,6 +130,8 @@ class MessageController extends GetxController {
     final episodeIndex = botController.getSelectedSectionId();
     try {
       final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
+      print(':::updateEpisodePercentage::: Status Code: ${response.statusCode}');
+      print(':::updateEpisodePercentage::: Response Body: ${response.body}');
       if (response.statusCode == 200 || response.statusCode == 201) {
         final db = await dbHelper.database;
         final episodeMaps = await db.query(
@@ -138,9 +143,11 @@ class MessageController extends GetxController {
           final episode = Episode.fromMap(episodeMaps.first);
           final updatedEpisode = episode.copyWith(percentage: completionPercentage.toDouble());
           await dbHelper.updateEpisode(updatedEpisode);
+          print("Updated episode percentage in database: ${updatedEpisode.percentage}");
         }
         final bookController = Get.put(BookLandingController());
         await bookController.fetchBooks();
+        print("Refreshed BookLandingController with updated data");
       } else {
         Get.snackbar('Error', 'Failed to update percentage: ${response.statusCode}');
       }
@@ -152,6 +159,8 @@ class MessageController extends GetxController {
 
   Future<void> _handleGenerateSubQuestion(String question, String answer) async {
     final response = await apiService.generateSubQuestion(question, answer);
+    print(':::generateSubQuestion::: Status Code: ${response.statusCode}');
+    print(':::generateSubQuestion::: Response Body: ${response.body}');
     if (response.statusCode == 200) {
       final saveResponse = await apiService.saveAnswer(
         botController.selectedBookId.value,
@@ -159,6 +168,8 @@ class MessageController extends GetxController {
         question,
         answer,
       );
+      print(':::saveAnswer::: Status Code: ${saveResponse.statusCode}');
+      print(':::saveAnswer::: Response Body: ${saveResponse.body}');
       if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
         await dbHelper.insertChatHistory(
           botController.selectedBookId.value,
@@ -187,6 +198,8 @@ class MessageController extends GetxController {
 
   Future<void> _handleSubQuestionAnswer(String subQuestion, String answer) async {
     final relevancyResponse = await apiService.checkRelevancy(subQuestion, answer);
+    print(':::checkRelevancy::: Status Code: ${relevancyResponse.statusCode}');
+    print(':::checkRelevancy::: Response Body: ${relevancyResponse.body}');
     if (relevancyResponse.statusCode == 200) {
       final saveResponse = await apiService.saveAnswer(
         botController.selectedBookId.value,
@@ -194,6 +207,8 @@ class MessageController extends GetxController {
         subQuestion,
         answer,
       );
+      print(':::saveAnswer::: Status Code: ${saveResponse.statusCode}');
+      print(':::saveAnswer::: Response Body: ${saveResponse.body}');
       if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
         await dbHelper.insertChatHistory(
           botController.selectedBookId.value,
