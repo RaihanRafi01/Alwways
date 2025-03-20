@@ -65,7 +65,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
       );
     }
     return GridView.builder(
-      padding: const EdgeInsets.only(top: 80),
+      padding: const EdgeInsets.only(bottom: 80),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.55,
