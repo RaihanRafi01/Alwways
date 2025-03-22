@@ -15,12 +15,34 @@ class SignupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure AuthController is available
     final AuthController authController = Get.find<AuthController>();
+
+    // Pre-fill dateController with the existing date of birth
     final TextEditingController dateController = TextEditingController(
-      text: isEdit && authController.dateOfBirth.value != null
+      text: authController.dateOfBirth.value != null
           ? DateFormat('dd/MM/yyyy').format(authController.dateOfBirth.value!)
           : '',
     );
+
+    // Pre-fill other fields with controllers to ensure two-way binding
+    final TextEditingController firstNameController = TextEditingController(
+      text: authController.firstName.value,
+    );
+    final TextEditingController lastNameController = TextEditingController(
+      text: authController.lastName.value,
+    );
+    final TextEditingController emailController = TextEditingController(
+      text: authController.email.value,
+    );
+    final TextEditingController contactController = TextEditingController(
+      text: authController.contact.value,
+    );
+    final TextEditingController locationController = TextEditingController(
+      text: authController.location.value,
+    );
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController confirmPasswordController = TextEditingController();
 
     return Scaffold(
       appBar: CustomAppbar(title: title),
@@ -44,7 +66,7 @@ class SignupScreen extends StatelessWidget {
                         Expanded(
                           child: CustomTextField(
                             label: "First Name",
-                            initialValue: isEdit ? authController.firstName.value : '',
+                            controller: firstNameController,
                             onChanged: (value) => authController.firstName.value = value,
                           ),
                         ),
@@ -52,29 +74,30 @@ class SignupScreen extends StatelessWidget {
                         Expanded(
                           child: CustomTextField(
                             label: "Last Name",
-                            initialValue: isEdit ? authController.lastName.value : '',
+                            controller: lastNameController,
                             onChanged: (value) => authController.lastName.value = value,
                           ),
                         ),
                       ],
                     ),
                     if (!isEdit)
-                    CustomTextField(
-                      label: "Email address",
-                      initialValue: isEdit ? authController.email.value : '',
-                      keyboardType: TextInputType.emailAddress,
-                      prefixIcon: Icons.email_outlined,
-                      onChanged: (value) => authController.email.value = value,
-                    ),
+                      CustomTextField(
+                        label: "Email address",
+                        controller: emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        prefixIcon: Icons.email_outlined,
+                        onChanged: (value) => authController.email.value = value,
+                      ),
                     CustomTextField(
                       label: "Contact",
-                      initialValue: isEdit ? authController.contact.value : '',
-                      keyboardType: TextInputType.phone,
+                      controller: contactController,
+                      phone: true, // Use IntlPhoneField for consistency
+                      initialValue: authController.contact.value, // Pre-fill phone number
                       onChanged: (value) => authController.contact.value = value,
                     ),
                     CustomTextField(
                       label: "Location",
-                      initialValue: isEdit ? authController.location.value : '',
+                      controller: locationController,
                       prefixIcon: Icons.location_on_outlined,
                       onChanged: (value) => authController.location.value = value,
                     ),
@@ -82,17 +105,16 @@ class SignupScreen extends StatelessWidget {
                       label: "Gender",
                       isDropdown: true,
                       dropdownItems: ['Male', 'Female', 'Other'],
-                      initialValue: isEdit ? authController.gender.value : '',
+                      initialValue: authController.gender.value,
                       onChanged: (value) => authController.gender.value = value,
                     ),
                     CustomTextField(
                       prefixIcon: Icons.calendar_month_outlined,
                       label: "Date of Birth",
                       controller: dateController,
+                      readOnly: true, // Prevent manual editing
                       onTap: () async {
-                        DateTime initialDate = isEdit && authController.dateOfBirth.value != null
-                            ? authController.dateOfBirth.value!
-                            : DateTime.now();
+                        DateTime initialDate = authController.dateOfBirth.value ?? DateTime.now();
                         DateTime? pickedDate = await showDatePicker(
                           context: context,
                           initialDate: initialDate,
@@ -106,17 +128,19 @@ class SignupScreen extends StatelessWidget {
                       },
                     ),
                     if (!isEdit)
-                    CustomTextField(
-                      suffixIcon: Icons.visibility_off_outlined,
-                      label: "Password",
-                      isPassword: true,
-                      onChanged: (value) => authController.password.value = value,
-                    ),
+                      CustomTextField(
+                        suffixIcon: Icons.visibility_off_outlined,
+                        label: "Password",
+                        isPassword: true,
+                        controller: passwordController,
+                        onChanged: (value) => authController.password.value = value,
+                      ),
                     if (!isEdit)
                       CustomTextField(
                         suffixIcon: Icons.visibility_off_outlined,
                         label: "Confirm Password",
                         isPassword: true,
+                        controller: confirmPasswordController,
                         onChanged: (value) => authController.confirmPassword.value = value,
                       ),
                     const SizedBox(height: 20),

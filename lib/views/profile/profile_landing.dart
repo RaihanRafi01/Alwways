@@ -7,10 +7,11 @@ import 'package:playground_02/widgets/customAppBar.dart';
 import 'package:playground_02/widgets/authentication/profileImage.dart';
 
 class ProfileScreen extends StatelessWidget {
-   ProfileScreen({super.key});
+  ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Ensure AuthController is initialized
     Get.put(AuthController());
     return GetBuilder<AuthController>(
       init: Get.find<AuthController>(),
@@ -29,7 +30,7 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       Obx(
                             () => ProfileImage(
-                              isEdit: true,
+                          isEdit: true,
                           pickedImage: controller.pickedImage.value,
                           profilePictureUrl: controller.profilePictureUrl.value,
                           onTap: controller.pickImage,
@@ -50,11 +51,11 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 ListTile(
-                  leading:
-                  SvgPicture.asset("assets/images/profile/profile_edit_icon.svg"),
+                  leading: SvgPicture.asset("assets/images/profile/profile_edit_icon.svg"),
                   title: const Text('Edit Profile'),
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
+                    // Pass the controller to SignupScreen for consistency
                     Get.to(() => const SignupScreen(isEdit: true, title: 'Edit Profile'));
                   },
                 ),
@@ -107,8 +108,7 @@ class ProfileItem extends StatelessWidget {
   final String svgPath;
   final String title;
 
-  const ProfileItem({Key? key, required this.svgPath, required this.title})
-      : super(key: key);
+  const ProfileItem({Key? key, required this.svgPath, required this.title}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -53,7 +53,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     if (!widget.isPassword) {
       _obscureText = false;
     }
-    if (widget.initialValue != null && widget.controller != null) {
+    if (!widget.phone && widget.initialValue != null && widget.controller != null) {
       widget.controller!.text = widget.initialValue!;
     }
   }
@@ -108,8 +108,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(widget.radius),
-              borderSide:
-              const BorderSide(color: AppColors.borderColor, width: 2),
+              borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
             ),
           ),
         )
@@ -126,14 +125,18 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(widget.radius),
-              borderSide: const BorderSide(
-                  color: AppColors.borderColor, width: 2),
+              borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
             ),
           ),
-          initialCountryCode: 'BD',
+          initialCountryCode: 'BD', // Default to Bangladesh
+          initialValue: widget.initialValue, // Use initialValue for pre-filling
           onChanged: (phone) {
             if (widget.onChanged != null) {
               widget.onChanged!(phone.completeNumber);
+            }
+            // Update the controller if provided
+            if (widget.controller != null) {
+              widget.controller!.text = phone.completeNumber;
             }
           },
         )
@@ -146,20 +149,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
           onTap: widget.onTap,
           decoration: InputDecoration(
             hintText: widget.hint,
-            prefixIcon:
-            widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
+            prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
             suffixIcon: widget.isPassword
                 ? IconButton(
               icon: Icon(
-                _obscureText
-                    ? Icons.visibility
-                    : Icons.visibility_off,
+                _obscureText ? Icons.visibility : Icons.visibility_off,
               ),
               onPressed: _togglePasswordVisibility,
             )
-                : (widget.suffixIcon != null
-                ? Icon(widget.suffixIcon)
-                : null),
+                : (widget.suffixIcon != null ? Icon(widget.suffixIcon) : null),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(widget.radius),
               borderSide: const BorderSide(color: AppColors.borderColor),
@@ -170,8 +168,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(widget.radius),
-              borderSide: const BorderSide(
-                  color: AppColors.borderColor, width: 2),
+              borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
             ),
           ),
         ),
