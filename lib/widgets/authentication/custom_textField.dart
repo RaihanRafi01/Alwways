@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:playground_02/constants/color/app_colors.dart';
 
 class CustomTextField extends StatefulWidget {
   final String label;
@@ -37,7 +37,7 @@ class CustomTextField extends StatefulWidget {
     this.isDropdown = false,
     this.dropdownItems,
     this.radius = 10,
-    this.textColor = Colors.black
+    this.textColor = Colors.black,
   });
 
   @override
@@ -53,6 +53,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
     if (!widget.isPassword) {
       _obscureText = false;
     }
+    if (widget.initialValue != null && widget.controller != null) {
+      widget.controller!.text = widget.initialValue!;
+    }
   }
 
   void _togglePasswordVisibility() {
@@ -66,11 +69,23 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(widget.label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: widget.textColor)),
+        Text(
+          widget.label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: widget.textColor,
+          ),
+        ),
         const SizedBox(height: 8),
         widget.isDropdown
             ? DropdownButtonFormField<String>(
-          value: widget.dropdownItems?.isNotEmpty == true ? widget.dropdownItems!.first : null,
+          value: widget.initialValue != null &&
+              widget.dropdownItems?.contains(widget.initialValue) == true
+              ? widget.initialValue
+              : (widget.dropdownItems?.isNotEmpty == true
+              ? widget.dropdownItems!.first
+              : null),
           items: widget.dropdownItems
               ?.map((item) => DropdownMenuItem(
             value: item,
@@ -93,14 +108,27 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(widget.radius),
-              borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
+              borderSide:
+              const BorderSide(color: AppColors.borderColor, width: 2),
             ),
           ),
         )
             : widget.phone
             ? IntlPhoneField(
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.radius),
+              borderSide: const BorderSide(color: AppColors.borderColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.radius),
+              borderSide: const BorderSide(color: AppColors.borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(widget.radius),
+              borderSide: const BorderSide(
+                  color: AppColors.borderColor, width: 2),
+            ),
           ),
           initialCountryCode: 'BD',
           onChanged: (phone) {
@@ -118,15 +146,20 @@ class _CustomTextFieldState extends State<CustomTextField> {
           onTap: widget.onTap,
           decoration: InputDecoration(
             hintText: widget.hint,
-            prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
+            prefixIcon:
+            widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
             suffixIcon: widget.isPassword
                 ? IconButton(
               icon: Icon(
-                _obscureText ? Icons.visibility : Icons.visibility_off,
+                _obscureText
+                    ? Icons.visibility
+                    : Icons.visibility_off,
               ),
               onPressed: _togglePasswordVisibility,
             )
-                : (widget.suffixIcon != null ? Icon(widget.suffixIcon) : null),
+                : (widget.suffixIcon != null
+                ? Icon(widget.suffixIcon)
+                : null),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(widget.radius),
               borderSide: const BorderSide(color: AppColors.borderColor),
@@ -137,7 +170,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(widget.radius),
-              borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
+              borderSide: const BorderSide(
+                  color: AppColors.borderColor, width: 2),
             ),
           ),
         ),

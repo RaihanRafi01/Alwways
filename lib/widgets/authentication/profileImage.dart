@@ -4,12 +4,16 @@ import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileImage extends StatelessWidget {
-  final XFile? image;
+  final XFile? pickedImage;         // Local image picked by user
+  final String? profilePictureUrl;  // Network image URL
   final VoidCallback onTap;
+  final bool isEdit;
 
   const ProfileImage({
     super.key,
-    required this.image,
+    this.isEdit = false,
+    this.pickedImage,
+    this.profilePictureUrl,
     required this.onTap,
   });
 
@@ -19,12 +23,15 @@ class ProfileImage extends StatelessWidget {
       child: Stack(
         alignment: Alignment.bottomRight,
         children: [
-          // Profile Image Circle
           CircleAvatar(
             radius: 50,
             backgroundColor: Colors.grey[300],
-            backgroundImage: image != null ? FileImage(File(image!.path)) : null,
-            child: image == null
+            backgroundImage: pickedImage != null
+                ? FileImage(File(pickedImage!.path))
+                : profilePictureUrl != null && profilePictureUrl!.isNotEmpty
+                ? NetworkImage(profilePictureUrl!)
+                : null,
+            child: pickedImage == null && (profilePictureUrl == null || profilePictureUrl!.isEmpty)
                 ? const Icon(
               Icons.camera_alt,
               size: 30,
@@ -32,7 +39,7 @@ class ProfileImage extends StatelessWidget {
             )
                 : null,
           ),
-          // Camera Icon Button
+          if(!isEdit)
           Positioned(
             bottom: 4,
             right: 4,
@@ -45,7 +52,8 @@ class ProfileImage extends StatelessWidget {
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.grey.shade300, width: 2),
                 ),
-                child: CircleAvatar(radius: 12,
+                child: CircleAvatar(
+                  radius: 12,
                   backgroundColor: Colors.white,
                   child: SvgPicture.asset('assets/images/camera_icon.svg'),
                 ),

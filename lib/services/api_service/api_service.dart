@@ -14,6 +14,43 @@ class ApiService {
   final String baseUrl = 'http://164.92.65.230:5002/api/';
   final String baseUrl2 = 'http://144.126.209.250/';
 
+
+  Future<http.Response> getProfile(String token) async {
+    return await http.get(
+      Uri.parse('${baseUrl}user/profile/'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  Future<http.Response> updateProfile(String token, Map<String, String> userData, XFile? image) async {
+    var uri = Uri.parse('${baseUrl}user/edit-profile');
+    var request = http.MultipartRequest('PUT', uri);
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['userData'] = jsonEncode(userData);
+
+    if (image != null) {
+      // Determine MIME type based on file extension
+      String mimeType = image.name.toLowerCase().endsWith('.png')
+          ? 'image/png'
+          : image.name.toLowerCase().endsWith('.jpg') || image.name.toLowerCase().endsWith('.jpeg')
+          ? 'image/jpeg'
+          : 'image/webp'; // Fallback, adjust as needed
+
+      print('Sending file: ${image.name} with MIME type: $mimeType');
+
+      request.files.add(await http.MultipartFile.fromPath(
+        'profilePicture',
+        image.path,
+        contentType: MediaType.parse(mimeType), // Explicitly set MIME type
+      ));
+    } else {
+      print('No image file to send');
+    }
+
+    var response = await request.send();
+    return await http.Response.fromStream(response);
+  }
+
   Future<http.Response> generateStory(String bookId, String episodeIndex) async {
     String? token = await _storage.read(key: 'access_token');
     if (token == null) {
