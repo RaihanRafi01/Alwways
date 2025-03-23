@@ -21,7 +21,7 @@ class BookCard extends StatelessWidget {
   final String bookId;
   final bool isEpisode;
 
-  const BookCard({
+  BookCard({
     super.key,
     required this.title,
     required this.coverImage,
@@ -29,9 +29,11 @@ class BookCard extends StatelessWidget {
     this.isGrid = false,
     required this.bookId,
     required this.isEpisode,
-  });
+  }) {
+    print("BookCard - title: $title, coverImage: $coverImage, isEpisode: $isEpisode, bookId: $bookId");
+  }
 
-  // Function to generate and save PDF with tracing
+  // Function to load image asynchronously
   Future<pw.ImageProvider> _loadImage(String url) async {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
@@ -42,7 +44,7 @@ class BookCard extends StatelessWidget {
     }
   }
 
-  /// Generates a PDF for a book with images under titles and opens it.
+  /// Generates a PDF for a book with centered images and a larger book cover.
   Future<void> _generateAndOpenPdf(String bookId) async {
     print('Starting PDF generation for bookId: $bookId');
     final dbHelper = DatabaseHelper();
@@ -55,36 +57,16 @@ class BookCard extends StatelessWidget {
     print('Fonts loaded successfully: Roboto-Regular and Roboto-Bold');
 
     // Define text styles
-    final titleStyle = pw.TextStyle(
-      fontSize: 40,
-      font: fontBold,
-      color: PdfColors.black,
-    );
-    final headerStyle = pw.TextStyle(
-      fontSize: 24,
-      font: fontBold,
-      color: PdfColors.black,
-    );
-    final bodyStyle = pw.TextStyle(
-      fontSize: 16,
-      font: fontRegular,
-      color: PdfColors.black,
-      lineSpacing: 1.2,
-    );
+    final titleStyle = pw.TextStyle(fontSize: 40, font: fontBold, color: PdfColors.black);
+    final headerStyle = pw.TextStyle(fontSize: 24, font: fontBold, color: PdfColors.black);
+    final bodyStyle = pw.TextStyle(fontSize: 16, font: fontRegular, color: PdfColors.black, lineSpacing: 1.2);
 
     // Define background color
     var backgroundColor = PdfColor.fromInt(AppColors.bookBackground1.value);
 
     final commonPageTheme = pw.PageTheme(
-      pageFormat: PdfPageFormat.a4.copyWith(
-        marginLeft: 0,
-        marginRight: 0,
-        marginTop: 0,
-        marginBottom: 0,
-      ),
-      buildBackground: (pw.Context context) => pw.Container(
-        color: backgroundColor, // Cyan background
-      ),
+      pageFormat: PdfPageFormat.a4.copyWith(marginLeft: 0, marginRight: 0, marginTop: 0, marginBottom: 0),
+      buildBackground: (pw.Context context) => pw.Container(color: backgroundColor),
     );
 
     // Fetch the book and its episodes from the database
@@ -108,7 +90,7 @@ class BookCard extends StatelessWidget {
       }
     }
 
-    // Add title page with book title and cover image
+    // Add title page with book title and larger centered cover image
     pdf.addPage(
       pw.Page(
         pageTheme: commonPageTheme,
@@ -117,21 +99,36 @@ class BookCard extends StatelessWidget {
           child: pw.Column(
             mainAxisAlignment: pw.MainAxisAlignment.center,
             children: [
-              pw.Text(
-                book.title,
-                style: titleStyle,
-              ),
+              pw.Text(book.title, style: titleStyle),
+              pw.SizedBox(height: 20),
               if (bookCoverImage != null)
-                pw.Image(
-                  bookCoverImage,
-                  width: 200,
-                  height: 300,
+                pw.Center(
+                  child: pw.Image(
+                    bookCoverImage,
+                    width: 300, // Larger width for book cover
+                    height: 400, // Larger height for book cover
+                  ),
                 ),
             ],
           ),
         ),
       ),
     );
+
+    // Pre-fetch episode cover images
+    print('Pre-fetching episode cover images...');
+    final Map<String, pw.ImageProvider?> episodeImages = {};
+    for (var episode in book.episodes) {
+      if (episode.coverImage.isNotEmpty && episode.story != null && episode.story!.isNotEmpty) {
+        try {
+          episodeImages[episode.id] = await _loadImage(episode.coverImage);
+          print('Pre-loaded episode cover image for ${episode.title} (ID: ${episode.id})');
+        } catch (e) {
+          episodeImages[episode.id] = null;
+          print('Error pre-loading episode cover image for ${episode.title} (ID: ${episode.id}): $e');
+        }
+      }
+    }
 
     // Add episodes in a MultiPage
     if (book.episodes.isNotEmpty) {
@@ -145,31 +142,23 @@ class BookCard extends StatelessWidget {
               if (episode.story != null && episode.story!.isNotEmpty) {
                 print('Processing episode: ${episode.id} - Title: ${episode.title}');
 
-                // Load episode cover image
-                pw.ImageProvider? episodeCoverImage;
-                if (episode.coverImage.isNotEmpty) {
-                  try {
-                    episodeCoverImage =  _loadImage(episode.coverImage) as pw.ImageProvider?;
-                    print('Episode cover image loaded successfully for ${episode.title}');
-                  } catch (e) {
-                    print('Error loading episode cover image: $e');
-                  }
-                }
+                // Use pre-loaded episode cover image
+                final episodeCoverImage = episodeImages[episode.id];
 
-                // Add episode title and cover image
+                // Add episode title and centered cover image
                 content.add(
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.center,
                     children: [
-                      pw.Text(
-                        episode.title,
-                        style: headerStyle,
-                      ),
+                      pw.Text(episode.title, style: headerStyle),
+                      pw.SizedBox(height: 20),
                       if (episodeCoverImage != null)
-                        pw.Image(
-                          episodeCoverImage,
-                          width: 150,
-                          height: 200,
+                        pw.Center(
+                          child: pw.Image(
+                            episodeCoverImage,
+                            width: 200, // Smaller than book cover
+                            height: 250, // Smaller than book cover
+                          ),
                         ),
                     ],
                   ),
@@ -181,11 +170,7 @@ class BookCard extends StatelessWidget {
                 for (final paragraph in paragraphs) {
                   if (paragraph.trim().isNotEmpty) {
                     content.add(
-                      pw.Text(
-                        paragraph,
-                        style: bodyStyle,
-                        textAlign: pw.TextAlign.justify,
-                      ),
+                      pw.Text(paragraph, style: bodyStyle, textAlign: pw.TextAlign.justify),
                     );
                     content.add(pw.SizedBox(height: 8));
                   }
@@ -197,12 +182,7 @@ class BookCard extends StatelessWidget {
             }
 
             if (content.isEmpty) {
-              content.add(
-                pw.Text(
-                  'No episode content available',
-                  style: bodyStyle,
-                ),
-              );
+              content.add(pw.Text('No episode content available', style: bodyStyle));
             }
 
             return [
@@ -239,7 +219,6 @@ class BookCard extends StatelessWidget {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     Get.lazyPut(() => BookController());
@@ -267,8 +246,7 @@ class BookCard extends StatelessWidget {
           const SizedBox(height: 16),
           BookProgressBar(progress: progress),
           const SizedBox(height: 16),
-          /// TODO change this before deployment != to >=
-          if (progress != 100 && !isEpisode) // >=
+          if (progress != 100 && !isEpisode) // TODO: Change to >= before deployment
             Align(
               alignment: Alignment.center,
               child: SizedBox(
@@ -280,26 +258,14 @@ class BookCard extends StatelessWidget {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.appColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                   ),
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.file_download_outlined,
-                        size: 17,
-                        color: Colors.white,
-                      ),
+                      Icon(Icons.file_download_outlined, size: 17, color: Colors.white),
                       SizedBox(width: 4),
-                      Text(
-                        'Download Book',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.white,
-                        ),
-                      ),
+                      Text('Download Book', style: TextStyle(fontSize: 10, color: Colors.white)),
                     ],
                   ),
                 ),
