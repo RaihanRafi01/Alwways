@@ -267,7 +267,8 @@ class BookCard extends StatelessWidget {
           const SizedBox(height: 16),
           BookProgressBar(progress: progress),
           const SizedBox(height: 16),
-          if (progress != 100)
+          /// TODO change this before deployment != to >=
+          if (progress != 100 && !isEpisode) // >=
             Align(
               alignment: Alignment.center,
               child: SizedBox(

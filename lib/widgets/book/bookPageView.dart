@@ -38,7 +38,7 @@ class BookPageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppbar(title: 'working'),
+      appBar: const CustomAppbar(title: ''),
       body: Column(
         children: [
           Obx(() {
@@ -98,7 +98,7 @@ class BookPageView extends StatelessWidget {
                           bookId: bookId,
                           isEpisode: isEpisode,
                         ),
-                        Padding(
+                        /*Padding(
                           padding: const EdgeInsets.only(top: 210, right: 16),
                           child: GestureDetector(
                             onTap: () => Get.to(BookCoverEditScreen(
@@ -113,7 +113,7 @@ class BookPageView extends StatelessWidget {
                               width: 24,
                             ),
                           ),
-                        ),
+                        ),*/
                       ],
                     ),
                   );
