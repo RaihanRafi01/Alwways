@@ -141,9 +141,11 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
                       isGrid: false,
                       isCoverEdit: true,
                       title: bookController.getTitle(widget.bookId),
-                      coverImage: isEpisodeEdit
-                          ? (chapterController.allPageImages[episodeIndex] ?? widget.image)
-                          : bookController.getCoverImage(widget.bookId, widget.image),
+                          coverImage: isEpisodeEdit
+                              ? (chapterController.allPageImages.isNotEmpty
+                              ? (chapterController.allPageImages[0] ?? widget.image)
+                              : widget.image)
+                              : (bookController.getCoverImage(widget.bookId, widget.image)),
                       bookId: widget.bookId,
                       isEpisode: isEpisodeEdit,
                     ),
