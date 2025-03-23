@@ -22,37 +22,40 @@ class BookLandingController extends GetxController {
   Future<void> fetchBooks() async {
     isLoading.value = true;
     try {
-      // Step 1: Load existing books from database
       final dbBooks = await dbHelper.getBooks();
       books.assignAll(dbBooks);
       print("Loaded ${books.length} books from database");
 
-      // Step 2: Fetch fresh books from API
       final apiBooks = await apiService.getAllBooks();
+      for (var book in apiBooks) {
+        print("Book '${book.title}' coverImage: '${book.coverImage}'");
+        for (var episode in book.episodes) {
+          print("Episode '${episode.title}' coverImage: '${episode.coverImage}'");
+        }
+      }
 
-      // Step 3: Merge API books with database books, preserving stories
       for (var apiBook in apiBooks) {
         final dbBook = books.firstWhereOrNull((b) => b.id == apiBook.id);
         if (dbBook != null) {
-          // Merge episodes, preserving stories from database
           final mergedEpisodes = apiBook.episodes.map((apiEpisode) {
             final dbEpisode = dbBook.episodes.firstWhereOrNull((e) => e.id == apiEpisode.id);
             if (dbEpisode != null && dbEpisode.story != null) {
-              return dbEpisode; // Keep the full dbEpisode with story
+              return apiEpisode.copyWith(
+                story: dbEpisode.story,
+                backgroundCover: dbEpisode.backgroundCover ?? apiEpisode.backgroundCover,
+              );
             }
-            return apiEpisode; // Use API episode if no story exists
+            return apiEpisode;
           }).toList();
           final mergedBook = apiBook.copyWith(episodes: mergedEpisodes);
           await dbHelper.insertBook(mergedBook);
         } else {
-          // New book, insert directly
           await dbHelper.insertBook(apiBook);
         }
       }
 
-      // Step 4: Reload merged books from database
       books.assignAll(await dbHelper.getBooks());
-      print("Updated books with API data, preserved stories: ${books.map((b) => b.id).toList()}");
+      print("Updated books with API data: ${books.map((b) => b.id).toList()}");
     } catch (e) {
       print("Error fetching books: $e");
       Get.snackbar('Error', 'Failed to load books: $e');

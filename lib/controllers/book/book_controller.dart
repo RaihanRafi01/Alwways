@@ -26,7 +26,7 @@ class BookController extends GetxController {
     'assets/images/book/cover_image_3.svg',
   ];
 
-  bool _hasInitialized = false; // Flag to prevent multiple initializations
+  bool _hasInitialized = false;
 
   @override
   void onInit() {
@@ -40,52 +40,33 @@ class BookController extends GetxController {
   Future<void> initializeBooks() async {
     isLoading.value = true;
     try {
-      // Get local data first
       final localBooks = await dbHelper.getBooks();
       books.value = localBooks;
       _populateCovers(localBooks);
 
-      // Fetch from server
       final serverBooks = await apiService.getAllBooks();
       print("Server books fetched: ${serverBooks.length}");
 
-      // Merge and update database
       for (var serverBook in serverBooks) {
         final existingBook = localBooks.firstWhereOrNull((b) => b.id == serverBook.id);
         final mergedBook = _mergeBook(existingBook, serverBook);
-
-        // Insert or update book
         await dbHelper.insertBook(mergedBook);
-
-        // Process conversations and update chat history + stories
         await _processConversations(mergedBook);
       }
 
-      // Refresh books from database
       books.value = await dbHelper.getBooks();
       _populateCovers(books);
 
-      // Calculate and update each book's percentage
       for (var book in books) {
         final calculatedPercentage = calculateBookPercentage(book);
         print("Calculated percentage for book '${book.title}' (ID: ${book.id}): $calculatedPercentage%");
-
-        // Create an updated book object with the new percentage
         final updatedBook = book.copyWith(percentage: calculatedPercentage);
-
-        // Update the database and confirm
         await dbHelper.updateBook(updatedBook);
-        print("Database updated for book '${updatedBook.title}' (ID: ${updatedBook.id}) with percentage: ${updatedBook.percentage}%");
-
-        //// api
         await apiService.updateBookPercentage(updatedBook.id, updatedBook.percentage);
-
       }
 
-      // Refresh the observable list with the latest data from the database
       books.value = await dbHelper.getBooks();
       print("Books list refreshed with ${books.length} books after percentage updates");
-
     } catch (e) {
       print("Error initializing books: $e");
       Get.snackbar('Error', 'Failed to initialize books: $e');
@@ -148,7 +129,7 @@ class BookController extends GetxController {
         backgroundCover: localEpisode?.backgroundCover ?? 'assets/images/book/cover_image_1.svg',
         percentage: serverEpisode.percentage,
         conversations: serverEpisode.conversations,
-        story: localEpisode?.story, // Preserve local story if exists
+        story: localEpisode?.story,
       );
     }).toList();
   }
@@ -162,31 +143,17 @@ class BookController extends GetxController {
         final botResponse = convoMap['botResponse'] as String;
         final storyGenerated = convoMap['storyGenerated'] as bool;
 
-        // Check if this conversation has already been processed
         final existingChatHistory = await dbHelper.getChatHistoryByQuestion(book.id, episode.id, question);
         if (existingChatHistory == null) {
-          // Insert into chat_history if not already processed
-          await dbHelper.insertChatHistory(
-            book.id,
-            episode.id, // Using episode ID as sectionId
-            question,
-            answer,
-          );
+          await dbHelper.insertChatHistory(book.id, episode.id, question, answer);
         }
 
-        // If storyGenerated is true, update episode story
         if (storyGenerated) {
-          // Check if the botResponse is already part of the story
           final existingStory = episode.story ?? '';
           if (!existingStory.contains(botResponse)) {
-            // Append the new botResponse to the story
             final updatedStory = existingStory.isEmpty ? botResponse : '$existingStory\n\n$botResponse';
             final updatedEpisode = episode.copyWith(story: updatedStory);
-
-            // Update the episode in the database
             await dbHelper.updateEpisode(updatedEpisode);
-
-            // Update in memory
             final bookIndex = books.indexWhere((b) => b.id == book.id);
             if (bookIndex != -1) {
               final episodeIndex = books[bookIndex].episodes.indexWhere((e) => e.id == episode.id);
@@ -204,9 +171,12 @@ class BookController extends GetxController {
     backgroundCovers[id] = cover;
   }
 
-  void updateCoverImage(String id, String imagePath) {
+  void updateCoverImage(String id, String imagePath, {bool isEpisode = false}) {
     coverImages[id] = imagePath;
-    bookCoverImage.value = imagePath;
+    if (!isEpisode) {
+      bookCoverImage.value = imagePath; // Only update for books
+    }
+    print("Updated cover image for ${isEpisode ? 'episode' : 'book'} ID $id: $imagePath");
   }
 
   void updateTitle(String id, String newTitle) {
@@ -229,8 +199,17 @@ class BookController extends GetxController {
     return backgroundCovers[id] ?? 'assets/images/book/cover_image_1.svg';
   }
 
-  String getCoverImage(String id, String defaultImage) {
-    return coverImages[id] ?? defaultImage;
+  String getCoverImage(String id, String defaultImage, {bool isEpisode = false}) {
+    if (isEpisode) {
+      // For episodes, prioritize the defaultImage (passed episode coverImage)
+      final episodeImage = coverImages[id] ?? defaultImage;
+      print("getCoverImage for episode ID $id: $episodeImage");
+      return episodeImage;
+    }
+    // For books, use the stored cover image or default
+    final bookImage = coverImages[id] ?? defaultImage;
+    print("getCoverImage for book ID $id: $bookImage");
+    return bookImage;
   }
 
   String getTitle(String id) {
@@ -252,7 +231,7 @@ class BookController extends GetxController {
     );
     await dbHelper.updateBook(updatedBook);
     books[books.indexWhere((b) => b.id == bookId)] = updatedBook;
-    print("Database updated for bookId: $bookId with title: ${updatedBook.title}, coverImage: ${updatedBook.coverImage}, backgroundCover: ${updatedBook.backgroundCover}");
+    print("Database updated for bookId: $bookId with title: ${updatedBook.title}, coverImage: ${updatedBook.coverImage}");
   }
 
   Future<void> updateEpisodeInDb(String episodeId) async {
@@ -266,7 +245,7 @@ class BookController extends GetxController {
         book.episodes[episodeIndex] = updatedEpisode;
         await dbHelper.updateEpisode(updatedEpisode);
         books.refresh();
-        print("Database updated for episodeId: $episodeId with title: ${updatedEpisode.title}, coverImage: ${updatedEpisode.coverImage}, backgroundCover: ${updatedEpisode.backgroundCover}");
+        print("Database updated for episodeId: $episodeId with title: ${updatedEpisode.title}, coverImage: ${updatedEpisode.coverImage}");
         break;
       }
     }
@@ -279,10 +258,10 @@ class BookController extends GetxController {
     }
     try {
       final response = await apiService.createBook(bookNameController.text);
-      print('::::::::::::::::::::: Status Code: ${response.statusCode}');
-      print('::::::::::::::::::::: Body: ${response.body}');
+      print('Status Code: ${response.statusCode}');
+      print('Body: ${response.body}');
       if (response.statusCode == 201 || response.statusCode == 200) {
-        await initializeBooks(); // Refresh books after creation
+        await initializeBooks();
         Get.offAll(const DashboardView(index: 1));
       } else {
         Get.snackbar('Error', 'Failed to create book: ${response.body}');
@@ -303,8 +282,8 @@ class BookController extends GetxController {
             coverImage = XFile(bookCoverImage.value);
             print("Sending coverImage for episode: ${bookCoverImage.value}, bookId: ${book.id}, episodeNumber: $episodeNumber");
             final response = await apiService.updateEpisodeCover(book.id, coverImage, episodeNumber);
-            print(':::::::::::: Status Code: ${response.statusCode}');
-            print(':::::::::::: Body: ${response.body}');
+            print('Status Code: ${response.statusCode}');
+            print('Body: ${response.body}');
             if (response.statusCode == 200 || response.statusCode == 201) {
               await updateEpisodeInDb(episodeId);
               Get.snackbar('Success', 'Episode cover updated successfully');
@@ -343,8 +322,8 @@ class BookController extends GetxController {
           print("No new coverImage for book, saving locally");
         }
         final response = await apiService.updateBookCover(id, bookTitle, coverImage);
-        print(':::::::::::: Status Code: ${response.statusCode}');
-        print(':::::::::::: Body: ${response.body}');
+        print('Status Code: ${response.statusCode}');
+        print('Body: ${response.body}');
         if (response.statusCode == 200 || response.statusCode == 201) {
           await _updateBookInDb(id);
           Get.snackbar('Success', 'Book cover updated successfully');
@@ -352,7 +331,7 @@ class BookController extends GetxController {
           bookCoverImage.value = '';
         } else {
           Get.snackbar('Error', 'Failed to update book cover: ${response.body}');
-          await _updateBookInDb(id); // Save local changes even if API fails
+          await _updateBookInDb(id);
           Get.back();
         }
       } else {
@@ -403,6 +382,7 @@ extension EpisodeExtension on Episode {
     String? backgroundCover,
     double? percentage,
     List<dynamic>? conversations,
+    String? story,
   }) {
     return Episode(
       id: id ?? this.id,
@@ -412,6 +392,7 @@ extension EpisodeExtension on Episode {
       backgroundCover: backgroundCover ?? this.backgroundCover,
       percentage: percentage ?? this.percentage,
       conversations: conversations ?? this.conversations,
+      story: story ?? this.story,
     );
   }
 }

@@ -25,19 +25,20 @@ class BookPageView extends StatelessWidget {
     required this.title,
     required this.bookId,
     required this.coverImage,
-    required this.isEpisode, required this.episodeIndex,
+    required this.isEpisode,
+    required this.episodeIndex,
   }) {
     print("BookPageView - Raw Get.arguments: ${Get.arguments}");
     print("BookPageView - bookId: $bookId, episodeIndex: $episodeIndex");
-    print("BookPageView - episode name : $title");
-    controller.loadStory(bookId, episodeIndex);
+    print("BookPageView - episode name: $title");
+    print("BookPageView - coverImage: $coverImage");
+    controller.loadStory(bookId, episodeIndex,coverImage);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Rest of the build method remains unchanged
     return Scaffold(
-      appBar: const CustomAppbar(title: ''),
+      appBar: const CustomAppbar(title: 'working'),
       body: Column(
         children: [
           Obx(() {
@@ -47,7 +48,7 @@ class BookPageView extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      controller.allPageChapters[controller.currentPage.value],
+                      controller.allPageChapters[controller.currentPage.value - 1],
                       style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
@@ -82,9 +83,8 @@ class BookPageView extends StatelessWidget {
           Expanded(
             child: Obx(() => PageView.builder(
               controller: controller.pageController,
-              itemCount: controller.allPages.length,
+              itemCount: controller.allPages.isEmpty ? 1 : controller.allPages.length + 1,
               itemBuilder: (context, index) {
-                // Rest of the itemBuilder remains unchanged
                 if (index == 0) {
                   return Center(
                     child: Stack(
@@ -130,7 +130,7 @@ class BookPageView extends StatelessWidget {
                               children: [
                                 const SizedBox(height: 30),
                                 Text(
-                                  controller.allPageChapters[index],
+                                  controller.allPageChapters[index - 1],
                                   style: const TextStyle(fontSize: 10),
                                 ),
                                 const SizedBox(height: 20),
@@ -138,8 +138,6 @@ class BookPageView extends StatelessWidget {
                                   "assets/images/book/chapter_underline_1.svg",
                                   width: 100,
                                 ),
-                                //const SizedBox(height: 30),
-                                //const Text('Motivation', style: TextStyle(fontSize: 16)),
                                 Obx(() {
                                   final imagePath = controller.allPageImages[index];
                                   if (imagePath != null) {
@@ -158,7 +156,7 @@ class BookPageView extends StatelessWidget {
                                 Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Text(
-                                    controller.allPages[index],
+                                    controller.allPages[index - 1],
                                     style: const TextStyle(
                                       fontSize: 16,
                                       color: AppColors.bookTextColor,
@@ -167,7 +165,6 @@ class BookPageView extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            // Rest of the widget tree...
                           ],
                         ),
                       ),

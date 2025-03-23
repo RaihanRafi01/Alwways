@@ -34,12 +34,15 @@ class BookCover extends StatelessWidget {
 
     Future<void> _pickImage() async {
       final ImagePicker picker = ImagePicker();
-      final XFile? pickedFile =
-          await picker.pickImage(source: ImageSource.gallery);
+      final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        bookController.updateCoverImage(bookId, pickedFile.path);
-        print("Picked image path: ${pickedFile.path}");
+        bookController.updateCoverImage(
+          isEpisode ? "$bookId-$title" : bookId, // Unique ID for episode
+          pickedFile.path,
+          isEpisode: isEpisode,
+        );
+        print("Picked image path for ${isEpisode ? 'episode' : 'book'}: ${pickedFile.path}");
       }
     }
 
@@ -49,9 +52,7 @@ class BookCover extends StatelessWidget {
         Obx(() {
           final coverPath = bookController.getBackgroundCover(bookId);
           return SvgPicture.asset(
-            coverPath.isNotEmpty
-                ? coverPath
-                : 'assets/images/book/cover_image_1.svg',
+            coverPath.isNotEmpty ? coverPath : 'assets/images/book/cover_image_1.svg',
             height: isGrid ? 300 : 350,
             width: double.infinity,
             fit: BoxFit.fill,
@@ -63,23 +64,23 @@ class BookCover extends StatelessWidget {
             children: [
               !haveTitle
                   ? Obx(() => Text(
-                        bookController.getTitle(bookId).isNotEmpty
-                            ? bookController.getTitle(bookId)
-                            : title,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: isGrid ? 14 : 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ))
+                bookController.getTitle(bookId).isNotEmpty
+                    ? bookController.getTitle(bookId)
+                    : title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isGrid ? 14 : 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ))
                   : Text(
-                      title,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: isGrid ? 14 : 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                title,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: isGrid ? 14 : 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 4),
               SvgPicture.asset(
                 "assets/images/book/book_underline_1.svg",
@@ -87,8 +88,12 @@ class BookCover extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Obx(() {
-                final selectedImage =
-                    bookController.getCoverImage(bookId, coverImage);
+                final selectedImage = bookController.getCoverImage(
+                  isEpisode ? "$bookId-$title" : bookId, // Unique ID for episode
+                  coverImage,
+                  isEpisode: isEpisode,
+                );
+                print("BookCover - Displaying image: '$selectedImage'");
                 if (selectedImage.startsWith('http')) {
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
@@ -105,8 +110,7 @@ class BookCover extends StatelessWidget {
                       ),
                     ),
                   );
-                } else if (selectedImage.endsWith('.png') ||
-                    selectedImage.endsWith('.jpg')) {
+                } else if (selectedImage.endsWith('.png') || selectedImage.endsWith('.jpg')) {
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: ClipRRect(
@@ -130,11 +134,13 @@ class BookCover extends StatelessWidget {
                     GestureDetector(
                       onTap: _pickImage,
                       child: Obx(() {
-                        final selectedImage =
-                            bookController.getCoverImage(bookId, coverImage);
+                        final selectedImage = bookController.getCoverImage(
+                          isEpisode ? "$bookId-$title" : bookId,
+                          coverImage,
+                          isEpisode: isEpisode,
+                        );
                         final isImageSelected =
-                            selectedImage.endsWith('.png') ||
-                                selectedImage.endsWith('.jpg');
+                            selectedImage.endsWith('.png') || selectedImage.endsWith('.jpg');
                         return SvgPicture.asset(
                           isImageSelected
                               ? "assets/images/book/edit_icon.svg"
@@ -155,8 +161,7 @@ class BookCover extends StatelessWidget {
             bottom: 10,
             child: GestureDetector(
               onTap: () {
-                print(
-                    "Navigating to edit screen - bookId: $bookId, isEpisode: $isEpisode");
+                print("Navigating to edit screen - bookId: $bookId, isEpisode: $isEpisode");
                 Get.to(BookCoverEditScreen(
                   title: title,
                   image: coverImage,

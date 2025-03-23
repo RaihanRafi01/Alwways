@@ -65,7 +65,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
       );
     }
     return GridView.builder(
-      padding: const EdgeInsets.only(bottom: 80),
+      padding: const EdgeInsets.only(top: 80),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.55,
@@ -78,18 +78,17 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
             if (isEpisode) {
               final percentage = item.percentage ?? 0.0;
               final bookId = item.bookId;
-              final episodeIndex = index.toString(); // Pass index as string
+              final episodeIndex = index.toString();
               if (percentage != 100.0) {
-                print(
-                    "::::::::::::::::::::::::::::::::::::::::::::::Episode '${item.title}'");
-                print(
-                    "::::::::::::::::::::::::::::::::::::::::::::::coverImage '${item.coverImage}'");
+                print("Episode '${item.title}'");
+                print("Episode coverImage '${item.coverImage}'");
                 Get.to(
                   BookPageView(
                     title: item.title,
                     bookId: bookId,
-                    coverImage: item.coverImage,
-                    isEpisode: isEpisode, episodeIndex: episodeIndex,
+                    coverImage: item.coverImage ?? 'assets/images/default_cover.jpg',
+                    isEpisode: isEpisode,
+                    episodeIndex: episodeIndex,
                   ),
                   arguments: {"episodeIndex": episodeIndex},
                 );
