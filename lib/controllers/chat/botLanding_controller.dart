@@ -11,6 +11,7 @@ class BotController extends GetxController {
   var selectedBookId = ''.obs;
   var selectedSectionId = ''.obs;
   var selectedSectionIndex = (-1).obs; // -1 means no selection
+  var selectedEpisodeIndex = ''.obs;
   var selectedEpisodeId = ''.obs;
 
   late final BookController bookController;
@@ -83,10 +84,11 @@ class BotController extends GetxController {
   void selectEpisode(String sectionId) {
     selectedSectionId.value = sectionId;
     selectedSectionIndex.value = sections.indexWhere((section) => section.id == sectionId);
-    print("Selected section index: ${selectedSectionIndex.value}, ID: $sectionId");
+    print("::::::::::::::::::::::Selected section index: ${selectedSectionIndex.value}, ID: $sectionId");
   }
 
   String getSelectedSectionId() {
+    print("::::::::::::::::::::::Selected section index: ${selectedSectionIndex.value}");
     return selectedSectionIndex.value >= 0 ? selectedSectionIndex.value.toString() : '';
   }
 }

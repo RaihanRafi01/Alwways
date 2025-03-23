@@ -99,8 +99,6 @@ class AuthController extends GetxController {
         'dateOfBirth': dateOfBirth.value?.toIso8601String().substring(0, 10) ?? '',
       };
 
-      if (password.value.isNotEmpty) userData['password'] = password.value;
-
       // Log pickedImage details for debugging
       if (pickedImage.value != null) {
         print('::::::::::::::::::::UPDATE : pickedImage path: ${pickedImage.value!.path}');

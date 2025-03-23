@@ -51,7 +51,7 @@ class BookCard extends StatelessWidget {
           BookProgressBar(progress: progress),
           const SizedBox(height: 16),
           // Conditional button if progress is 100%
-          if (progress >= 100) // Check if progress is 100%
+          if (progress != 100) // Check if progress is 100% // >=
             Align(
               alignment: Alignment.center,
               child: SizedBox(

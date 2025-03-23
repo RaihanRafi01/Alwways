@@ -85,17 +85,14 @@ class MessageController extends GetxController {
     if (questionController.isSubQuestionMode.value) {
       await _handleSubQuestionAnswer(currentQuestion, userAnswer);
       if (!questionController.isSubQuestionMode.value) {
+        // Only proceed to next main question if sub-question mode is fully exited
         final history = await dbHelper.getChatHistory(bookId, sectionId);
         questionController.skipToNextUnansweredQuestion(history);
-        askQuestion();
+        //askQuestion();
       }
     } else {
       await _handleGenerateSubQuestion(currentQuestion, userAnswer);
-      if (!questionController.isSubQuestionMode.value) {
-        final history = await dbHelper.getChatHistory(bookId, sectionId);
-        questionController.skipToNextUnansweredQuestion(history);
-        askQuestion();
-      }
+      // Do not automatically ask the next question here; let _handleGenerateSubQuestion control the flow
     }
   }
 
@@ -161,6 +158,9 @@ class MessageController extends GetxController {
     final response = await apiService.generateSubQuestion(question, answer);
     print(':::generateSubQuestion::: Status Code: ${response.statusCode}');
     print(':::generateSubQuestion::: Response Body: ${response.body}');
+
+    _removeLoadingMessage(); // Remove loading message before any outcome
+
     if (response.statusCode == 200) {
       final saveResponse = await apiService.saveAnswer(
         botController.selectedBookId.value,
@@ -177,21 +177,18 @@ class MessageController extends GetxController {
           question,
           answer,
         );
-        // Call API only when main question is successfully answered
         await _calculateAndPrintCompletionPercentage(sectionId);
         final data = jsonDecode(response.body);
         final subQuestions = List<String>.from(data['content']);
         questionController.setSubQuestions(subQuestions);
-        askQuestion();
+        askQuestion(); // Ask the first sub-question
       } else {
-        _removeLoadingMessage();
         Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
     } else if (response.statusCode == 400) {
-      _removeLoadingMessage();
       messages.add(BotMessage(message: "Could you please elaborate on: $question"));
+      // Do NOT proceed to the next question; wait for user input
     } else {
-      _removeLoadingMessage();
       Get.snackbar('Error', 'Failed to generate sub-questions');
     }
   }
@@ -200,6 +197,9 @@ class MessageController extends GetxController {
     final relevancyResponse = await apiService.checkRelevancy(subQuestion, answer);
     print(':::checkRelevancy::: Status Code: ${relevancyResponse.statusCode}');
     print(':::checkRelevancy::: Response Body: ${relevancyResponse.body}');
+
+    _removeLoadingMessage(); // Remove loading message before any outcome
+
     if (relevancyResponse.statusCode == 200) {
       final saveResponse = await apiService.saveAnswer(
         botController.selectedBookId.value,
@@ -216,17 +216,15 @@ class MessageController extends GetxController {
           subQuestion,
           answer,
         );
-        questionController.nextQuestion();
+        questionController.nextQuestion(); // Move to next sub-question or exit sub-question mode
         askQuestion();
       } else {
-        _removeLoadingMessage();
         Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
     } else if (relevancyResponse.statusCode == 400) {
-      _removeLoadingMessage();
       messages.add(BotMessage(message: "Could you provide a more relevant answer on: $subQuestion"));
+      // Do NOT proceed to the next question; wait for user input
     } else {
-      _removeLoadingMessage();
       Get.snackbar('Error', 'Failed to check relevancy: ${relevancyResponse.statusCode}');
     }
   }
