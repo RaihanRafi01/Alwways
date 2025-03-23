@@ -11,6 +11,7 @@ import 'package:playground_02/controllers/book/book_controller.dart';
 import '../../services/database/databaseHelper.dart';
 import 'bookCover.dart';
 import 'bookProgress.dart';
+import 'package:http/http.dart' as http;
 
 class BookCard extends StatelessWidget {
   final String title;
@@ -31,6 +32,17 @@ class BookCard extends StatelessWidget {
   });
 
   // Function to generate and save PDF with tracing
+  Future<pw.ImageProvider> _loadImage(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final bytes = response.bodyBytes;
+      return pw.MemoryImage(bytes);
+    } else {
+      throw Exception('Failed to load image from $url');
+    }
+  }
+
+  /// Generates a PDF for a book with images under titles and opens it.
   Future<void> _generateAndOpenPdf(String bookId) async {
     print('Starting PDF generation for bookId: $bookId');
     final dbHelper = DatabaseHelper();
@@ -41,7 +53,6 @@ class BookCard extends StatelessWidget {
     final fontRegular = pw.Font.ttf(await rootBundle.load('assets/fonts/Roboto-Regular.ttf'));
     final fontBold = pw.Font.ttf(await rootBundle.load('assets/fonts/Roboto-Bold.ttf'));
     print('Fonts loaded successfully: Roboto-Regular and Roboto-Bold');
-
 
     // Define text styles
     final titleStyle = pw.TextStyle(
@@ -86,20 +97,43 @@ class BookCard extends StatelessWidget {
     });
     print('Book found: ${book.title} (ID: ${book.id}) with ${book.episodes.length} episodes');
 
-    // Add first page with only book title
+    // Load book cover image
+    pw.ImageProvider? bookCoverImage;
+    if (book.coverImage.isNotEmpty) {
+      try {
+        bookCoverImage = await _loadImage(book.coverImage);
+        print('Book cover image loaded successfully');
+      } catch (e) {
+        print('Error loading book cover image: $e');
+      }
+    }
+
+    // Add title page with book title and cover image
     pdf.addPage(
       pw.Page(
         pageTheme: commonPageTheme,
-        build: (pw.Context context) => pw.Center(
-          child: pw.Text(
-            book.title,
-            style: titleStyle,
+        build: (pw.Context context) => pw.Container(
+          color: backgroundColor,
+          child: pw.Column(
+            mainAxisAlignment: pw.MainAxisAlignment.center,
+            children: [
+              pw.Text(
+                book.title,
+                style: titleStyle,
+              ),
+              if (bookCoverImage != null)
+                pw.Image(
+                  bookCoverImage,
+                  width: 200,
+                  height: 300,
+                ),
+            ],
           ),
         ),
       ),
     );
 
-    // Add all episodes in a MultiPage starting from page 2
+    // Add episodes in a MultiPage
     if (book.episodes.isNotEmpty) {
       pdf.addPage(
         pw.MultiPage(
@@ -110,18 +144,39 @@ class BookCard extends StatelessWidget {
             for (var episode in book.episodes) {
               if (episode.story != null && episode.story!.isNotEmpty) {
                 print('Processing episode: ${episode.id} - Title: ${episode.title}');
-                print('Episode story length: ${episode.story?.length ?? 0} characters');
 
+                // Load episode cover image
+                pw.ImageProvider? episodeCoverImage;
+                if (episode.coverImage.isNotEmpty) {
+                  try {
+                    episodeCoverImage =  _loadImage(episode.coverImage) as pw.ImageProvider?;
+                    print('Episode cover image loaded successfully for ${episode.title}');
+                  } catch (e) {
+                    print('Error loading episode cover image: $e');
+                  }
+                }
+
+                // Add episode title and cover image
                 content.add(
-                  pw.Center(
-                    child: pw.Text(
-                      episode.title,
-                      style: headerStyle,
-                    ),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.center,
+                    children: [
+                      pw.Text(
+                        episode.title,
+                        style: headerStyle,
+                      ),
+                      if (episodeCoverImage != null)
+                        pw.Image(
+                          episodeCoverImage,
+                          width: 150,
+                          height: 200,
+                        ),
+                    ],
                   ),
                 );
                 content.add(pw.SizedBox(height: 20));
 
+                // Add episode story content
                 final paragraphs = episode.story!.split('\n\n');
                 for (final paragraph in paragraphs) {
                   if (paragraph.trim().isNotEmpty) {
@@ -151,16 +206,14 @@ class BookCard extends StatelessWidget {
             }
 
             return [
-              pw.Padding(
-                padding: const pw.EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 20,
-                ),
+              pw.Container(
+                color: backgroundColor,
+                padding: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: content,
                 ),
-              )
+              ),
             ];
           },
         ),
@@ -170,12 +223,10 @@ class BookCard extends StatelessWidget {
     // Save the PDF to the device
     print('Saving PDF...');
     final directory = await getApplicationDocumentsDirectory();
-    print('Document directory: ${directory.path}');
     final safeFileName = book.title.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
     final file = File('${directory.path}/${safeFileName}_stories.pdf');
-    print('PDF file path: ${file.path}');
     await file.writeAsBytes(await pdf.save());
-    print('PDF saved successfully');
+    print('PDF saved successfully at: ${file.path}');
 
     // Open the PDF file
     print('Attempting to open PDF...');
@@ -187,6 +238,8 @@ class BookCard extends StatelessWidget {
       Get.snackbar('Success', 'PDF generated and opened successfully!');
     }
   }
+
+
   @override
   Widget build(BuildContext context) {
     Get.lazyPut(() => BookController());

@@ -82,6 +82,8 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
               if (percentage != 100.0) {
                 print(
                     "::::::::::::::::::::::::::::::::::::::::::::::Episode '${item.title}'");
+                print(
+                    "::::::::::::::::::::::::::::::::::::::::::::::coverImage '${item.coverImage}'");
                 Get.to(
                   BookPageView(
                     title: item.title,
