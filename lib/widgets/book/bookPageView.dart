@@ -42,7 +42,8 @@ class BookPageView extends StatelessWidget {
       body: Column(
         children: [
           Obx(() {
-            if (controller.currentPage.value != 0) {
+            if (controller.currentPage.value != 0 &&
+                controller.currentPage.value - 1 < controller.allPageChapters.length) {
               return Container(
                 padding: const EdgeInsets.all(16),
                 child: Column(
