@@ -12,7 +12,7 @@ class BookController extends GetxController {
   var backgroundCovers = <String, String>{}.obs;
   var coverImages = <String, String>{}.obs;
   var books = <Book>[].obs;
-  var bookCoverImage = ''.obs; // For user-uploaded cover image (e.g., via picker)
+  var bookCoverImage = ''.obs; // For user-uploaded cover image
   var isLoading = false.obs;
   final ApiService apiService = ApiService();
   final DatabaseHelper dbHelper = DatabaseHelper();
@@ -154,7 +154,7 @@ class BookController extends GetxController {
           if (!existingStory.contains(botResponse)) {
             final updatedStory = existingStory.isEmpty ? botResponse : '$existingStory\n\n$botResponse';
             print(':::: latestStoryId : $latestStoryId');
-            final updatedEpisode = episode.copyWith(story: updatedStory,storyId: latestStoryId);
+            final updatedEpisode = episode.copyWith(story: updatedStory, storyId: latestStoryId);
             await dbHelper.updateEpisode(updatedEpisode);
             final bookIndex = books.indexWhere((b) => b.id == book.id);
             if (bookIndex != -1) {
@@ -176,7 +176,7 @@ class BookController extends GetxController {
   void updateCoverImage(String id, String imagePath, {bool isEpisode = false}) {
     coverImages[id] = imagePath;
     if (!isEpisode) {
-      bookCoverImage.value = imagePath; // Only update for books
+      bookCoverImage.value = imagePath;
     }
     print("Updated cover image for ${isEpisode ? 'episode' : 'book'} ID $id: $imagePath");
   }
@@ -203,12 +203,10 @@ class BookController extends GetxController {
 
   String getCoverImage(String id, String defaultImage, {bool isEpisode = false}) {
     if (isEpisode) {
-      // For episodes, prioritize the defaultImage (passed episode coverImage)
       final episodeImage = coverImages[id] ?? defaultImage;
       print("getCoverImage for episode ID $id: $episodeImage");
       return episodeImage;
     }
-    // For books, use the stored cover image or default
     final bookImage = coverImages[id] ?? defaultImage;
     print("getCoverImage for book ID $id: $bookImage");
     return bookImage;
@@ -279,31 +277,42 @@ class BookController extends GetxController {
       for (var book in books) {
         final episode = book.episodes.firstWhereOrNull((e) => e.id == episodeId);
         if (episode != null) {
-          XFile? coverImage;
-          if (bookCoverImage.value.isNotEmpty && bookCoverImage.value != episode.coverImage) {
-            coverImage = XFile(bookCoverImage.value);
-            print("Sending coverImage for episode: ${bookCoverImage.value}, bookId: ${book.id}, episodeNumber: $episodeNumber");
+          // Use the same composite key as in BookCover
+          final compositeKey = "$episodeId-${episode.title}";
+          final newCoverImagePath = coverImages[compositeKey] ?? episode.coverImage; // Fallback to current image
+          print("Updating episode $episodeId - compositeKey: $compositeKey, newCoverImagePath: $newCoverImagePath");
+
+          // Always update DB with latest image, even if API isn't called
+          await updateEpisodeInDb(episodeId);
+
+          if (newCoverImagePath.isNotEmpty && newCoverImagePath != episode.coverImage) {
+            final coverImage = XFile(newCoverImagePath);
+            print("Uploading coverImage for episode: $newCoverImagePath, bookId: ${book.id}, episodeNumber: $episodeNumber");
+
             final response = await apiService.updateEpisodeCover(book.id, coverImage, episodeNumber);
             print('Status Code: ${response.statusCode}');
             print('Body: ${response.body}');
+
             if (response.statusCode == 200 || response.statusCode == 201) {
-              await updateEpisodeInDb(episodeId);
               Get.snackbar('Success', 'Episode cover updated successfully');
               Get.back();
-              bookCoverImage.value = '';
             } else {
               Get.snackbar('Error', 'Failed to update episode cover: ${response.body}');
             }
           } else {
-            print("No new coverImage for episode, saving locally");
-            await updateEpisodeInDb(episodeId);
-            Get.snackbar('Success', 'Episode updated successfully');
+            print("No new cover image or image unchanged, saved locally");
+            Get.snackbar('Success', 'Episode updated locally');
             Get.back();
           }
-          break;
+          break; // Exit loop once episode is found
         }
       }
+      if (books.every((book) => book.episodes.every((e) => e.id != episodeId))) {
+        print("Episode $episodeId not found in any book");
+        Get.snackbar('Error', 'Episode not found');
+      }
     } catch (e) {
+      print("Error updating episode cover: $e");
       Get.snackbar('Error', 'An error occurred: $e');
     } finally {
       isLoading.value = false;
@@ -385,6 +394,7 @@ extension EpisodeExtension on Episode {
     double? percentage,
     List<dynamic>? conversations,
     String? story,
+    String? storyId, // Added storyId parameter
   }) {
     return Episode(
       id: id ?? this.id,
@@ -395,6 +405,7 @@ extension EpisodeExtension on Episode {
       percentage: percentage ?? this.percentage,
       conversations: conversations ?? this.conversations,
       story: story ?? this.story,
+      storyId: storyId ?? this.storyId,
     );
   }
 }

@@ -15,6 +15,7 @@ class BookCover extends StatelessWidget {
   final String bookId;
   final bool isEpisode;
   final bool haveTitle;
+  final Function(String)? onImagePicked; // Callback for image pick
 
   const BookCover({
     Key? key,
@@ -26,6 +27,7 @@ class BookCover extends StatelessWidget {
     required this.coverImage,
     required this.bookId,
     required this.isEpisode,
+    this.onImagePicked,
   }) : super(key: key);
 
   @override
@@ -37,12 +39,16 @@ class BookCover extends StatelessWidget {
       final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
+        final uniqueId = isEpisode ? "$bookId-$title" : bookId;
         bookController.updateCoverImage(
-          isEpisode ? "$bookId-$title" : bookId, // Unique ID for episode
+          uniqueId,
           pickedFile.path,
           isEpisode: isEpisode,
         );
         print("Picked image path for ${isEpisode ? 'episode' : 'book'}: ${pickedFile.path}");
+        if (onImagePicked != null) {
+          onImagePicked!(pickedFile.path); // Trigger callback
+        }
       }
     }
 
@@ -89,7 +95,7 @@ class BookCover extends StatelessWidget {
               const SizedBox(height: 10),
               Obx(() {
                 final selectedImage = bookController.getCoverImage(
-                  isEpisode ? "$bookId-$title" : bookId, // Unique ID for episode
+                  isEpisode ? "$bookId-$title" : bookId,
                   coverImage,
                   isEpisode: isEpisode,
                 );

@@ -33,189 +33,218 @@ class BookCard extends StatelessWidget {
     print("BookCard - title: $title, coverImage: $coverImage, isEpisode: $isEpisode, bookId: $bookId");
   }
 
-  // Function to load image asynchronously
   Future<pw.ImageProvider> _loadImage(String url) async {
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
-      final bytes = response.bodyBytes;
-      return pw.MemoryImage(bytes);
+      return pw.MemoryImage(response.bodyBytes);
     } else {
       throw Exception('Failed to load image from $url');
     }
   }
 
-  /// Generates a PDF for a book with centered images and a larger book cover.
-  Future<void> _generateAndOpenPdf(String bookId) async {
+  Future<pw.ImageProvider> _loadPngFromAssets(String assetPath) async {
+    final byteData = await rootBundle.load(assetPath);
+    return pw.MemoryImage(byteData.buffer.asUint8List());
+  }
+
+  Future<List<File>> _generatePdfFiles(String bookId) async {
     print('Starting PDF generation for bookId: $bookId');
     final dbHelper = DatabaseHelper();
-    final pdf = pw.Document();
+    List<File> pdfFiles = [];
 
-    // Load custom fonts
-    print('Loading fonts...');
+    // Load assets
     final fontRegular = pw.Font.ttf(await rootBundle.load('assets/fonts/Roboto-Regular.ttf'));
     final fontBold = pw.Font.ttf(await rootBundle.load('assets/fonts/Roboto-Bold.ttf'));
-    print('Fonts loaded successfully: Roboto-Regular and Roboto-Bold');
+    // Load PNGs with different sizes
+    final bookUnderlinePng = await _loadPngFromAssets('assets/images/book/book_underline_4x.png');
+    final episodeUnderlinePng = await _loadPngFromAssets('assets/images/book/book_underline_4x.png');
 
-    // Define text styles
-    final titleStyle = pw.TextStyle(fontSize: 40, font: fontBold, color: PdfColors.black);
-    final headerStyle = pw.TextStyle(fontSize: 24, font: fontBold, color: PdfColors.black);
-    final bodyStyle = pw.TextStyle(fontSize: 16, font: fontRegular, color: PdfColors.black, lineSpacing: 1.2);
-
-    // Define background color
+    // Styles - Increased line spacing from 1.0 to 1.5
+    final titleStyle = pw.TextStyle(fontSize: 48, font: fontBold, color: PdfColors.black);
+    final headerStyle = pw.TextStyle(fontSize: 32, font: fontBold, color: PdfColors.black);
+    final bodyStyle = pw.TextStyle(
+      fontSize: 14,
+      font: fontRegular,
+      color: PdfColors.black,
+      lineSpacing: 3,
+    );
     var backgroundColor = PdfColor.fromInt(AppColors.bookBackground1.value);
 
     final commonPageTheme = pw.PageTheme(
-      pageFormat: PdfPageFormat.a4.copyWith(marginLeft: 0, marginRight: 0, marginTop: 0, marginBottom: 0),
+      pageFormat: PdfPageFormat.a4.copyWith(
+        marginLeft: 0,
+        marginRight: 0,
+        marginTop: 0,
+        marginBottom: 0,
+      ),
       buildBackground: (pw.Context context) => pw.Container(color: backgroundColor),
     );
 
-    // Fetch the book and its episodes from the database
-    print('Fetching books from database...');
+    // Fetch book data
     final books = await dbHelper.getBooks();
-    print('Total books fetched: ${books.length}');
-    final book = books.firstWhere((b) => b.id == bookId, orElse: () {
-      print('Book with ID $bookId not found in database');
-      throw Exception('Book not found');
-    });
-    print('Book found: ${book.title} (ID: ${book.id}) with ${book.episodes.length} episodes');
+    final book = books.firstWhere((b) => b.id == bookId, orElse: () => throw Exception('Book not found'));
+    print('Fetched episodes for book $bookId: ${book.episodes.map((e) => e.id).toList()}');
 
-    // Load book cover image
+    // Load book cover
     pw.ImageProvider? bookCoverImage;
     if (book.coverImage.isNotEmpty) {
       try {
         bookCoverImage = await _loadImage(book.coverImage);
-        print('Book cover image loaded successfully');
       } catch (e) {
         print('Error loading book cover image: $e');
       }
     }
 
-    // Add title page with book title and larger centered cover image
-    pdf.addPage(
-      pw.Page(
-        pageTheme: commonPageTheme,
-        build: (pw.Context context) => pw.Container(
-          color: backgroundColor,
-          child: pw.Column(
-            mainAxisAlignment: pw.MainAxisAlignment.center,
-            children: [
-              pw.Text(book.title, style: titleStyle),
-              pw.SizedBox(height: 20),
-              if (bookCoverImage != null)
-                pw.Center(
-                  child: pw.Image(
-                    bookCoverImage,
-                    width: 300, // Larger width for book cover
-                    height: 400, // Larger height for book cover
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    // Pre-fetch episode cover images
-    print('Pre-fetching episode cover images...');
+    // Pre-fetch episode images
     final Map<String, pw.ImageProvider?> episodeImages = {};
     for (var episode in book.episodes) {
       if (episode.coverImage.isNotEmpty && episode.story != null && episode.story!.isNotEmpty) {
         try {
           episodeImages[episode.id] = await _loadImage(episode.coverImage);
-          print('Pre-loaded episode cover image for ${episode.title} (ID: ${episode.id})');
         } catch (e) {
           episodeImages[episode.id] = null;
-          print('Error pre-loading episode cover image for ${episode.title} (ID: ${episode.id}): $e');
         }
       }
     }
 
-    // Add episodes in a MultiPage
-    if (book.episodes.isNotEmpty) {
-      pdf.addPage(
-        pw.MultiPage(
-          pageTheme: commonPageTheme,
-          build: (pw.Context context) {
-            final List<pw.Widget> content = [];
+    // Process episodes
+    int fileIndex = 1;
+    const int maxPagesPerFile = 1000;
+    int currentPageCount = 0;
 
-            for (var episode in book.episodes) {
-              if (episode.story != null && episode.story!.isNotEmpty) {
-                print('Processing episode: ${episode.id} - Title: ${episode.title}');
+    final pdf = pw.Document();
 
-                // Use pre-loaded episode cover image
-                final episodeCoverImage = episodeImages[episode.id];
+    // Add title page with increased spacing and larger book underline
+    pdf.addPage(
+      pw.Page(
+        pageTheme: commonPageTheme,
+        build: (pw.Context context) => pw.Container(
+          color: backgroundColor,
+          child: pw.Center(
+            child: pw.Column(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Text(book.title, style: titleStyle, textAlign: pw.TextAlign.center),
+                pw.SizedBox(height: 20),
+                pw.Image(bookUnderlinePng, width: 350), // Larger size for book underline
+                pw.SizedBox(height: 30),
+                if (bookCoverImage != null)
+                  pw.Image(bookCoverImage, width: 300, height: 400),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    currentPageCount++;
+    print('Added title page, total pages: $currentPageCount');
 
-                // Add episode title and centered cover image
-                content.add(
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text(episode.title, style: headerStyle),
-                      pw.SizedBox(height: 20),
-                      if (episodeCoverImage != null)
-                        pw.Center(
-                          child: pw.Image(
-                            episodeCoverImage,
-                            width: 200, // Smaller than book cover
-                            height: 250, // Smaller than book cover
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-                content.add(pw.SizedBox(height: 20));
+    for (var episode in book.episodes) {
+      if (episode.story != null && episode.story!.isNotEmpty) {
+        final episodeCoverImage = episodeImages[episode.id];
+        print('Processing episode ${episode.id} with story length: ${episode.story!.length}');
 
-                // Add episode story content
-                final paragraphs = episode.story!.split('\n\n');
-                for (final paragraph in paragraphs) {
-                  if (paragraph.trim().isNotEmpty) {
-                    content.add(
-                      pw.Text(paragraph, style: bodyStyle, textAlign: pw.TextAlign.justify),
-                    );
-                    content.add(pw.SizedBox(height: 8));
-                  }
-                }
-                content.add(pw.SizedBox(height: 40));
-              } else {
-                print('Skipping episode ${episode.id} - No story content');
-              }
-            }
+        final List<pw.Widget> episodeContent = [
+          pw.Align(
+            alignment: pw.Alignment.topCenter,
+            child: pw.Column(
+              children: [
+                pw.Text(episode.title, style: headerStyle, textAlign: pw.TextAlign.center),
+                pw.SizedBox(height: 12),
+                pw.Image(episodeUnderlinePng, width: 200), // Smaller size for episode underline
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 25),
+          if (episodeCoverImage != null)
+            pw.Center(
+              child: pw.Image(episodeCoverImage, width: 200, height: 250),
+            ),
+          pw.SizedBox(height: 25),
+        ];
 
-            if (content.isEmpty) {
-              content.add(pw.Text('No episode content available', style: bodyStyle));
-            }
+        final paragraphs = episode.story!.split('\n\n');
+        print('Episode ${episode.id} has ${paragraphs.length} paragraphs');
+        for (final paragraph in paragraphs) {
+          if (paragraph.trim().isNotEmpty) {
+            episodeContent.add(pw.Text(paragraph, style: bodyStyle, textAlign: pw.TextAlign.justify));
+            episodeContent.add(pw.SizedBox(height: 12));
+            print('Added paragraph of length ${paragraph.length} to episode ${episode.id}');
+          }
+        }
 
-            return [
-              pw.Container(
-                color: backgroundColor,
-                padding: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+        pdf.addPage(
+          pw.MultiPage(
+            pageTheme: commonPageTheme,
+            build: (pw.Context context) => [
+              pw.Padding(
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 30,
+                  vertical: 25,
+                ),
                 child: pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: content,
+                  children: episodeContent,
                 ),
               ),
-            ];
-          },
-        ),
-      );
+            ],
+          ),
+        );
+
+        int estimatedPageCount = (episodeContent.length ~/ 20) + 1;
+        currentPageCount += estimatedPageCount;
+        print('Added MultiPage for episode ${episode.id}, estimated pages: $estimatedPageCount, total pages: $currentPageCount');
+
+        if (currentPageCount >= maxPagesPerFile) {
+          final directory = await getApplicationDocumentsDirectory();
+          final safeFileName = book.title.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
+          final file = File('${directory.path}/${safeFileName}_stories_part$fileIndex.pdf');
+          await file.writeAsBytes(await pdf.save());
+          pdfFiles.add(file);
+          print('Saved PDF part $fileIndex with $currentPageCount pages');
+
+          fileIndex++;
+          currentPageCount = 0;
+        }
+      } else {
+        print('Episode ${episode.id} has no story content');
+      }
     }
 
-    // Save the PDF to the device
-    print('Saving PDF...');
-    final directory = await getApplicationDocumentsDirectory();
-    final safeFileName = book.title.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
-    final file = File('${directory.path}/${safeFileName}_stories.pdf');
-    await file.writeAsBytes(await pdf.save());
-    print('PDF saved successfully at: ${file.path}');
+    if (currentPageCount > 0) {
+      final directory = await getApplicationDocumentsDirectory();
+      final safeFileName = book.title.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
+      final file = File('${directory.path}/${safeFileName}_stories_part$fileIndex.pdf');
+      await file.writeAsBytes(await pdf.save());
+      pdfFiles.add(file);
+      print('Saved final PDF part $fileIndex with $currentPageCount pages');
+    }
 
-    // Open the PDF file
-    print('Attempting to open PDF...');
-    final result = await OpenFile.open(file.path);
-    print('OpenFile result: ${result.type}, message: ${result.message}');
-    if (result.type != ResultType.done) {
-      Get.snackbar('Error', 'Could not open PDF: ${result.message}');
-    } else {
-      Get.snackbar('Success', 'PDF generated and opened successfully!');
+    return pdfFiles;
+  }
+
+  Future<void> _generateAndOpenPdf(String bookId) async {
+    try {
+      final pdfFiles = await _generatePdfFiles(bookId);
+
+      if (pdfFiles.isEmpty) {
+        Get.snackbar('Error', 'No PDF files generated');
+        return;
+      }
+
+      final result = await OpenFile.open(pdfFiles.first.path);
+      if (result.type != ResultType.done) {
+        Get.snackbar('Error', 'Could not open PDF: ${result.message}');
+      } else {
+        Get.snackbar('Success',
+          'PDF generated successfully! ${pdfFiles.length} file(s) created. First file opened.',
+          duration: const Duration(seconds: 5),
+        );
+      }
+    } catch (e) {
+      print('Error generating PDF: $e');
+      Get.snackbar('Error', 'Failed to generate PDF: $e');
     }
   }
 
@@ -246,7 +275,7 @@ class BookCard extends StatelessWidget {
           const SizedBox(height: 16),
           BookProgressBar(progress: progress),
           const SizedBox(height: 16),
-          if (progress != 100 && !isEpisode) // TODO: Change to >= before deployment
+          if (progress != 100 && !isEpisode)
             Align(
               alignment: Alignment.center,
               child: SizedBox(
