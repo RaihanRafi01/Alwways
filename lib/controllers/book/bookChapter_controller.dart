@@ -45,7 +45,7 @@ class BookChapterController extends GetxController {
     }
   }
 
-  void _splitContentIntoPages({int maxWordsPerPage = 80}) {
+  void _splitContentIntoPages({int maxWordsPerPage = 60}) {
     allPages.clear();
     allPageChapters.clear();
     // Preserve the cover image at index 0

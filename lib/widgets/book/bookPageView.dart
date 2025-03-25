@@ -166,6 +166,37 @@ class BookPageView extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: Padding(
+                                padding:
+                                const EdgeInsets.only(bottom: 16, right: 16),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final isCover = controller.allPages[index].contains("ChapterCover");
+                                    final result =
+                                    await Get.to(() => BookEditPage(
+                                      index: index,
+                                      chapterTitle:
+                                      controller.allPageChapters[index],
+                                      chapterContent:
+                                      controller.allPages[index],
+                                      isCover: isCover,
+                                    ));
+                                    if (result != null) {
+                                      controller.allPageChapters[index] =
+                                      result["title"];
+                                      controller.allPages[index] =
+                                      result["content"];
+                                    }
+                                  },
+                                  child: SvgPicture.asset(
+                                      "assets/images/book/edit_icon.svg",
+                                      height: 24,
+                                      width: 24),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
