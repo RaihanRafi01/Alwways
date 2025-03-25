@@ -96,6 +96,7 @@ class Episode {
   final double percentage;
   final List<dynamic> conversations;
   final String? story; // New field for the story
+  final String? storyId; // New field
 
   Episode({
     required this.id,
@@ -106,6 +107,7 @@ class Episode {
     required this.percentage,
     required this.conversations,
     this.story, // Nullable, as it may not exist initially
+    this.storyId,
   });
 
   factory Episode.fromJson(Map<String, dynamic> json, {String? bookId}) {
@@ -117,6 +119,7 @@ class Episode {
       percentage: json['percentage'].toDouble(),
       conversations: json['conversations'] ?? [],
       story: json['story'], // From API response
+      storyId: json['storyId'], // From API if provided
     );
   }
 
@@ -129,6 +132,7 @@ class Episode {
       'percentage': percentage,
       'conversations': conversations,
       'story': story,
+      'storyId': storyId, // Add to database
     };
   }
 
@@ -142,6 +146,7 @@ class Episode {
       'percentage': percentage,
       'conversations': jsonEncode(conversations),
       'story': story, // Add to database
+      'storyId': storyId, // Add to database
     };
   }
 
@@ -157,6 +162,7 @@ class Episode {
           ? jsonDecode(map['conversations'] as String)
           : [],
       story: map['story'] as String?,
+      storyId: map['storyId'] as String?,
     );
   }
 
@@ -169,6 +175,7 @@ class Episode {
     double? percentage,
     List<dynamic>? conversations,
     String? story,
+    String? storyId,
   }) {
     return Episode(
       id: id ?? this.id,
@@ -179,6 +186,7 @@ class Episode {
       percentage: percentage ?? this.percentage,
       conversations: conversations ?? this.conversations,
       story: story ?? this.story,
+      storyId: storyId ?? this.storyId,
     );
   }
 }

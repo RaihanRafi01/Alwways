@@ -59,35 +59,6 @@ class _BookEditPageState extends State<BookEditPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: TextField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Enter the chapter title...",
-                ),
-                style: const TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Obx(() {
-              final imagePath = controller.allPageImages[widget.index];
-              if (imagePath != null) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: Image.file(
-                    File(imagePath),
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.contain,
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            }),
             Expanded(
               child: TextField(
                 controller: _contentController,
@@ -106,13 +77,9 @@ class _BookEditPageState extends State<BookEditPage> {
                 Expanded(
                   child: CustomButton(
                     text: "Save",
-                    onPressed: () {
-                      controller.updateChapterTitle(widget.index, _titleController.text.trim());
-                      controller.updateChapterContent(widget.index, _contentController.text.trim());
-                      Get.back(result: {
-                        "title": _titleController.text.trim(),
-                        "content": _contentController.text.trim(),
-                      });
+                    onPressed: () async {
+                      await controller.updateChapterContent(widget.index, _contentController.text.trim());
+                      Get.back();
                     },
                     isEditPage: true,
                   ),

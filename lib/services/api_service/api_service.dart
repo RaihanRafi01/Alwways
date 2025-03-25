@@ -22,6 +22,24 @@ class ApiService {
     );
   }
 
+
+  Future<http.Response> updateConversation(String bookId, String episodeId, String conversationId, Map<String, dynamic> data) async {
+    String? token = await _storage.read(key: 'access_token');
+    if (token == null) {
+      throw Exception('No token found');
+    }
+    final url = Uri.parse('${baseUrl}book/$bookId/episode/$episodeId/conversation/$conversationId');
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": "Bearer $token",
+      },
+      body: jsonEncode(data),
+    );
+    return response;
+  }
+
   Future<http.Response> updateProfile(String token, Map<String, String> userData, XFile? image) async {
     var uri = Uri.parse('${baseUrl}user/edit-profile');
     var request = http.MultipartRequest('PUT', uri);

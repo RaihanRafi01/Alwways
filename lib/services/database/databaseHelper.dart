@@ -48,6 +48,7 @@ class DatabaseHelper {
           percentage REAL,
           conversations TEXT,
           story TEXT, -- Added story column
+          storyId TEXT, -- Added storyId column
           FOREIGN KEY (bookId) REFERENCES books (id)
         )
       ''');

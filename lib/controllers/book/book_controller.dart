@@ -142,6 +142,7 @@ class BookController extends GetxController {
         final answer = convoMap['userAnswer'] as String;
         final botResponse = convoMap['botResponse'] as String;
         final storyGenerated = convoMap['storyGenerated'] as bool;
+        final latestStoryId = convoMap['_id'] as String;
 
         final existingChatHistory = await dbHelper.getChatHistoryByQuestion(book.id, episode.id, question);
         if (existingChatHistory == null) {
@@ -152,7 +153,8 @@ class BookController extends GetxController {
           final existingStory = episode.story ?? '';
           if (!existingStory.contains(botResponse)) {
             final updatedStory = existingStory.isEmpty ? botResponse : '$existingStory\n\n$botResponse';
-            final updatedEpisode = episode.copyWith(story: updatedStory);
+            print(':::: latestStoryId : $latestStoryId');
+            final updatedEpisode = episode.copyWith(story: updatedStory,storyId: latestStoryId);
             await dbHelper.updateEpisode(updatedEpisode);
             final bookIndex = books.indexWhere((b) => b.id == book.id);
             if (bookIndex != -1) {
