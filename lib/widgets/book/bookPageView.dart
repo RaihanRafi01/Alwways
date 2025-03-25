@@ -173,20 +173,20 @@ class BookPageView extends StatelessWidget {
                                 const EdgeInsets.only(bottom: 16, right: 16),
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final isCover = controller.allPages[index].contains("ChapterCover");
+                                    final isCover = controller.allPages[index - 1].contains("ChapterCover");
                                     final result =
                                     await Get.to(() => BookEditPage(
-                                      index: index,
+                                      index: index - 1,
                                       chapterTitle:
-                                      controller.allPageChapters[index],
+                                      controller.allPageChapters[index - 1],
                                       chapterContent:
-                                      controller.allPages[index],
+                                      controller.allPages[index - 1],
                                       isCover: isCover,
                                     ));
                                     if (result != null) {
-                                      controller.allPageChapters[index] =
+                                      controller.allPageChapters[index - 1] =
                                       result["title"];
-                                      controller.allPages[index] =
+                                      controller.allPages[index - 1] =
                                       result["content"];
                                     }
                                   },
