@@ -34,7 +34,7 @@ class _Splashscreen1State extends State<Splashscreen1> {
     if (isLoggedIn) {
       Get.offAll(const DashboardView()); // Navigate to home and clear stack
     } else {
-      Get.offAll(LoginScreen()); // Navigate to login and clear stack
+      Get.offAll(const OnboardingScreen()); // Navigate to login and clear stack
     }
   }
 
