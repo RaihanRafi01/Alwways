@@ -16,7 +16,7 @@ class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Ensure AuthController is available
-    final AuthController authController = Get.find<AuthController>();
+    final AuthController authController = Get.put(AuthController());
 
     // Pre-fill dateController with the existing date of birth
     final TextEditingController dateController = TextEditingController(

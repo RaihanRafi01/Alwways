@@ -22,6 +22,8 @@ class ChatScreen extends StatelessWidget {
     final BotController botController = Get.find<BotController>();
     final ScrollController scrollController = ScrollController();
 
+    print('::::::::::::::: GGG ::::::::::::::::::::::: book id : $bookId , sectionId : $sectionId , episodeId : $episodeId');
+
     // Initialize chat history and questions
     void initializeChat() async {
       // Set selected IDs in BotController

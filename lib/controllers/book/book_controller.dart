@@ -262,7 +262,8 @@ class BookController extends GetxController {
       print('Body: ${response.body}');
       if (response.statusCode == 201 || response.statusCode == 200) {
         await initializeBooks();
-        Get.offAll(const DashboardView(index: 1));
+        Get.snackbar('Success', 'Successfully created the book');
+        //Get.offAll(const DashboardView(index: 1));
       } else {
         Get.snackbar('Error', 'Failed to create book: ${response.body}');
       }

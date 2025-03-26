@@ -59,29 +59,31 @@ class QuestionController extends GetxController {
 
   String getCurrentQuestion() {
     print("Getting current question: index=${currentQuestionIndex.value}, questions.length=${questions.length}, isSubQuestionMode=${isSubQuestionMode.value}");
-    if (isSubQuestionMode.value && currentSubQuestionIndex.value < subQuestions.length) {
-      return subQuestions[currentSubQuestionIndex.value];
-    } else if (currentQuestionIndex.value < questions.length) {
-      return questions[currentQuestionIndex.value].text;
-    } else {
+    if (isSubQuestionMode.value && subQuestions.isNotEmpty) {
+      return subQuestions.first;
+    }
+    if (currentQuestionIndex.value >= questions.length) {
       return 'No more questions';
     }
+    return questions[currentQuestionIndex.value].text;
   }
 
   void nextQuestion() {
-    print("Next question: isSubQuestionMode=${isSubQuestionMode.value}, currentSubQuestionIndex=${currentSubQuestionIndex.value}, currentQuestionIndex=${currentQuestionIndex.value}");
+    print("Next question: isSubQuestionMode=${isSubQuestionMode.value}, currentSubQuestionIndex=${subQuestions.length > 0 ? 0 : -1}, currentQuestionIndex=${currentQuestionIndex.value}");
     if (isSubQuestionMode.value) {
-      if (currentSubQuestionIndex.value < subQuestions.length - 1) {
-        currentSubQuestionIndex.value++;
-      } else {
+      subQuestions.removeAt(0);
+      if (subQuestions.isEmpty) {
         isSubQuestionMode.value = false;
-        subQuestions.clear();
-        currentSubQuestionIndex.value = 0;
-        currentQuestionIndex.value++; // Move to next main question
       }
-    } else if (currentQuestionIndex.value < questions.length - 1) {
+    } else {
       currentQuestionIndex.value++;
     }
+    print("After nextQuestion: currentQuestionIndex=${currentQuestionIndex.value}");
+  }
+
+  void setSubQuestions(List<String> newSubQuestions) {
+    subQuestions.assignAll(newSubQuestions);
+    isSubQuestionMode.value = true;
   }
 
   void skipToNextUnansweredQuestion(List<Map<String, String>> chatHistory) {
@@ -97,12 +99,5 @@ class QuestionController extends GetxController {
       currentQuestionIndex.value++;
     }
     print("Skipped to next unanswered question: index=${currentQuestionIndex.value}");
-  }
-
-  void setSubQuestions(List<String> newSubQuestions) {
-    subQuestions.value = newSubQuestions;
-    currentSubQuestionIndex.value = 0;
-    isSubQuestionMode.value = true;
-    print("Sub-questions set: $newSubQuestions");
   }
 }
