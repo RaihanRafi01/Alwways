@@ -99,7 +99,6 @@ class MessageController extends GetxController {
         final response = await apiService.checkRelevancy(currentQuestion, userAnswer);
         print("Relevancy check - Status Code: ${response.statusCode}, Body: ${response.body}");
 
-        _removeLoadingMessage();
 
         if (response.statusCode == 400) {
           // Ask the same question again if relevancy fails
@@ -262,7 +261,6 @@ class MessageController extends GetxController {
       print(':::generateSubQuestion::: Status Code: ${response.statusCode}');
       print(':::generateSubQuestion::: Response Body: ${response.body}');
 
-      _removeLoadingMessage();
 
       if (response.statusCode == 200) {
         final saveResponse = await apiService.saveAnswer(
@@ -299,8 +297,6 @@ class MessageController extends GetxController {
       final relevancyResponse = await apiService.checkRelevancy(subQuestion, answer);
       print(':::checkRelevancy::: Status Code: ${relevancyResponse.statusCode}');
       print(':::checkRelevancy::: Response Body: ${relevancyResponse.body}');
-
-      _removeLoadingMessage();
 
       if (relevancyResponse.statusCode == 200) {
         final saveResponse = await apiService.saveAnswer(

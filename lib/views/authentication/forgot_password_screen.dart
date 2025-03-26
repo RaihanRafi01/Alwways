@@ -17,7 +17,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppbar(title: 'Forgot Password'),
+      appBar: CustomAppbar(title: 'forgot_password'.tr), // Use .tr for dynamic translation
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -26,27 +26,27 @@ class ForgotPasswordScreen extends StatelessWidget {
             children: [
               const AppLogo(),
               const SizedBox(height: 20),
-              const Text(
-                "Enter your email to reset your password.",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                "enter_email_to_reset".tr, // Use .tr for dynamic translation
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               CustomTextField(
-                label: "Email",
+                label: "email".tr, // Use .tr for dynamic translation
                 controller: emailController, // Pass controller to capture input
               ),
               const SizedBox(height: 16),
               Obx(() => authController.isLoading.value
                   ? const CircularProgressIndicator() // Show loading indicator
                   : CustomButton(
-                text: "CONTINUE",
+                text: "continue".tr, // Use .tr for dynamic translation
                 onPressed: () {
                   String email = emailController.text.trim();
                   if (email.isEmpty) {
-                    Get.snackbar('Warning!', 'Please enter an email');
+                    Get.snackbar('warning'.tr, 'please_enter_email'.tr); // Use .tr for dynamic translation
                   } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
                       .hasMatch(email)) {
-                    Get.snackbar('Warning!', 'Please enter a valid email');
+                    Get.snackbar('warning'.tr, 'please_enter_valid_email'.tr); // Use .tr for dynamic translation
                   } else {
                     authController.sendOtp(email); // Call sendOtp
                   }

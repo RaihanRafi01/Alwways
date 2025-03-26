@@ -49,8 +49,8 @@ class _BookEditPageState extends State<BookEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppbar(
-        title: "Edit Memory",
+      appBar: CustomAppbar(
+        title: "edit_memory".tr, // Updated
         isEdit: true,
       ),
       body: Container(
@@ -64,9 +64,9 @@ class _BookEditPageState extends State<BookEditPage> {
                 controller: _contentController,
                 maxLines: null,
                 expands: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: InputBorder.none,
-                  hintText: "Edit the content here...",
+                  hintText: "edit_content_hint".tr, // Updated
                 ),
                 style: const TextStyle(fontSize: 16.0),
               ),
@@ -76,7 +76,7 @@ class _BookEditPageState extends State<BookEditPage> {
               children: [
                 Expanded(
                   child: CustomButton(
-                    text: "Save",
+                    text: "save".tr, // Updated
                     onPressed: () async {
                       await controller.updateChapterContent(widget.index, _contentController.text.trim());
                       Get.back();

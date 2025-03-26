@@ -7,7 +7,6 @@ import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/book/bookCard.dart';
 import 'package:playground_02/widgets/book/bookCover.dart';
 import 'package:playground_02/widgets/home/custom_bottom_navigation_bar.dart';
-
 import '../../controllers/book/book_controller.dart';
 
 class HomePageLanding extends StatefulWidget {
@@ -33,20 +32,28 @@ class _HomePageLandingState extends State<HomePageLanding> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 50),
-              const Center(child: BookCover(isGrid: false, title: 'My Life', coverImage: '', bookId: '', isEpisode: false,)),
+              Center(
+                child: BookCover(
+                  isGrid: false,
+                  title: "my_life".tr, // Updated
+                  coverImage: '',
+                  bookId: '',
+                  isEpisode: false,
+                ),
+              ),
               const SizedBox(height: 20),
-              const Text(
-                'Hi Alex!',
-                style: TextStyle(
+               Text(
+                '${"hi".tr} Alex!',
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textColor,
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Thank you for sharing about your childhood. It’s a wonderful addition to your memoir. Let’s continue capturing these precious moments together."',
-                style: TextStyle(
+              Text(
+                "thank_you_message".tr, // Updated
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textColor,
@@ -54,13 +61,13 @@ class _HomePageLandingState extends State<HomePageLanding> {
               ),
               /*const SizedBox(height: 20),
               const Text(
-                "Welcome to your personalized life story-writing experience. Choose how you would like to start documenting your life stories. You can engage in a real-time conversation with the AI for a dynamic storytelling experience or select the structured Q&A mode for a guided approach. Both options will help you create meaningful chapters about your life.",
+                "welcome_message".tr, // Example for commented-out text
                 style: TextStyle(color: AppColors.textColor, fontSize: 14),
               ),*/
               const SizedBox(height: 30), // Add a spacer to push buttons toward the center
               CustomButton(
-                text: "TALK TO AI",
-                onPressed: () => Get.to(() => ChatLandingScreen()) //Get.toNamed(AppRoutes.chat),
+                text: "talk_to_ai".tr, // Updated
+                onPressed: () => Get.to(() => ChatLandingScreen()), //Get.toNamed(AppRoutes.chat),
               ),
               const SizedBox(height: 80),
               /*const SizedBox(height: 20),
@@ -79,4 +86,3 @@ class _HomePageLandingState extends State<HomePageLanding> {
     );
   }
 }
-

@@ -19,7 +19,7 @@ class SetNewPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppbar(title: 'Set New Password'),
+      appBar: CustomAppbar(title: 'set_new_password'.tr), // Use .tr for dynamic translation
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -29,14 +29,14 @@ class SetNewPasswordScreen extends StatelessWidget {
               const AppLogo(),
               const SizedBox(height: 60),
               CustomTextField(
-                label: "New Password",
+                label: "new_password".tr, // Use .tr for dynamic translation
                 suffixIcon: Icons.visibility_off_outlined,
                 isPassword: true,
                 controller: newPasswordController, // Capture new password
               ),
               const SizedBox(height: 16),
               CustomTextField(
-                label: "Confirm Password",
+                label: "confirm_password".tr, // Use .tr for dynamic translation
                 suffixIcon: Icons.visibility_off_outlined,
                 isPassword: true,
                 controller: confirmPasswordController, // Capture confirm password
@@ -45,18 +45,18 @@ class SetNewPasswordScreen extends StatelessWidget {
               Obx(() => authController.isLoading.value
                   ? const CircularProgressIndicator() // Show loading indicator
                   : CustomButton(
-                text: "SUBMIT",
+                text: "submit".tr, // Use .tr for dynamic translation
                 onPressed: () {
                   String newPassword = newPasswordController.text.trim();
                   String confirmPassword = confirmPasswordController.text.trim();
 
                   // Local validation
                   if (newPassword.isEmpty || confirmPassword.isEmpty) {
-                    Get.snackbar('Error', 'Please fill in both fields');
+                    Get.snackbar('error'.tr, 'please_fill_both_fields'.tr); // Use .tr for dynamic translation
                   } else if (newPassword != confirmPassword) {
-                    Get.snackbar('Error', 'Passwords do not match');
+                    Get.snackbar('error'.tr, 'passwords_do_not_match'.tr); // Use .tr for dynamic translation
                   } else if (newPassword.length < 6) {
-                    Get.snackbar('Error', 'Password must be at least 6 characters');
+                    Get.snackbar('error'.tr, 'password_min_length'.tr); // Use .tr for dynamic translation
                   } else {
                     authController.resetPassword(email, otp, newPassword); // Call resetPassword
                   }

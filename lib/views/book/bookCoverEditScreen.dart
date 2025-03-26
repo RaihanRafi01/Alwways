@@ -53,7 +53,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
         if (book == null) {
           print("Episode ${widget.bookId} not found");
           setState(() {
-            errorMessage = "Episode ${widget.bookId} not found in any book";
+            errorMessage = "episode_not_found".trParams({'bookId': widget.bookId}); // Updated
           });
           return;
         }
@@ -64,7 +64,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
         if (book == null) {
           print("Book ${widget.bookId} not found");
           setState(() {
-            errorMessage = "Book ${widget.bookId} not found";
+            errorMessage = "book_not_found".trParams({'bookId': widget.bookId}); // Updated
           });
           return;
         }
@@ -75,7 +75,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
     } catch (e) {
       print("Exception in _checkContent: $e");
       setState(() {
-        errorMessage = "Error: $e";
+        errorMessage = "error_with_message".trParams({'error': e.toString()}); // Updated
       });
     }
   }
@@ -95,7 +95,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
     print("Building UI for bookId: ${widget.bookId}");
     if (errorMessage != null) {
       return Scaffold(
-        appBar: CustomAppbar(title: "Error", showIcon: false),
+        appBar: CustomAppbar(title: "error".tr, showIcon: false), // Updated
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -107,7 +107,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () => Get.back(),
-                child: const Text("Go Back"),
+                child: Text("go_back".tr), // Updated
               ),
             ],
           ),
@@ -127,7 +127,10 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
     });
 
     return Scaffold(
-      appBar: CustomAppbar(title: isEpisodeEdit ? "Edit Episode Cover" : "Edit Cover", showIcon: false),
+      appBar: CustomAppbar(
+        title: isEpisodeEdit ? "edit_episode_cover".tr : "edit_cover".tr, // Updated
+        showIcon: false,
+      ),
       body: Stack(
         children: [
           SingleChildScrollView(
@@ -141,11 +144,11 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
                       isGrid: false,
                       isCoverEdit: true,
                       title: bookController.getTitle(widget.bookId),
-                          coverImage: isEpisodeEdit
-                              ? (chapterController.allPageImages.isNotEmpty
-                              ? (chapterController.allPageImages[0] ?? widget.image)
-                              : widget.image)
-                              : (bookController.getCoverImage(widget.bookId, widget.image)),
+                      coverImage: isEpisodeEdit
+                          ? (chapterController.allPageImages.isNotEmpty
+                          ? (chapterController.allPageImages[0] ?? widget.image)
+                          : widget.image)
+                          : (bookController.getCoverImage(widget.bookId, widget.image)),
                       bookId: widget.bookId,
                       isEpisode: isEpisodeEdit,
                     ),
@@ -168,11 +171,11 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
                     ),
                   ),
                 const SizedBox(height: 20),
-                const Padding(
-                  padding: EdgeInsets.only(left: 10.0),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
                   child: Text(
-                    'Select Background Cover',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    "select_background_cover".tr, // Updated
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -253,9 +256,9 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
                         strokeWidth: 2,
                       ),
                     )
-                        : const Text(
-                      'Save Changes',
-                      style: TextStyle(color: Colors.white),
+                        : Text(
+                      "save_changes".tr, // Updated
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 )),

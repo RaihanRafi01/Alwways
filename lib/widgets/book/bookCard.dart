@@ -289,12 +289,15 @@ class BookCard extends StatelessWidget {
                     backgroundColor: AppColors.appColor,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.file_download_outlined, size: 17, color: Colors.white),
-                      SizedBox(width: 4),
-                      Text('Download Book', style: TextStyle(fontSize: 10, color: Colors.white)),
+                      const Icon(Icons.file_download_outlined, size: 17, color: Colors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        "download_book".tr,
+                        style: const TextStyle(fontSize: 10, color: Colors.white),
+                      ),
                     ],
                   ),
                 ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
-
 import '../../constants/color/app_colors.dart';
 import '../../widgets/authentication/custom_button.dart';
 
@@ -19,7 +18,7 @@ class CouponView extends GetView {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppbar(title: 'ORDER',bgColor: AppColors.appColor,),
+      appBar: CustomAppbar(title: "order".tr, bgColor: AppColors.appColor), // Updated
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -38,7 +37,7 @@ class CouponView extends GetView {
                       Image.asset("assets/images/app_name_white.png"),
                       const SizedBox(height: 16),
                       Text(
-                        "app_name".tr,
+                        "app_name".tr, // Already translated
                         style: const TextStyle(
                           color: AppColors.textWhite,
                           fontSize: 20,
@@ -60,49 +59,49 @@ class CouponView extends GetView {
                 children: [
                   // Book Name Field
                   _buildField(
-                    label: 'Book Name',
+                    label: "book_name".tr, // Updated
                     child: TextField(
-                      decoration: _buildInputDecoration('My Life'),
+                      decoration: _buildInputDecoration("my_life".tr), // Updated
                     ),
                   ),
                   const SizedBox(height: 16),
 
                   // Customer Name Field
                   _buildField(
-                    label: 'Customer Name',
+                    label: "customer_name".tr, // Updated
                     child: TextField(
-                      decoration: _buildInputDecoration('Enter customer name'),
+                      decoration: _buildInputDecoration("enter_customer_name".tr), // Updated
                     ),
                   ),
                   const SizedBox(height: 16),
 
                   // Delivery Address Field
                   _buildField(
-                    label: 'Delivery Address',
+                    label: "delivery_address".tr, // Updated
                     child: TextField(
                       maxLines: 3,
-                      decoration: _buildInputDecoration('Enter delivery address'),
+                      decoration: _buildInputDecoration("enter_delivery_address".tr), // Updated
                     ),
                   ),
                   const SizedBox(height: 16),
 
                   // Price Field
                   _buildField(
-                    label: 'Price',
+                    label: "price".tr, // Updated
                     child: TextField(
                       readOnly: true,
-                      decoration: _buildInputDecoration('\$50'),
+                      decoration: _buildInputDecoration('\$50'), // Kept as-is; see notes
                     ),
                   ),
                   const SizedBox(height: 16),
 
                   // Coupon Code Field
                   _buildField(
-                    label: 'Coupon Code',
+                    label: "coupon_code".tr, // Updated
                     child: TextField(
                       controller: couponController,
-                      readOnly: true, // Prevent manual input
-                      decoration: _buildInputDecoration('Add coupon code'),
+                      readOnly: true,
+                      decoration: _buildInputDecoration("add_coupon_code".tr), // Updated
                       onTap: () {
                         _showCouponDialog(context);
                       },
@@ -118,15 +117,15 @@ class CouponView extends GetView {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Total Price:',
-                        style: TextStyle(
+                      Text(
+                        "total_price".tr, // Updated
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const Text(
-                        '\$40',
+                        '\$40', // Kept as-is; see notes
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -139,7 +138,7 @@ class CouponView extends GetView {
                   // Order Now Button
                   Center(
                     child: CustomButton(
-                      text: 'Order Now',
+                      text: "order_now".tr, // Updated
                       onPressed: () {
                         // Add order logic here
                       },
@@ -162,7 +161,7 @@ class CouponView extends GetView {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Select a Coupon"),
+          title: Text("select_a_coupon".tr), // Updated
           content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
@@ -172,9 +171,8 @@ class CouponView extends GetView {
                 return ListTile(
                   title: Text(predefinedCoupons[index]),
                   onTap: () {
-                    // Set selected coupon in the text field
                     couponController.text = predefinedCoupons[index];
-                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(context).pop();
                   },
                 );
               },
@@ -183,9 +181,9 @@ class CouponView extends GetView {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog without selection
+                Navigator.of(context).pop();
               },
-              child: const Text("Cancel"),
+              child: Text("cancel".tr), // Updated
             ),
           ],
         );
@@ -203,7 +201,7 @@ class CouponView extends GetView {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              '$label:',
+              '$label:', // Colon kept as part of UI, not translated
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

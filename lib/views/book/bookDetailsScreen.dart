@@ -5,7 +5,6 @@ import 'package:playground_02/views/subscription/cupon_view.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/book/bookPageView.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
-
 import '../../constants/routes.dart';
 import '../../widgets/book/bookCover.dart';
 
@@ -16,7 +15,7 @@ class BookDetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppbar(
-        title: "",
+        title: "", // Still empty; let me know if you want to add a title
         isHome: true,
       ),
       body: SingleChildScrollView(
@@ -24,8 +23,14 @@ class BookDetailsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              SizedBox(height: 50,),
-              const BookCover(isGrid: false, title: '', coverImage: '', bookId: '', isEpisode: false,),
+              const SizedBox(height: 50),
+              const BookCover(
+                isGrid: false,
+                title: '',
+                coverImage: '',
+                bookId: '',
+                isEpisode: false,
+              ),
               /*Center(
                 child: Stack(
                   alignment: Alignment.bottomRight,
@@ -45,14 +50,26 @@ class BookDetailsScreen extends StatelessWidget {
                   ],
                 ),
               ),*/
-              SizedBox(height: 20,),
-              CustomButton(text: 'VIEW BOOK', onPressed: (){
-                Get.to(BookPageView(title: 'gfd', bookId: '', coverImage: '', isEpisode: false, episodeIndex: '',));
-              }),
-              SizedBox(height: 20,),
-              CustomButton(text: 'GET BOOK', onPressed: (){
-                Get.to(CouponView());
-              }),
+              const SizedBox(height: 20),
+              CustomButton(
+                text: "view_book".tr, // Updated
+                onPressed: () {
+                  Get.to(BookPageView(
+                    title: 'gfd',
+                    bookId: '',
+                    coverImage: '',
+                    isEpisode: false,
+                    episodeIndex: '',
+                  ));
+                },
+              ),
+              const SizedBox(height: 20),
+              CustomButton(
+                text: "get_book".tr, // Updated
+                onPressed: () {
+                  Get.to(CouponView());
+                },
+              ),
             ],
           ),
         ),

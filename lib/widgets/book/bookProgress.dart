@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../constants/color/app_colors.dart';
 
@@ -53,7 +54,7 @@ class BookProgressBar extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '$percentage% complete',
+              '$percentage% ${"complete".tr}',
               style: const TextStyle(
                 color: AppColors.textColor,
                 fontSize: 14,

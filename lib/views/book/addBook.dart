@@ -11,11 +11,11 @@ class AddBook extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     // Initialize the BookController
+    // Initialize the BookController
     final controller = Get.put(BookController());
 
     return Scaffold(
-      appBar: const CustomAppbar(title: "Create a Book", showIcon: false),
+      appBar: CustomAppbar(title: "create_a_book".tr, showIcon: false), // Updated
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -23,7 +23,7 @@ class AddBook extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: CustomTextField(
-                label: "Book Name",
+                label: "book_name".tr, // Updated
                 controller: controller.bookNameController, // Link to controller
                 textColor: AppColors.textColor,
               ),
@@ -34,7 +34,7 @@ class AddBook extends StatelessWidget {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
         child: CustomButton(
-          text: "create",
+          text: "create".tr, // Updated
           onPressed: () {
             controller.createBook(); // Call the createBook method
           },

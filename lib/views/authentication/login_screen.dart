@@ -16,7 +16,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppbar(title: 'Login',),
+      appBar: CustomAppbar(title: 'login'.tr), // Use .tr for dynamic translation
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -30,12 +30,12 @@ class LoginScreen extends StatelessWidget {
 
               // Email and Password Fields
               CustomTextField(
-                label: "Email",
+                label: "email".tr, // Use .tr for dynamic translation
                 isPassword: false,
                 onChanged: (value) => authController.email.value = value,
               ),
               CustomTextField(
-                label: "Password",
+                label: "password".tr, // Use .tr for dynamic translation
                 isPassword: true,
                 onChanged: (value) => authController.password.value = value,
               ),
@@ -45,7 +45,7 @@ class LoginScreen extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => Get.to(ForgotPasswordScreen()),
-                  child: const Text("Forget Password", style: TextStyle(color: Colors.red,fontSize: 14,fontWeight: FontWeight.w500)),
+                  child: Text("forgot_password".tr, style: const TextStyle(color: Colors.red, fontSize: 14, fontWeight: FontWeight.w500)), // Use .tr for dynamic translation
                 ),
               ),
 
@@ -53,8 +53,8 @@ class LoginScreen extends StatelessWidget {
 
               // Login Button
               CustomButton(
-                text: "LOG IN",
-                onPressed: (){
+                text: "log_in".tr, // Use .tr for dynamic translation
+                onPressed: () {
                   authController.login(authController.email.value, authController.password.value);
                 },
                 borderRadius: 20.0,
@@ -71,4 +71,3 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
-

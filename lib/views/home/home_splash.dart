@@ -17,7 +17,7 @@ class _HomeSplashscreenState extends State<HomeSplashscreen> {
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 2), () {
-      Get.offAll(const DashboardView());// Navigate to the second splash screen
+      Get.offAll(const DashboardView()); // Navigate to the DashboardView
     });
   }
 
@@ -30,7 +30,10 @@ class _HomeSplashscreenState extends State<HomeSplashscreen> {
           children: [
             Image.asset('assets/images/home/home_splash.png'),
             const SizedBox(height: 16),
-            const Text('Welcome To our Family',style: TextStyle(fontSize: 30,fontWeight: FontWeight.w400),)
+            Text(
+              "welcome_to_our_family".tr, // Updated
+              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w400),
+            ),
           ],
         ),
       ),

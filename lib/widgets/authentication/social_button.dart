@@ -16,8 +16,8 @@ class SocialButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 44,
-      width: 221,
+      height: 50,
+      width: 240,
       child: OutlinedButton.icon(
         onPressed: onPressed,
         icon: Image.asset(iconPath, height: 24),

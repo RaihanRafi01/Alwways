@@ -13,9 +13,8 @@ class HelpSupportView extends GetView<SettingController> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(), // No title provided; add one if needed
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
@@ -23,23 +22,23 @@ class HelpSupportView extends GetView<SettingController> {
             children: [
               //const SizedBox(height: 80),
               CustomTextField(
-                label: 'Email',
+                label: "email".tr, // Updated
                 prefixIcon: Icons.email_outlined,
                 controller: emailController,
-                hint: 'Enter Email',
+                hint: "enter_email".tr, // Updated
               ),
               const SizedBox(height: 20),
               CustomTextField(
-                label: 'Description',
+                label: "description".tr, // Updated
                 controller: problemController,
-                hint: 'Write Your Problem',
+                hint: "write_your_problem".tr, // Updated
               ),
               const SizedBox(height: 40),
               Obx(() {
                 return settingController.isLoading.value
                     ? const CircularProgressIndicator()
                     : CustomButton(
-                  text: 'Send',
+                  text: "send".tr, // Updated
                   onPressed: _validateAndSend,
                 );
               }),
@@ -55,12 +54,12 @@ class HelpSupportView extends GetView<SettingController> {
     final problem = problemController.text.trim();
 
     if (email.isEmpty || problem.isEmpty) {
-      _showSnackbar('Error', 'Please fill out all fields');
+      _showSnackbar("error".tr, "please_fill_out_all_fields".tr); // Updated
       return;
     }
 
     if (!_isValidEmail(email)) {
-      _showSnackbar('Error', 'Please enter a valid email address');
+      _showSnackbar("error".tr, "please_enter_valid_email_address".tr); // Updated
       return;
     }
 

@@ -3,11 +3,15 @@ import 'package:get/get.dart';
 import 'package:playground_02/constants/routes.dart';
 import 'package:playground_02/constants/translations/app_translations.dart';
 
-import 'controllers/book/book_controller.dart';
+import 'constants/translations/language_initializer.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  print('Main: App initialization started');
+  await LanguageInitializer.initAppLanguage();
+  print('Main: Language initialization completed');
   runApp(const MyApp());
-  //Get.lazyPut(() => BookController());
+  print('Main: App running');
 }
 
 class MyApp extends StatelessWidget {
@@ -15,12 +19,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('MyApp: Building app with locale: ${Get.locale}');
     return GetMaterialApp(
       title: 'Auth UI',
       translations: AppTranslations(),
-      locale: const Locale('en', 'US'),
+      locale: Get.locale ?? const Locale('en', 'US'),
       fallbackLocale: const Locale('en', 'US'),
-      initialRoute: AppRoutes.splash1,  // splash1
+      initialRoute: AppRoutes.splash1,
       getPages: AppRoutes.pages,
       theme: ThemeData(
         fontFamily: 'Visby',

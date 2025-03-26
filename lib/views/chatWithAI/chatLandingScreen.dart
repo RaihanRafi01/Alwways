@@ -19,7 +19,7 @@ class ChatLandingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AI Bot'),
+        title: Text("ai_bot".tr), // Updated
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -39,29 +39,29 @@ class ChatLandingScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Hello, and welcome!',
-            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.bookTextColor),
+          Text(
+            "hello_and_welcome".tr, // Updated
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.bookTextColor),
           ),
           const SizedBox(height: 28),
           CustomButton(
-            text: 'Add Book',
+            text: "add_book".tr, // Updated
             onPressed: () => Get.to(() => const AddBook()),
           ),
           const SizedBox(height: 28),
-          const Text(
-            'I’m here to help you create a beautiful memoir of your life. 😊',
-            style: TextStyle(fontSize: 16, color: AppColors.botTextColor2),
+          Text(
+            "memoir_help_message".tr, // Updated
+            style: const TextStyle(fontSize: 16, color: AppColors.botTextColor2),
           ),
           const SizedBox(height: 28),
-          const Text(
-            'Select a book',
-            style: TextStyle(fontSize: 18, color: AppColors.botTextColor),
+          Text(
+            "select_a_book".tr, // Updated
+            style: const TextStyle(fontSize: 18, color: AppColors.botTextColor),
           ),
           const SizedBox(height: 8),
           DropdownButton<String>(
             value: controller.selectedBookId.value.isEmpty ? null : controller.selectedBookId.value,
-            hint: const Text('Select a book'),
+            hint: Text("select_a_book".tr), // Updated
             items: controller.books.map((Map<String, String> book) {
               return DropdownMenuItem<String>(
                 value: book['id'],
@@ -82,14 +82,14 @@ class ChatLandingScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 24),
-                const Text(
-                  'Select a section',
-                  style: TextStyle(fontSize: 18, color: AppColors.botTextColor),
+                Text(
+                  "select_a_section".tr, // Updated
+                  style: const TextStyle(fontSize: 18, color: AppColors.botTextColor),
                 ),
                 const SizedBox(height: 8),
                 DropdownButton<String>(
                   value: controller.selectedSectionId.value.isEmpty ? null : controller.selectedSectionId.value,
-                  hint: const Text('Select a section'),
+                  hint: Text("select_a_section".tr), // Updated
                   items: controller.sections.map<DropdownMenuItem<String>>((Section section) {
                     return DropdownMenuItem<String>(
                       value: section.id,
@@ -118,11 +118,11 @@ class ChatLandingScreen extends StatelessWidget {
   Widget _buildInitialChatScreen(BuildContext context) {
     final ScrollController scrollController = ScrollController();
 
-    // Updated predefined questions
+    // Updated predefined questions with .tr
     final List<String> predefinedQuestions = [
-      "What will be the name of the book?",
-      "Where were you born?",
-      "What is one of your favorite childhood memories?",
+      "question_book_name".tr,
+      "question_birth_place".tr,
+      "question_childhood_memory".tr,
     ];
 
     // Initialize the chat with predefined questions
@@ -164,14 +164,14 @@ class ChatLandingScreen extends StatelessWidget {
 
     return Column(
       children: [
-        const Text(
-          'Let’s start your memoir!',
-          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.bookTextColor),
+        Text(
+          "start_memoir".tr, // Updated
+          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.bookTextColor),
         ),
         const SizedBox(height: 20),
-        const Text(
-          'Answer a few questions to create your first book.',
-          style: TextStyle(fontSize: 16, color: AppColors.botTextColor2),
+        Text(
+          "answer_questions_prompt".tr, // Updated
+          style: const TextStyle(fontSize: 16, color: AppColors.botTextColor2),
         ),
         const SizedBox(height: 20),
         Expanded(

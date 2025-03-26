@@ -17,7 +17,7 @@ class VerifyCodeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppbar(title: 'Verify Code'),
+      appBar: CustomAppbar(title: "verify_code".tr), // Updated
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -26,9 +26,9 @@ class VerifyCodeScreen extends StatelessWidget {
             children: [
               const AppLogo(),
               const SizedBox(height: 66),
-              const Text(
-                "Enter Verification Code",
-                style: TextStyle(fontSize: 18),
+              Text(
+                "enter_verification_code".tr, // Updated
+                style: const TextStyle(fontSize: 18),
               ),
               const SizedBox(height: 20),
               PinCodeInputField(
@@ -42,10 +42,13 @@ class VerifyCodeScreen extends StatelessWidget {
               Obx(() => authController.isLoading.value
                   ? const CircularProgressIndicator() // Show loading indicator
                   : CustomButton(
-                text: "VERIFY NOW",
+                text: "verify_now".tr, // Updated
                 onPressed: () {
                   if (otp.isEmpty || otp.length != 4) {
-                    Get.snackbar('Error', 'Please enter a valid 4-digit OTP');
+                    Get.snackbar(
+                      "error".tr, // Updated
+                      "please_enter_valid_otp".tr, // Updated
+                    );
                   } else {
                     authController.verifyOtp(email, otp); // Call verifyOtp
                   }

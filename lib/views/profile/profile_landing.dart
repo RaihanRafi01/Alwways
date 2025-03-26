@@ -18,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
       initState: (_) => Get.find<AuthController>().fetchProfile(),
       builder: (controller) {
         return Scaffold(
-          appBar: const CustomAppbar(title: 'Profile', isHome: true),
+          appBar: CustomAppbar(title: "profile".tr, isHome: true), // Updated
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
@@ -52,11 +52,11 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 ListTile(
                   leading: SvgPicture.asset("assets/images/profile/profile_edit_icon.svg"),
-                  title: const Text('Edit Profile'),
+                  title: Text("edit_profile".tr), // Updated
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () {
                     // Pass the controller to SignupScreen for consistency
-                    Get.to(() => const SignupScreen(isEdit: true, title: 'Edit Profile'));
+                    Get.to(() => SignupScreen(isEdit: true, title: "edit_profile".tr)); // Updated
                   },
                 ),
                 Obx(
@@ -91,7 +91,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ListTile(
                   leading: SvgPicture.asset("assets/images/profile/log_out_icon.svg"),
-                  title: const Text('Log Out'),
+                  title: Text("log_out".tr), // Updated
                   onTap: controller.logout,
                 ),
                 const SizedBox(height: 60),

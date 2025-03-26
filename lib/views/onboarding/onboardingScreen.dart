@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:gif/gif.dart';  // Import gif package for GIF support
+import 'package:gif/gif.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/constants/routes.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:playground_02/constants/translations/app_translations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -15,6 +16,46 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
+
+  // Define content for both languages
+  final Map<String, List<Map<String, String>>> onboardingContent = {
+    'en_US': [
+      {
+        'title': 'Welcome to our app!',
+        'subtitle': 'Discover amazing features tailored for you.',
+      },
+      {
+        'title': 'Turn your answers into chapters',
+        'subtitle': 'Chat with Titi, our AI, or answer the questionnaire to bring your memories to life.',
+      },
+      {
+        'title': 'Add images and customize',
+        'subtitle': 'Make it unique: add photos and design a special cover.',
+      },
+      {
+        'title': 'Start for free and discover more',
+        'subtitle': 'Create the first chapters for free and unlock the full book if you like it.',
+      },
+    ],
+    'es_ES': [
+      {
+        'title': '¡Bienvenido a nuestra aplicación!',
+        'subtitle': 'Descubre funciones increíbles diseñadas para ti.',
+      },
+      {
+        'title': 'Convierte tus respuestas en capítulos',
+        'subtitle': 'Chatea con Titi, nuestra IA, o responde el cuestionario para dar vida a tus recuerdos.',
+      },
+      {
+        'title': 'Añade imágenes y personaliza',
+        'subtitle': 'Hazlo único: agrega fotos y diseña una portada especial.',
+      },
+      {
+        'title': 'Comienza gratis y descubre más',
+        'subtitle': 'Crea los primeros capítulos gratis y desbloquea el libro completo si te gusta.',
+      },
+    ],
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -31,43 +72,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   setState(() {});
                 },
                 children: [
-                  // Page 1 (with GIF)
                   _buildPage(
-                    true,  // Add true to show GIF on this page
-                    "assets/images/onboarding/onboarding_gif.gif",  // Path to your GIF
-                    "Welcome to our app!",
-                    "Discover amazing features tailored for you.",
+                    true,
+                    "assets/images/onboarding/onboarding_gif.gif",
+                    onboardingContent[Get.locale?.toString() ?? 'en_US']![0]['title']!,
+                    onboardingContent[Get.locale?.toString() ?? 'en_US']![0]['subtitle']!,
                   ),
-                  // Page 2
                   _buildPage(
-                    false,  // Not showing GIF on other pages
+                    false,
                     "assets/images/onboarding/onboarding_2.png",
-                    "Turn your answers into chapters",
-                    " Chat with Titi, our AI, or answer the questionnaire to bring your memories to life.",
+                    onboardingContent[Get.locale?.toString() ?? 'en_US']![1]['title']!,
+                    onboardingContent[Get.locale?.toString() ?? 'en_US']![1]['subtitle']!,
                   ),
-                  // Page 3
                   _buildPage(
                     false,
                     "assets/images/onboarding/onboarding_3.png",
-                    "Add images and customize",
-                    " Make it unique: add photos and design a special cover.",
+                    onboardingContent[Get.locale?.toString() ?? 'en_US']![2]['title']!,
+                    onboardingContent[Get.locale?.toString() ?? 'en_US']![2]['subtitle']!,
                   ),
-                  // Page 4 - Final Page
                   _buildPage(
                     false,
                     "assets/images/onboarding/onboarding_4.png",
-                    " Start for free and discover more",
-                    "Create the first chapters for free and unlock the full book if you like it.",
+                    onboardingContent[Get.locale?.toString() ?? 'en_US']![3]['title']!,
+                    onboardingContent[Get.locale?.toString() ?? 'en_US']![3]['subtitle']!,
                   ),
                 ],
               ),
             ),
-            // Dots Indicator
             Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
               child: SmoothPageIndicator(
                 controller: _pageController,
-                count: 4, // Total number of pages
+                count: 4,
                 effect: const WormEffect(
                   dotWidth: 10.0,
                   dotHeight: 10.0,
@@ -79,7 +115,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
               child: CustomButton(
-                text: 'Get Started',
+                text: Get.locale?.languageCode == 'es' ? 'Comenzar' : 'Get Started',
                 onPressed: () {
                   if (_pageController.page == 3) {
                     Get.offNamed(AppRoutes.login);
@@ -100,33 +136,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // Helper method to create a page widget with an optional GIF, SVG image, and two text widgets
   Widget _buildPage(bool showGif, String mediaPath, String text1, String text2) {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 30),
-          // If it's the first page, display a GIF, else display an SVG or static image
           showGif
-              ? Gif(image: AssetImage(mediaPath),
-              autostart: Autostart.once,
+              ? Gif(
+            image: AssetImage(mediaPath),
+            autostart: Autostart.once,
           )
               : Image.asset(mediaPath, height: 390, width: 200),
-      
           const SizedBox(height: 20),
-          // First Text
           Text(
             text1,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold,color: AppColors.appColor),
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: AppColors.appColor,
+            ),
           ),
           const SizedBox(height: 10),
-          // Second Text
           Text(
             text2,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18,color: AppColors.onboardingText),
+            style: const TextStyle(
+              fontSize: 18,
+              color: AppColors.onboardingText,
+            ),
           ),
         ],
       ),

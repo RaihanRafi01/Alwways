@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/widgets/authentication/social_button.dart';
+
 class SignupWithOther extends StatelessWidget {
   const SignupWithOther({super.key});
 
@@ -12,9 +13,9 @@ class SignupWithOther extends StatelessWidget {
         children: [
           TextButton(
             onPressed: () => Get.toNamed('/signup'),
-            child: const Text("Create an account"),
+            child: Text("create_account".tr), // Use .tr for dynamic translation
           ),
-          const Text("or sign up with "),
+          Text("or_sign_up_with".tr), // Use .tr for dynamic translation
         ],
       ),
 
@@ -22,7 +23,7 @@ class SignupWithOther extends StatelessWidget {
 
       // Google and Apple Sign-in Buttons
       SocialButton(
-        label: "Log in with Google",
+        label: "log_in_with_google".tr, // Use .tr for dynamic translation
         iconPath: 'assets/images/auth/google_logo.png',
         onPressed: () {
           // Call Google sign-in function
@@ -30,7 +31,7 @@ class SignupWithOther extends StatelessWidget {
       ),
       const SizedBox(height: 8),
       SocialButton(
-        label: "Log in with Apple",
+        label: "log_in_with_apple".tr, // Use .tr for dynamic translation
         iconPath: 'assets/images/auth/apple_logo.png',
         onPressed: () {
           // Call Apple sign-in function

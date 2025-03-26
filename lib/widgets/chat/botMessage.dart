@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
 
 class BotMessage extends StatelessWidget {
@@ -81,7 +82,7 @@ class _ThreeDotsAnimationState extends State<ThreeDotsAnimation>
       builder: (context, child) {
         String dots = '.' * _animation.value; // Dynamically update dots
         return Text(
-          'Thinking$dots',
+          '${"thinking".tr}$dots',
           style: const TextStyle(
             fontSize: 16,
             color: AppColors.botTextColor, // Match your bot text color

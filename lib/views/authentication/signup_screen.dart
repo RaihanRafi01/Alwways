@@ -9,9 +9,9 @@ import 'package:playground_02/widgets/customAppBar.dart';
 
 class SignupScreen extends StatelessWidget {
   final bool isEdit;
-  final String title;
+  final String? title;
 
-  const SignupScreen({super.key, this.isEdit = false, this.title = 'Create account'});
+  SignupScreen({super.key, this.isEdit = false, this.title}); // Default title uses translation
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +45,7 @@ class SignupScreen extends StatelessWidget {
     final TextEditingController confirmPasswordController = TextEditingController();
 
     return Scaffold(
-      appBar: CustomAppbar(title: title),
+      appBar: CustomAppbar(title: title!),
       body: Obx(() {
         return Stack(
           children: [
@@ -65,7 +65,7 @@ class SignupScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: CustomTextField(
-                            label: "First Name",
+                            label: "first_name".tr, // Use .tr for dynamic translation
                             controller: firstNameController,
                             onChanged: (value) => authController.firstName.value = value,
                           ),
@@ -73,7 +73,7 @@ class SignupScreen extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: CustomTextField(
-                            label: "Last Name",
+                            label: "last_name".tr, // Use .tr for dynamic translation
                             controller: lastNameController,
                             onChanged: (value) => authController.lastName.value = value,
                           ),
@@ -82,35 +82,35 @@ class SignupScreen extends StatelessWidget {
                     ),
                     if (!isEdit)
                       CustomTextField(
-                        label: "Email address",
+                        label: "email_address".tr, // Use .tr for dynamic translation
                         controller: emailController,
                         keyboardType: TextInputType.emailAddress,
                         prefixIcon: Icons.email_outlined,
                         onChanged: (value) => authController.email.value = value,
                       ),
                     CustomTextField(
-                      label: "Contact",
+                      label: "contact".tr, // Use .tr for dynamic translation
                       controller: contactController,
                       phone: true, // Use IntlPhoneField for consistency
                       initialValue: authController.contact.value, // Pre-fill phone number
                       onChanged: (value) => authController.contact.value = value,
                     ),
                     CustomTextField(
-                      label: "Location",
+                      label: "location".tr, // Use .tr for dynamic translation
                       controller: locationController,
                       prefixIcon: Icons.location_on_outlined,
                       onChanged: (value) => authController.location.value = value,
                     ),
                     CustomTextField(
-                      label: "Gender",
+                      label: "gender".tr, // Use .tr for dynamic translation
                       isDropdown: true,
-                      dropdownItems: ['Male', 'Female', 'Other'],
+                      dropdownItems: ['male'.tr, 'female'.tr, 'other'.tr], // Translate dropdown items
                       initialValue: authController.gender.value,
                       onChanged: (value) => authController.gender.value = value,
                     ),
                     CustomTextField(
                       prefixIcon: Icons.calendar_month_outlined,
-                      label: "Date of Birth",
+                      label: "date_of_birth".tr, // Use .tr for dynamic translation
                       controller: dateController,
                       readOnly: true, // Prevent manual editing
                       onTap: () async {
@@ -130,7 +130,7 @@ class SignupScreen extends StatelessWidget {
                     if (!isEdit)
                       CustomTextField(
                         suffixIcon: Icons.visibility_off_outlined,
-                        label: "Password",
+                        label: "password".tr, // Use .tr for dynamic translation
                         isPassword: true,
                         controller: passwordController,
                         onChanged: (value) => authController.password.value = value,
@@ -138,7 +138,7 @@ class SignupScreen extends StatelessWidget {
                     if (!isEdit)
                       CustomTextField(
                         suffixIcon: Icons.visibility_off_outlined,
-                        label: "Confirm Password",
+                        label: "confirm_password".tr, // Use .tr for dynamic translation
                         isPassword: true,
                         controller: confirmPasswordController,
                         onChanged: (value) => authController.confirmPassword.value = value,
@@ -146,22 +146,22 @@ class SignupScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     if (isEdit)
                       CustomButton(
-                        text: "Save Changes",
+                        text: "save_changes".tr, // Use .tr for dynamic translation
                         onPressed: () => authController.updateProfile(),
                       ),
                     if (!isEdit)
                       CustomButton(
-                        text: "SIGN UP",
+                        text: "sign_up".tr, // Use .tr for dynamic translation
                         onPressed: () => authController.createAccount(),
                       ),
                     if (!isEdit)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text("Already have an account?"),
+                          Text("already_have_account".tr), // Use .tr for dynamic translation
                           TextButton(
                             onPressed: () => Get.toNamed('/login'),
-                            child: const Text("Login"),
+                            child: Text("login".tr), // Use .tr for dynamic translation
                           ),
                         ],
                       ),

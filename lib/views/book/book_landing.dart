@@ -25,7 +25,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppbar(
-        title: widget.isEpisode ? "Episodes" : "All Books",
+        title: widget.isEpisode ? "episodes".tr : "all_books".tr, // Updated
         isHome: !widget.isEpisode,
       ),
       body: Stack(
@@ -61,7 +61,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
   Widget _buildGrid(List<dynamic> items, bool isEpisode) {
     if (items.isEmpty) {
       return Center(
-        child: Text(isEpisode ? "No episodes found" : "No books found"),
+        child: Text(isEpisode ? "no_episodes_found".tr : "no_books_found".tr), // Updated
       );
     }
     return GridView.builder(
