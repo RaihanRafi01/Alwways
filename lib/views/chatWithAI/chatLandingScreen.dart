@@ -118,9 +118,9 @@ class ChatLandingScreen extends StatelessWidget {
   Widget _buildInitialChatScreen(BuildContext context) {
     final ScrollController scrollController = ScrollController();
 
-    // Predefined questions for initial chat
+    // Updated predefined questions
     final List<String> predefinedQuestions = [
-      "What is your name?",
+      "What will be the name of the book?",
       "Where were you born?",
       "What is one of your favorite childhood memories?",
     ];
@@ -182,7 +182,7 @@ class ChatLandingScreen extends StatelessWidget {
             ),
           )),
         ),
-        MessageInput(), // Stays at the bottom, above the keyboard
+        MessageInput(),
       ],
     );
   }
