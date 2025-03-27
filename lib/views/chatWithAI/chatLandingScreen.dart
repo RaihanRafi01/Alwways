@@ -19,11 +19,12 @@ class ChatLandingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("ai_bot".tr), // Updated
+        title: Text("ai_bot".tr),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Obx(() {
+          // Ensure books are loaded or refreshed when returning
           if (controller.books.isEmpty) {
             return _buildInitialChatScreen(context);
           } else {
@@ -40,56 +41,68 @@ class ChatLandingScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "hello_and_welcome".tr, // Updated
+            "hello_and_welcome".tr,
             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.bookTextColor),
           ),
           const SizedBox(height: 28),
           CustomButton(
-            text: "add_book".tr, // Updated
+            text: "add_book".tr,
             onPressed: () => Get.to(() => const AddBook()),
           ),
           const SizedBox(height: 28),
           Text(
-            "memoir_help_message".tr, // Updated
+            "memoir_help_message".tr,
             style: const TextStyle(fontSize: 16, color: AppColors.botTextColor2),
           ),
           const SizedBox(height: 28),
           Text(
-            "select_a_book".tr, // Updated
+            "select_a_book".tr,
             style: const TextStyle(fontSize: 18, color: AppColors.botTextColor),
           ),
           const SizedBox(height: 8),
-          DropdownButton<String>(
-            value: controller.selectedBookId.value.isEmpty ? null : controller.selectedBookId.value,
-            hint: Text("select_a_book".tr), // Updated
-            items: controller.books.map((Map<String, String> book) {
-              return DropdownMenuItem<String>(
-                value: book['id'],
-                child: Text(book['title']!),
-              );
-            }).toList(),
-            onChanged: (selectedBookId) {
-              if (selectedBookId != null && selectedBookId.isNotEmpty) {
-                controller.selectBook(selectedBookId);
-              }
-            },
-          ),
+          Obx(() {
+            // Validate selectedBookId against available books
+            final validBookId = controller.books.any((book) => book['id'] == controller.selectedBookId.value)
+                ? controller.selectedBookId.value
+                : null;
+
+            return DropdownButton<String>(
+              value: validBookId,
+              hint: Text("select_a_book".tr),
+              items: controller.books.map((Map<String, String> book) {
+                return DropdownMenuItem<String>(
+                  value: book['id'],
+                  child: Text(book['title']!),
+                );
+              }).toList(),
+              onChanged: (selectedBookId) {
+                if (selectedBookId != null && selectedBookId.isNotEmpty) {
+                  controller.selectBook(selectedBookId);
+                }
+              },
+            );
+          }),
           Obx(() {
             if (controller.selectedBookId.value.isEmpty) {
               return const SizedBox.shrink();
             }
+            // Validate selectedSectionId against available sections
+            final validSectionId = controller.sections.any((section) => section.id == controller.selectedSectionId.value)
+                ? controller.selectedSectionId.value
+                : null;
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 24),
                 Text(
-                  "select_a_section".tr, // Updated
+                  "select_a_section".tr,
                   style: const TextStyle(fontSize: 18, color: AppColors.botTextColor),
                 ),
                 const SizedBox(height: 8),
                 DropdownButton<String>(
-                  value: controller.selectedSectionId.value.isEmpty ? null : controller.selectedSectionId.value,
-                  hint: Text("select_a_section".tr), // Updated
+                  value: validSectionId,
+                  hint: Text("select_a_section".tr),
                   items: controller.sections.map<DropdownMenuItem<String>>((Section section) {
                     return DropdownMenuItem<String>(
                       value: section.id,
@@ -118,14 +131,6 @@ class ChatLandingScreen extends StatelessWidget {
   Widget _buildInitialChatScreen(BuildContext context) {
     final ScrollController scrollController = ScrollController();
 
-    // Updated predefined questions with .tr
-    final List<String> predefinedQuestions = [
-      "question_1".tr,
-      "question_2".tr,
-      "question_3".tr,
-    ];
-
-    // Initialize the chat with predefined questions
     void initializeInitialChat() {
       messageController.messages.clear();
       messageController.userAnswers.clear();
@@ -144,7 +149,6 @@ class ChatLandingScreen extends StatelessWidget {
       messageController.askQuestion();
     }
 
-    // Scroll to bottom when messages change
     ever(messageController.messages, (_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (scrollController.hasClients) {
@@ -157,20 +161,15 @@ class ChatLandingScreen extends StatelessWidget {
       });
     });
 
-    // Initialize chat when widget builds
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initializeInitialChat();
     });
 
     return Column(
       children: [
-        /*Text(
-          "start_memoir".tr, // Updated
-          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.bookTextColor),
-        ),*/
         const SizedBox(height: 20),
         Text(
-          "answer_questions_prompt".tr, // Updated
+          "answer_questions_prompt".tr,
           style: const TextStyle(fontSize: 16, color: AppColors.botTextColor2),
         ),
         const SizedBox(height: 20),

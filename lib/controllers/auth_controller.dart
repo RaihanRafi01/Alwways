@@ -25,13 +25,14 @@ class AuthController extends GetxController {
   var dateOfBirth = Rxn<DateTime>(), password = ''.obs, confirmPassword = ''.obs;
   var pickedImage = Rxn<XFile>();
   var profilePictureUrl = ''.obs; // Added for profile picture URL
+  var subscriptionType = ''.obs;
 
   // Getters for computed values
   String get fullName => '${firstName.value} ${lastName.value}';
   String get formattedDateOfBirth => dateOfBirth.value != null
       ? DateFormat('dd/MM/yyyy').format(dateOfBirth.value!)
       : '';
-
+  @override
   // Store tokens securely
   Future<void> storeTokens(String accessToken) async {
     await _storage.write(key: 'access_token', value: accessToken);
@@ -51,6 +52,7 @@ class AuthController extends GetxController {
 
   // Fetch profile data from API
   Future<void> fetchProfile() async {
+    print(' :::::: 🪃 hit fetch profile');
     try {
       String? token = await _storage.read(key: 'access_token');
       if (token == null) {
@@ -68,6 +70,7 @@ class AuthController extends GetxController {
         contact.value = data['mobile'] ?? '';
         location.value = data['location'] ?? '';
         gender.value = data['gender'] ?? '';
+        subscriptionType.value = data['subscriptionType'] ?? 'Free';
         dateOfBirth.value = data['dateOfBirth'] != null
             ? DateTime.parse(data['dateOfBirth'])
             : null;

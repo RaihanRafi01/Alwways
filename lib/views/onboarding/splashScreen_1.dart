@@ -6,7 +6,9 @@ import 'package:playground_02/views/authentication/login_screen.dart';
 import 'package:playground_02/views/dashboard/views/dashboard_view.dart';
 import 'package:playground_02/views/home/home_landing.dart';
 import 'package:playground_02/views/onboarding/onboardingScreen.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import the second splash screen
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../controllers/auth_controller.dart'; // Import the second splash screen
 
 class Splashscreen1 extends StatefulWidget {
   const Splashscreen1({super.key});
