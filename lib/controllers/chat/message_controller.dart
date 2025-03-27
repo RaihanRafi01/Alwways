@@ -129,7 +129,7 @@ class MessageController extends GetxController {
     Future<void> _createBookAndNavigate() async {
       print("Creating book with answers: ${userAnswers.toList()}");
       String bookName = userAnswers.firstWhere(
-            (a) => a['question'] == 'What will be the name of the book?',
+            (a) => a['question'] == 'What title would you like to give the book? Don\'t worry, you can change it anytime.',
         orElse: () => {'answer': 'My Memoir'},
       )['answer'] ?? 'My Memoir';
       bookController.bookNameController.text = bookName; // Use the answer directly as book name

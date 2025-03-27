@@ -120,9 +120,9 @@ class ChatLandingScreen extends StatelessWidget {
 
     // Updated predefined questions with .tr
     final List<String> predefinedQuestions = [
-      "question_book_name".tr,
-      "question_birth_place".tr,
-      "question_childhood_memory".tr,
+      "question_1".tr,
+      "question_2".tr,
+      "question_3".tr,
     ];
 
     // Initialize the chat with predefined questions
