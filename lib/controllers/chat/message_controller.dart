@@ -83,47 +83,144 @@ class MessageController extends GetxController {
       }
     }
 
-    Future<void> sendMessage(String userAnswer) async {
-      if (userAnswer.trim().isEmpty) return;
+  Future<void> sendMessage(String userAnswer) async {
+    if (userAnswer.trim().isEmpty) return;
 
-      final currentQuestion = questionController.getCurrentQuestion();
-      print("User answered: '$userAnswer' to question: '$currentQuestion' (Index: ${questionController.currentQuestionIndex.value})");
-      messages.add(UserMessage(message: userAnswer));
-      userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
+    final currentQuestion = questionController.getCurrentQuestion();
+    print("User answered: '$userAnswer' to question: '$currentQuestion' (Index: ${questionController.currentQuestionIndex.value})");
+    messages.add(UserMessage(message: userAnswer));
+    userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
 
-      if (botController.selectedBookId.value.isEmpty) {
-        print("In initial chat mode, checking relevancy...");
-        _showLoadingMessage();
-
-        // Call relevancy check API
-        final response = await apiService.checkRelevancy(currentQuestion, userAnswer);
-        print("Relevancy check - Status Code: ${response.statusCode}, Body: ${response.body}");
-
-
-        if (response.statusCode == 400) {
-          // Ask the same question again if relevancy fails
-          messages.add(BotMessage(message: "Could you provide a more relevant answer to: $currentQuestion"));
-        } else {
-          // Move to next question if relevancy passes
-          questionController.nextQuestion();
-          askQuestion();
-        }
-        return;
-      }
-
-      final bookId = botController.selectedBookId.value;
+    if (botController.selectedBookId.value.isEmpty) {
+      print("In initial chat mode, checking relevancy...");
       _showLoadingMessage();
 
-      if (questionController.isSubQuestionMode.value) {
-        await _handleSubQuestionAnswer(currentQuestion, userAnswer);
-        if (!questionController.isSubQuestionMode.value) {
-          final history = await dbHelper.getChatHistory(bookId, sectionId!);
-          questionController.skipToNextUnansweredQuestion(history);
-        }
+      final response = await apiService.checkRelevancy(currentQuestion, userAnswer);
+      print("Relevancy check - Status Code: ${response.statusCode}, Body: ${response.body}");
+
+      _removeLoadingMessage();
+
+      if (response.statusCode == 400) {
+        messages.add(BotMessage(message: "Could you provide a more relevant answer to: $currentQuestion"));
       } else {
-        await _handleGenerateSubQuestion(currentQuestion, userAnswer);
+        if (questionController.currentQuestionIndex.value == 0 && userAnswers.length == 1) {
+          String lowerAnswer = userAnswer.toLowerCase();
+          print("::: Debugging isForSelf ::: lowerAnswer: '$lowerAnswer'");
+
+          bool isForSelf = (lowerAnswer.contains(" me ") || // "me" as a standalone word
+              lowerAnswer.contains("myself") ||
+              lowerAnswer.contains("i ") || // Already has a space
+              lowerAnswer.contains("my own") ||
+              lowerAnswer.contains("for me") ||
+              lowerAnswer.contains("mine") ||
+              lowerAnswer.contains("my book") ||
+              lowerAnswer.contains("personal") ||
+              lowerAnswer.contains("self") ||
+              lowerAnswer.contains("i am") ||
+              lowerAnswer.contains("i'm") ||
+              lowerAnswer.contains("for myself") ||
+              lowerAnswer.contains("by me") ||
+              lowerAnswer.contains("about me") ||
+              lowerAnswer.contains("on me") ||
+              lowerAnswer.contains("i want") ||
+              lowerAnswer.contains("i will") ||
+              lowerAnswer.contains("i'll") ||
+              lowerAnswer.contains("my story") ||
+              lowerAnswer.contains("my life") ||
+              lowerAnswer.contains("me personally") ||
+              lowerAnswer.contains("to me") ||
+              lowerAnswer.contains("i need") ||
+              lowerAnswer.contains("i think") ||
+              lowerAnswer.contains("my memoir") ||
+              lowerAnswer.contains("i wrote") ||
+              lowerAnswer.contains("written by me") ||
+              lowerAnswer.contains("my personal") ||
+              lowerAnswer.contains("me alone") ||
+              lowerAnswer.contains("just me") ||
+              lowerAnswer.contains("only me") ||
+              lowerAnswer.contains("i myself") ||
+              lowerAnswer.contains("me too") ||
+              lowerAnswer.contains("my journey") ||
+              lowerAnswer.contains("i intend")) &&
+              !lowerAnswer.contains("someone") && // Explicitly exclude "someone"
+              !lowerAnswer.contains("someone else");
+
+          print("::: Debugging isForSelf ::: isForSelf: $isForSelf");
+
+          if (isForSelf) {
+            questionController.questions.value = [
+              Question(
+                id: "2",
+                episodeId: '',
+                sectionId: 'initial',
+                text: "question_2".tr, // "What is your name?"
+                v: 0,
+                createdAt: DateTime.now().toIso8601String(),
+                updatedAt: DateTime.now().toIso8601String(),
+              ),
+              Question(
+                id: "3",
+                episodeId: '',
+                sectionId: 'initial',
+                text: "question_3".tr, // "What title would you like to give the book? ..."
+                v: 0,
+                createdAt: DateTime.now().toIso8601String(),
+                updatedAt: DateTime.now().toIso8601String(),
+              ),
+            ];
+            print("::: Set questions for self ::: ['What is your name?', 'What title ...']");
+          } else {
+            questionController.questions.value = [
+              Question(
+                id: "2",
+                episodeId: '',
+                sectionId: 'initial',
+                text: "question_2_1".tr, // "What is their name?"
+                v: 0,
+                createdAt: DateTime.now().toIso8601String(),
+                updatedAt: DateTime.now().toIso8601String(),
+              ),
+              Question(
+                id: "3",
+                episodeId: '',
+                sectionId: 'initial',
+                text: "question_3".tr, // "What title would you like to give the book? ..."
+                v: 0,
+                createdAt: DateTime.now().toIso8601String(),
+                updatedAt: DateTime.now().toIso8601String(),
+              ),
+            ];
+            print("::: Set questions for other ::: ['What is their name?', 'What title ...']");
+          }
+          questionController.currentQuestionIndex.value = 0;
+          askQuestion();
+        } else {
+          questionController.nextQuestion();
+          if (questionController.currentQuestionIndex.value < questionController.questions.length) {
+            askQuestion();
+          } else {
+            print("All initial questions answered, proceeding to create book...");
+            _createBookAndNavigate();
+          }
+        }
       }
+      return;
     }
+
+    // Existing code for when a book is selected...
+    final bookId = botController.selectedBookId.value;
+    _showLoadingMessage();
+
+    if (questionController.isSubQuestionMode.value) {
+      await _handleSubQuestionAnswer(currentQuestion, userAnswer);
+      if (!questionController.isSubQuestionMode.value) {
+        final history = await dbHelper.getChatHistory(bookId, sectionId!);
+        questionController.skipToNextUnansweredQuestion(history);
+      }
+    } else {
+      await _handleGenerateSubQuestion(currentQuestion, userAnswer);
+    }
+  }
 
 
     Future<void> _createBookAndNavigate() async {

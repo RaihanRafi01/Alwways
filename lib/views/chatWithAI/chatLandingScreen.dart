@@ -129,17 +129,17 @@ class ChatLandingScreen extends StatelessWidget {
     void initializeInitialChat() {
       messageController.messages.clear();
       messageController.userAnswers.clear();
-      messageController.questionController.questions.value = predefinedQuestions
-          .map((q) => Question(
-        id: q.hashCode.toString(),
-        episodeId: '',
-        sectionId: 'initial',
-        text: q,
-        v: 0,
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-      ))
-          .toList();
+      messageController.questionController.questions.value = [
+        Question(
+          id: "1",
+          episodeId: '',
+          sectionId: 'initial',
+          text: "question_1".tr,
+          v: 0,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+        ),
+      ];
       messageController.questionController.currentQuestionIndex.value = 0;
       messageController.askQuestion();
     }
@@ -164,10 +164,10 @@ class ChatLandingScreen extends StatelessWidget {
 
     return Column(
       children: [
-        Text(
+        /*Text(
           "start_memoir".tr, // Updated
           style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.bookTextColor),
-        ),
+        ),*/
         const SizedBox(height: 20),
         Text(
           "answer_questions_prompt".tr, // Updated
