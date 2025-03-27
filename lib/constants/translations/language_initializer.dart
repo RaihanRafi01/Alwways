@@ -20,7 +20,7 @@ class LanguageInitializer {
         Get.updateLocale(const Locale('en', 'US'));
         if (countryCode == 'BD') {
           /// TODO need to commit
-          Get.updateLocale(const Locale('es', 'ES'));
+          //Get.updateLocale(const Locale('es', 'ES'));
           print('InitAppLanguage: Locale set to English (en_US) for Bangladesh');
         } else {
           print('InitAppLanguage: Locale set to English (en_US) - default or non-Spain');

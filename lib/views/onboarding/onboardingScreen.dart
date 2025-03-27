@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:gif/gif.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
@@ -21,8 +22,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final Map<String, List<Map<String, String>>> onboardingContent = {
     'en_US': [
       {
-        'title': 'Welcome to our app!',
-        'subtitle': 'Discover amazing features tailored for you.',
+        'title': 'Welcome to',
+        'subtitle': 'Start writing the story of your life and leave an eternal legacy.',
       },
       {
         'title': 'Turn your answers into chapters',
@@ -39,8 +40,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ],
     'es_ES': [
       {
-        'title': '¡Bienvenido a nuestra aplicación!',
-        'subtitle': 'Descubre funciones increíbles diseñadas para ti.',
+        'title': 'Bienvenido a',
+        'subtitle': 'Comienza a escribir la historia de tu vida y deja un legado eterno.',
       },
       {
         'title': 'Convierte tus respuestas en capítulos',
@@ -63,74 +64,78 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       theme: ThemeData.light(),
       home: Scaffold(
         backgroundColor: AppColors.appBackground,
-        body: Column(
-          children: [
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {});
-                },
-                children: [
-                  _buildPage(
-                    true,
-                    "assets/images/onboarding/onboarding_gif.gif",
-                    onboardingContent[Get.locale?.toString() ?? 'en_US']![0]['title']!,
-                    onboardingContent[Get.locale?.toString() ?? 'en_US']![0]['subtitle']!,
-                  ),
-                  _buildPage(
-                    false,
-                    "assets/images/onboarding/onboarding_2.png",
-                    onboardingContent[Get.locale?.toString() ?? 'en_US']![1]['title']!,
-                    onboardingContent[Get.locale?.toString() ?? 'en_US']![1]['subtitle']!,
-                  ),
-                  _buildPage(
-                    false,
-                    "assets/images/onboarding/onboarding_3.png",
-                    onboardingContent[Get.locale?.toString() ?? 'en_US']![2]['title']!,
-                    onboardingContent[Get.locale?.toString() ?? 'en_US']![2]['subtitle']!,
-                  ),
-                  _buildPage(
-                    false,
-                    "assets/images/onboarding/onboarding_4.png",
-                    onboardingContent[Get.locale?.toString() ?? 'en_US']![3]['title']!,
-                    onboardingContent[Get.locale?.toString() ?? 'en_US']![3]['subtitle']!,
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: SmoothPageIndicator(
-                controller: _pageController,
-                count: 4,
-                effect: const WormEffect(
-                  dotWidth: 10.0,
-                  dotHeight: 10.0,
-                  activeDotColor: AppColors.appColor,
-                  dotColor: AppColors.dotInactive,
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Column(
+            children: [
+              const SizedBox(height: 50),
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {});
+                  },
+                  children: [
+                    _buildPage(
+                      true,
+                      "assets/images/onboarding/onboarding_gif.gif",
+                      onboardingContent[Get.locale?.toString() ?? 'en_US']![0]['title']!,
+                      onboardingContent[Get.locale?.toString() ?? 'en_US']![0]['subtitle']!,
+                    ),
+                    _buildPage(
+                      false,
+                      "assets/images/onboarding/onboarding_2.png",
+                      onboardingContent[Get.locale?.toString() ?? 'en_US']![1]['title']!,
+                      onboardingContent[Get.locale?.toString() ?? 'en_US']![1]['subtitle']!,
+                    ),
+                    _buildPage(
+                      false,
+                      "assets/images/onboarding/onboarding_3.png",
+                      onboardingContent[Get.locale?.toString() ?? 'en_US']![2]['title']!,
+                      onboardingContent[Get.locale?.toString() ?? 'en_US']![2]['subtitle']!,
+                    ),
+                    _buildPage(
+                      false,
+                      "assets/images/onboarding/onboarding_4.png",
+                      onboardingContent[Get.locale?.toString() ?? 'en_US']![3]['title']!,
+                      onboardingContent[Get.locale?.toString() ?? 'en_US']![3]['subtitle']!,
+                    ),
+                  ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-              child: CustomButton(
-                text: Get.locale?.languageCode == 'es' ? 'Comenzar' : 'Get Started',
-                onPressed: () {
-                  if (_pageController.page == 3) {
-                    Get.offNamed(AppRoutes.login);
-                  } else {
-                    _pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                },
-                backgroundColor: AppColors.borderColor,
-                textColor: Colors.white,
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: SmoothPageIndicator(
+                  controller: _pageController,
+                  count: 4,
+                  effect: const WormEffect(
+                    dotWidth: 10.0,
+                    dotHeight: 10.0,
+                    activeDotColor: AppColors.appColor,
+                    dotColor: AppColors.dotInactive,
+                  ),
+                ),
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                child: CustomButton(
+                  text: Get.locale?.languageCode == 'es' ? 'Comenzar' : 'Get Started',
+                  onPressed: () {
+                    if (_pageController.page == 3) {
+                      Get.offNamed(AppRoutes.login);
+                    } else {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    }
+                  },
+                  backgroundColor: AppColors.borderColor,
+                  textColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -149,14 +154,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           )
               : Image.asset(mediaPath, height: 390, width: 200),
           const SizedBox(height: 20),
-          Text(
-            text1,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: AppColors.appColor,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible( // Add this
+                child: Text(
+                  text1,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.appColor,
+                  ),
+                ),
+              ),
+              if (showGif)
+                Padding(
+                  padding: const EdgeInsets.only(left: 10),
+                  child: SvgPicture.asset('assets/images/app_name.svg'),
+                ),
+            ],
           ),
           const SizedBox(height: 10),
           Text(
