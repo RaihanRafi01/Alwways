@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:playground_02/controllers/auth_controller.dart';
 import 'package:playground_02/controllers/book/book_controller.dart';
 import 'package:playground_02/views/book/addBook.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
@@ -14,9 +15,15 @@ class ChatLandingScreen extends StatelessWidget {
   final BotController controller = Get.put(BotController());
   final BookController bookController = Get.put(BookController());
   final MessageController messageController = Get.put(MessageController());
+  final AuthController authController = Get.find<AuthController>();
+  late var isFree = 'Free'; // Default to 'Free'
 
   @override
   Widget build(BuildContext context) {
+    // Only update isFree if subscriptionType has a value
+    if (authController.subscriptionType.value.isNotEmpty) {
+      isFree = authController.subscriptionType.value;
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text("ai_bot".tr),
@@ -111,12 +118,26 @@ class ChatLandingScreen extends StatelessWidget {
                   }).toList(),
                   onChanged: (selectedSectionId) {
                     if (selectedSectionId != null && selectedSectionId.isNotEmpty) {
-                      controller.selectSection(selectedSectionId);
-                      Get.off(() => ChatScreen(
-                        bookId: controller.selectedBookId.value,
-                        sectionId: controller.selectedSectionId.value,
-                        episodeId: controller.selectedEpisodeId.value,
-                      ));
+                      // Check subscription status and section position
+                      final sectionIndex = controller.sections.indexWhere((section) => section.id == selectedSectionId);
+
+                      if (isFree == 'Free' && sectionIndex > 2) {  // Index > 2 means 4th section or beyond
+                        Get.snackbar(
+                          "Upgrade Required",
+                          "Free users can only access the first 3 sections. Please upgrade your subscription to access more.",
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: Colors.red.withOpacity(0.9),
+                          colorText: Colors.white,
+                          duration: const Duration(seconds: 3),
+                        );
+                      } else {
+                        controller.selectSection(selectedSectionId);
+                        Get.off(() => ChatScreen(
+                          bookId: controller.selectedBookId.value,
+                          sectionId: controller.selectedSectionId.value,
+                          episodeId: controller.selectedSectionId.value,
+                        ));
+                      }
                     }
                   },
                 ),
