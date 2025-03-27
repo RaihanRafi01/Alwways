@@ -48,7 +48,7 @@ class AppRoutes {
     GetPage(name: login, page: () => LoginScreen()),
     GetPage(name: forgotPassword, page: () => ForgotPasswordScreen()),
     GetPage(name: signup, page: () => SignupScreen(title: 'create_account'.tr)),
-    GetPage(name: language, page: () => LanguageScreen()),
+    //GetPage(name: language, page: () => LanguageScreen()),
 
     ///// HOME
     GetPage(name: homePageLanding, page: () => const HomePageLanding()),

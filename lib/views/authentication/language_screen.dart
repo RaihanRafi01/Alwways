@@ -1,9 +1,12 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/controllers/language_controller.dart';
 import 'package:playground_02/widgets/authentication/LanguageOptionTile.dart';
 import 'package:playground_02/widgets/authentication/appLogo.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
+
+import '../../constants/translations/language_controller.dart';
 class LanguageScreen extends StatelessWidget {
   final LanguageController languageController = Get.put(LanguageController());
 
@@ -71,3 +74,4 @@ class LanguageScreen extends StatelessWidget {
     );
   }
 }
+*/

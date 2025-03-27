@@ -6,6 +6,8 @@ import 'package:playground_02/views/authentication/signup_screen.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
 import 'package:playground_02/widgets/authentication/profileImage.dart';
 
+import '../setting/views/setting_view.dart';
+
 class ProfileScreen extends StatelessWidget {
   ProfileScreen({super.key});
 
@@ -84,6 +86,15 @@ class ProfileScreen extends StatelessWidget {
                       () => ProfileItem(
                     svgPath: "assets/images/profile/location_icon.svg",
                     title: controller.location.value,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: (){
+                    Get.to(()=> const SettingView());
+                  },
+                  child: ProfileItem(
+                    svgPath: "assets/images/profile/setting_icon.svg",
+                    title: "settings".tr,
                   ),
                 ),
                 ListTile(

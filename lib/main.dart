@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/constants/routes.dart';
 import 'package:playground_02/constants/translations/app_translations.dart';
+import 'package:playground_02/constants/translations/language_controller.dart';
 
 import 'constants/translations/language_initializer.dart';
 

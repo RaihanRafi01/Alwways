@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,16 +7,43 @@ class LanguageInitializer {
   static Future<void> initAppLanguage() async {
     try {
       print('InitAppLanguage: Starting language initialization');
-      final position = await _determinePosition();
-      print('InitAppLanguage: Position obtained - Lat: ${position.latitude}, Long: ${position.longitude}');
-      final countryCode = _getCountryCode(position);
-      print('InitAppLanguage: Country code determined: $countryCode');
+      final prefs = await SharedPreferences.getInstance();
+      final savedLocale = prefs.getString('locale');
+      final savedCountryCode = prefs.getString('countryCode');
+
+      // If there's a saved locale from LanguageController, use it
+      if (savedLocale != null) {
+        final parts = savedLocale.split('_');
+        if (parts.length == 2) {
+          final locale = Locale(parts[0], parts[1]);
+          Get.updateLocale(locale);
+          print('InitAppLanguage: Using saved locale from preferences: $savedLocale');
+          return;
+        }
+      }
+
+      // If no saved locale, proceed with country code logic
+      String? countryCode;
+      if (savedCountryCode == null) {
+        print('InitAppLanguage: No saved country code found, determining position');
+        final position = await _determinePosition();
+        print('InitAppLanguage: Position obtained - Lat: ${position.latitude}, Long: ${position.longitude}');
+        countryCode = _getCountryCode(position);
+        print('InitAppLanguage: Country code determined: $countryCode');
+        await prefs.setString('countryCode', countryCode ?? 'DEFAULT');
+        print('InitAppLanguage: Country code saved to SharedPreferences');
+      } else {
+        countryCode = savedCountryCode;
+        print('InitAppLanguage: Using saved country code: $countryCode');
+      }
 
       if (countryCode == 'ES') {
         Get.updateLocale(const Locale('es', 'ES'));
+        await prefs.setString('locale', 'es_ES');
         print('InitAppLanguage: Locale set to Spanish (es_ES)');
       } else {
         Get.updateLocale(const Locale('en', 'US'));
+        await prefs.setString('locale', 'en_US');
         if (countryCode == 'BD') {
           /// TODO need to commit
           //Get.updateLocale(const Locale('es', 'ES'));
@@ -31,6 +57,7 @@ class LanguageInitializer {
       Get.updateLocale(const Locale('en', 'US'));
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('locale', 'en_US');
+      await prefs.setString('countryCode', 'DEFAULT');
       print('InitAppLanguage: Fallback to English (en_US) due to error');
     }
   }
