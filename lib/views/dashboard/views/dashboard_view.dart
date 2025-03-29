@@ -11,41 +11,64 @@ import '../controllers/dashboard_controller.dart';
 
 class DashboardView extends StatelessWidget {
   final int index;
-  const DashboardView({super.key,this.index = 0});
+  const DashboardView({super.key, this.index = 0});
 
   @override
   Widget build(BuildContext context) {
-    // Initialize the DashboardController
-    final controller = Get.put(DashboardController());
+    final DashboardController dashboardController = Get.put(DashboardController());
     Get.put(BookController());
     final AuthController authController = Get.put(AuthController());
     authController.fetchProfile();
 
-    controller.currentIndex.value = index;
+    dashboardController.currentIndex.value = index;
 
-    // List of pages for navigation
     final List<Widget> _screens = [
       const HomePageLanding(),
       const BookLandingScreen(),
        ProfileScreen(),
     ];
 
-    return Scaffold(
-      backgroundColor: AppColors.appColor, // Set the background color
-      body: Stack(
-        children: [
-          // The main content of the screen inside SafeArea to avoid overlap with bottom nav
-          SafeArea(
-            child: Obx(() => _screens[controller.currentIndex.value]),
+    return Obx(() {
+      if (authController.isProfileLoaded.value) {
+        return Scaffold(
+          backgroundColor: AppColors.appColor,
+          body: Stack(
+            children: [
+              SafeArea(
+                child: Obx(() => _screens[dashboardController.currentIndex.value]),
+              ),
+              const Align(
+                alignment: Alignment.bottomCenter,
+                child: CustomNavigationBar(),
+              ),
+            ],
           ),
-
-          // The custom navigation bar at the bottom
-          const Align(
-            alignment: Alignment.bottomCenter,
-            child: CustomNavigationBar(),
+        );
+      } else {
+        // Show the same splash screen while loading
+        return Scaffold(
+          body: Container(
+            color: AppColors.appColor,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset("assets/images/logo_white.png"),
+                  const SizedBox(height: 8),
+                  Image.asset("assets/images/app_name_white.png"),
+                  const SizedBox(height: 16),
+                  Text(
+                    "app_name".tr,
+                    style: const TextStyle(
+                      color: AppColors.textWhite,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
-    );
+        );
+      }
+    });
   }
 }

@@ -18,20 +18,30 @@ class AuthController extends GetxController {
   final ApiService _service = ApiService();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   var isLoading = false.obs;
+  final RxBool isProfileLoaded = false.obs;
 
   // Reactive variables for user input and profile data
-  var firstName = ''.obs, lastName = ''.obs, email = ''.obs,
-      contact = ''.obs, location = ''.obs, gender = ''.obs;
-  var dateOfBirth = Rxn<DateTime>(), password = ''.obs, confirmPassword = ''.obs;
+  var firstName = ''.obs,
+      lastName = ''.obs,
+      email = ''.obs,
+      contact = ''.obs,
+      location = ''.obs,
+      gender = ''.obs;
+  var dateOfBirth = Rxn<DateTime>(),
+      password = ''.obs,
+      confirmPassword = ''.obs;
   var pickedImage = Rxn<XFile>();
   var profilePictureUrl = ''.obs; // Added for profile picture URL
   var subscriptionType = ''.obs;
 
   // Getters for computed values
   String get fullName => '${firstName.value} ${lastName.value}';
+
   String get formattedDateOfBirth => dateOfBirth.value != null
       ? DateFormat('dd/MM/yyyy').format(dateOfBirth.value!)
       : '';
+  @override
+
   @override
   // Store tokens securely
   Future<void> storeTokens(String accessToken) async {
@@ -74,11 +84,16 @@ class AuthController extends GetxController {
         dateOfBirth.value = data['dateOfBirth'] != null
             ? DateTime.parse(data['dateOfBirth'])
             : null;
+
+        isProfileLoaded.value = true;
       } else {
-        Get.snackbar('Error', 'Failed to fetch profile: ${response.statusCode}');
+        Get.snackbar(
+            'Error', 'Failed to fetch profile: ${response.statusCode}');
+        isProfileLoaded.value = false;
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e');
+      isProfileLoaded.value = false;
     }
   }
 
@@ -99,26 +114,33 @@ class AuthController extends GetxController {
         'mobile': contact.value,
         'location': location.value,
         'gender': gender.value,
-        'dateOfBirth': dateOfBirth.value?.toIso8601String().substring(0, 10) ?? '',
+        'dateOfBirth':
+            dateOfBirth.value?.toIso8601String().substring(0, 10) ?? '',
       };
 
       // Log pickedImage details for debugging
       if (pickedImage.value != null) {
-        print('::::::::::::::::::::UPDATE : pickedImage path: ${pickedImage.value!.path}');
-        print('::::::::::::::::::::UPDATE : pickedImage name: ${pickedImage.value!.name}');
+        print(
+            '::::::::::::::::::::UPDATE : pickedImage path: ${pickedImage.value!.path}');
+        print(
+            '::::::::::::::::::::UPDATE : pickedImage name: ${pickedImage.value!.name}');
         final file = File(pickedImage.value!.path);
-        print('::::::::::::::::::::UPDATE : pickedImage exists: ${file.existsSync()}');
+        print(
+            '::::::::::::::::::::UPDATE : pickedImage exists: ${file.existsSync()}');
         String mimeType = pickedImage.value!.name.toLowerCase().endsWith('.png')
             ? 'image/png'
-            : pickedImage.value!.name.toLowerCase().endsWith('.jpg') || pickedImage.value!.name.toLowerCase().endsWith('.jpeg')
-            ? 'image/jpeg'
-            : 'unknown';
-        print('::::::::::::::::::::UPDATE : pickedImage inferred MIME type: $mimeType');
+            : pickedImage.value!.name.toLowerCase().endsWith('.jpg') ||
+                    pickedImage.value!.name.toLowerCase().endsWith('.jpeg')
+                ? 'image/jpeg'
+                : 'unknown';
+        print(
+            '::::::::::::::::::::UPDATE : pickedImage inferred MIME type: $mimeType');
       } else {
         print('::::::::::::::::::::UPDATE : pickedImage is null');
       }
 
-      final response = await _service.updateProfile(token, userData, pickedImage.value);
+      final response =
+          await _service.updateProfile(token, userData, pickedImage.value);
 
       print('::::::::::::::::::::UPDATE : request ${jsonEncode(userData)}');
       print('::::::::::::::::::::UPDATE : statusCode ${response.statusCode}');
@@ -130,7 +152,8 @@ class AuthController extends GetxController {
         pickedImage.value = null; // Clear picked image
         Get.back(); // Return to ProfileScreen
       } else {
-        Get.snackbar('Error', 'Failed to update profile: ${response.statusCode}');
+        Get.snackbar(
+            'Error', 'Failed to update profile: ${response.statusCode}');
       }
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: $e');
@@ -148,8 +171,17 @@ class AuthController extends GetxController {
 
   // Validate user inputs
   bool _isInputValid() {
-    if ([firstName, lastName, email, contact, location, gender, password, confirmPassword]
-        .any((field) => field.value.isEmpty) || pickedImage.value == null) {
+    if ([
+          firstName,
+          lastName,
+          email,
+          contact,
+          location,
+          gender,
+          password,
+          confirmPassword
+        ].any((field) => field.value.isEmpty) ||
+        pickedImage.value == null) {
       Get.snackbar('Error', 'Please fill in all fields');
       return false;
     }
@@ -169,15 +201,22 @@ class AuthController extends GetxController {
     isLoading.value = true;
     try {
       final response = await _service.signUp(
-          firstName.value, lastName.value, email.value, contact.value,
-          location.value, gender.value, dateOfBirth.value.toString(),
-          password.value, pickedImage.value!);
+          firstName.value,
+          lastName.value,
+          email.value,
+          contact.value,
+          location.value,
+          gender.value,
+          dateOfBirth.value.toString(),
+          password.value,
+          pickedImage.value!);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.snackbar('Success', 'Account created successfully!');
         Get.offAll(LoginScreen());
       } else {
-        final message = jsonDecode(response.body)['message'] ?? 'Sign-up failed';
+        final message =
+            jsonDecode(response.body)['message'] ?? 'Sign-up failed';
         Get.snackbar('Error', message);
       }
     } catch (e) {

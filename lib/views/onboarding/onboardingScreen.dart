@@ -154,23 +154,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           )
               : Image.asset(mediaPath, height: 390, width: 200),
           const SizedBox(height: 20),
-          Row(
+          Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Flexible( // Add this
-                child: Text(
-                  text1,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.appColor,
-                  ),
+              Text(
+                text1,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.appColor,
                 ),
               ),
               if (showGif)
                 Padding(
-                  padding: const EdgeInsets.only(left: 10),
+                  padding: const EdgeInsets.only(left: 10,top: 10),
                   child: SvgPicture.asset('assets/images/app_name.svg'),
                 ),
             ],

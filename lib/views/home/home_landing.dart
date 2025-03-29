@@ -7,6 +7,7 @@ import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/book/bookCard.dart';
 import 'package:playground_02/widgets/book/bookCover.dart';
 import 'package:playground_02/widgets/home/custom_bottom_navigation_bar.dart';
+import '../../controllers/auth_controller.dart';
 import '../../controllers/book/book_controller.dart';
 
 class HomePageLanding extends StatefulWidget {
@@ -18,9 +19,10 @@ class HomePageLanding extends StatefulWidget {
 
 class _HomePageLandingState extends State<HomePageLanding> {
   final NavigationController navController = Get.put(NavigationController());
-
+  final AuthController authController = Get.find<AuthController>();
   @override
   Widget build(BuildContext context) {
+    var name = authController.firstName.value;
     Get.put(BookController());
     return Scaffold(
       backgroundColor: Colors.white,
@@ -43,7 +45,7 @@ class _HomePageLandingState extends State<HomePageLanding> {
               ),
               const SizedBox(height: 20),
                Text(
-                '${"hi".tr} Alex!',
+                '${"hi".tr} $name!',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,

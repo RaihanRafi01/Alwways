@@ -49,7 +49,7 @@ class _HomePageLandingState extends State<BookOverView> {
                   "Thank you for sharing about your childhood. It’s a wonderful addition to your memoir. Let’s continue capturing these precious moments together.",
                   style: TextStyle(color: AppColors.textColor,fontSize: 14),),
                 const SizedBox(height: 16),
-                CustomButton(text: "TALK TO AI", onPressed: (){}),
+                CustomButton(text: "TALK TO TITI", onPressed: (){}),
                 const SizedBox(height: 20),
                 CustomButton(text: "STRUCTURED Q&A", onPressed: (){}),
                 const SizedBox(height: 20),
