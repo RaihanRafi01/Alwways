@@ -63,7 +63,7 @@ class AuthController extends GetxController {
 
   // Fetch profile data from API
   Future<void> fetchProfile() async {
-    print(' :::::: 🪃 hit fetch profile');
+    print(' :::::: ========>>>>>> 🪃 hit fetch profile');
     try {
       String? token = await _storage.read(key: 'access_token');
       if (token == null) {
@@ -73,7 +73,7 @@ class AuthController extends GetxController {
 
       final response = await _service.getProfile(token);
       if (response.statusCode == 200) {
-        print(' :::::: 🪃 hit fetch profile :::::::::::::: ${response.body}');
+        print(' :::::: hit fetch profile RESPONSE :::::::::::::: ${response.body}');
         final data = jsonDecode(response.body);
         profilePictureUrl.value = data['profilePicture'] ?? '';
         userId.value = data['_id'] ?? '';

@@ -68,6 +68,12 @@ class BookCard extends StatelessWidget {
       color: PdfColors.black,
       lineSpacing: 3,
     );
+    // Style for the first letter (drop cap)
+    final dropCapStyle = pw.TextStyle(
+      fontSize: 40, // Larger size for the first letter
+      font: fontRegular,
+      color: PdfColors.black,
+    );
     var backgroundColor = PdfColor.fromInt(AppColors.bookBackground1.value);
 
     final commonPageTheme = pw.PageTheme(
@@ -152,7 +158,7 @@ class BookCard extends StatelessWidget {
               children: [
                 pw.Text(episode.title, style: headerStyle, textAlign: pw.TextAlign.center),
                 pw.SizedBox(height: 12),
-                pw.Image(episodeUnderlinePng, width: 200), // Smaller size for episode underline
+                pw.Image(episodeUnderlinePng, width: 260), // Smaller size for episode underline
               ],
             ),
           ),
@@ -166,9 +172,42 @@ class BookCard extends StatelessWidget {
 
         final paragraphs = episode.story!.split('\n\n');
         print('Episode ${episode.id} has ${paragraphs.length} paragraphs');
+        bool isFirstParagraph = true; // Track the first non-empty paragraph
+
         for (final paragraph in paragraphs) {
           if (paragraph.trim().isNotEmpty) {
-            episodeContent.add(pw.Text(paragraph, style: bodyStyle, textAlign: pw.TextAlign.justify));
+            if (isFirstParagraph) {
+              // Apply drop cap to the first paragraph
+              final firstLetter = paragraph[0];
+              final restOfParagraph = paragraph.substring(1);
+              episodeContent.add(
+                pw.RichText(
+                  text: pw.TextSpan(
+                    children: [
+                      pw.TextSpan(
+                        text: firstLetter,
+                        style: dropCapStyle, // Larger first letter
+                      ),
+                      pw.TextSpan(
+                        text: restOfParagraph,
+                        style: bodyStyle, // Rest of the paragraph
+                      ),
+                    ],
+                  ),
+                  textAlign: pw.TextAlign.justify,
+                ),
+              );
+              isFirstParagraph = false; // Only apply to the first paragraph
+            } else {
+              // Regular paragraph styling for subsequent paragraphs
+              episodeContent.add(
+                pw.Text(
+                  paragraph,
+                  style: bodyStyle,
+                  textAlign: pw.TextAlign.justify,
+                ),
+              );
+            }
             episodeContent.add(pw.SizedBox(height: 12));
             print('Added paragraph of length ${paragraph.length} to episode ${episode.id}');
           }

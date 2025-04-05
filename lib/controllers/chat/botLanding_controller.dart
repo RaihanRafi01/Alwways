@@ -50,7 +50,7 @@ class BotController extends GetxController {
       await dbHelper.insertSections(fetchedSections);
       sections.value = await dbHelper.getSections();
     } else {
-      Get.snackbar('Error', 'Failed to fetch sections: ${response.statusCode}');
+      //Get.snackbar('Error', 'Failed to fetch sections: ${response.statusCode}');
     }
   }
 

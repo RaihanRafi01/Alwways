@@ -20,11 +20,11 @@ class HomeController extends GetxController {
       print('User ID: ${authController.userId.value}');
 
       // Ensure profile is loaded if userId is empty
-      if (authController.userId.value.isEmpty) {
+      /*if (authController.userId.value.isEmpty) {
         print('User ID is empty, attempting to fetch profile...');
         await authController.fetchProfile();
         print('Profile fetched, new User ID: ${authController.userId.value}');
-      }
+      }*/
 
       // If userId is still empty, use welcome message
       if (authController.userId.value.isEmpty) {
