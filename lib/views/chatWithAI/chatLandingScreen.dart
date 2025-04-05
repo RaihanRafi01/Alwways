@@ -52,11 +52,11 @@ class ChatLandingScreen extends StatelessWidget {
             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.bookTextColor),
           ),
           const SizedBox(height: 28),
-          CustomButton(
+          /*CustomButton(
             text: "add_book".tr,
             onPressed: () => Get.to(() => const AddBook()),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 28),*/
           Text(
             "memoir_help_message".tr,
             style: const TextStyle(fontSize: 16, color: AppColors.botTextColor2),
@@ -191,7 +191,7 @@ class ChatLandingScreen extends StatelessWidget {
         const SizedBox(height: 20),
         Text(
           "answer_questions_prompt".tr,
-          style: const TextStyle(fontSize: 16, color: AppColors.botTextColor2),
+          style: const TextStyle(fontSize: 18, color: AppColors.textColor),
         ),
         const SizedBox(height: 20),
         Expanded(

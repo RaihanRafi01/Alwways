@@ -41,43 +41,6 @@ class BookPageView extends StatelessWidget {
         }
         return Column(
           children: [
-            Obx(() {
-              final pageIndex = controller.currentPage.value - 1;
-              if (controller.currentPage.value != 0 &&
-                  pageIndex >= 0 &&
-                  pageIndex < controller.allPageChapters.length) {
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Container(
-                        color: AppColors.bookBackground,
-                        child: Padding(
-                          padding: const EdgeInsets.all(18.0),
-                          child: Row(
-                            children: [
-                              SvgPicture.asset(
-                                "assets/images/book/pencil_icon.svg",
-                                height: 20,
-                                width: 20,
-                              ),
-                              const SizedBox(width: 20),
-                              const Flexible(
-                                child: Text(
-                                  "New chapters will be added and existing chapters will change as you chat with the AI Bot.",
-                                  overflow: TextOverflow.clip,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            }),
             Expanded(
               child: Obx(() {
                 final pageCount = controller.allPages.isEmpty ? 1 : controller.allPages.length + 1;
@@ -118,13 +81,17 @@ class BookPageView extends StatelessWidget {
                                 children: [
                                   const SizedBox(height: 30),
                                   Text(
-                                    title,
+                                    'Chapter - 1',
                                     style: const TextStyle(fontSize: 12),
                                   ),
                                   const SizedBox(height: 20),
                                   SvgPicture.asset(
                                     "assets/images/book/chapter_underline_1.svg",
                                     width: 140,
+                                  ),
+                                  Text(
+                                    title,
+                                    style: const TextStyle(fontSize: 12),
                                   ),
                                   Padding(
                                     padding: const EdgeInsets.all(16),

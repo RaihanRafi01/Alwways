@@ -33,6 +33,7 @@ class AuthController extends GetxController {
   var pickedImage = Rxn<XFile>();
   var profilePictureUrl = ''.obs; // Added for profile picture URL
   var subscriptionType = ''.obs;
+  var userId = ''.obs;
 
   // Getters for computed values
   String get fullName => '${firstName.value} ${lastName.value}';
@@ -72,8 +73,10 @@ class AuthController extends GetxController {
 
       final response = await _service.getProfile(token);
       if (response.statusCode == 200) {
+        print(' :::::: 🪃 hit fetch profile :::::::::::::: ${response.body}');
         final data = jsonDecode(response.body);
         profilePictureUrl.value = data['profilePicture'] ?? '';
+        userId.value = data['_id'] ?? '';
         firstName.value = data['firstname'] ?? '';
         lastName.value = data['lastname'] ?? '';
         email.value = data['email'] ?? '';
@@ -86,7 +89,11 @@ class AuthController extends GetxController {
             : null;
 
         isProfileLoaded.value = true;
-      } else {
+      }
+      else if (response.statusCode == 401){
+        Get.offAll(LoginScreen());
+      }
+      else {
         Get.snackbar(
             'Error', 'Failed to fetch profile: ${response.statusCode}');
         isProfileLoaded.value = false;

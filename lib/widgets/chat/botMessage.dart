@@ -28,8 +28,8 @@ class BotMessage extends StatelessWidget {
                 : Text(
               message,
               style: const TextStyle(
-                fontSize: 16,
-                color: AppColors.botTextColor,
+                fontSize: 18,
+                color: AppColors.textColor,
               ),
             ),
             if (!isLoading && actions != null && actions!.isNotEmpty) ...[

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/constants/routes.dart';
+import 'package:playground_02/controllers/home_controller.dart';
 import 'package:playground_02/views/chatWithAI/chatLandingScreen.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/book/bookCard.dart';
@@ -19,6 +20,7 @@ class HomePageLanding extends StatefulWidget {
 
 class _HomePageLandingState extends State<HomePageLanding> {
   final NavigationController navController = Get.put(NavigationController());
+  final HomeController homeController = Get.put(HomeController());
   final AuthController authController = Get.find<AuthController>();
   @override
   Widget build(BuildContext context) {
@@ -37,54 +39,42 @@ class _HomePageLandingState extends State<HomePageLanding> {
               Center(
                 child: BookCover(
                   isGrid: false,
-                  title: "my_life".tr, // Updated
+                  title: "my_life".tr,
                   coverImage: '',
                   bookId: '',
                   isEpisode: false,
                 ),
               ),
               const SizedBox(height: 20),
-               Text(
+              Text(
                 '${"hi".tr} $name!',
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textColor,
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                "thank_you_message".tr, // Updated
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+              Obx(
+                    () => Text(
+                  homeController.message.value,
+                  style: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
+                  ),
                 ),
               ),
-              /*const SizedBox(height: 20),
-              const Text(
-                "welcome_message".tr, // Example for commented-out text
-                style: TextStyle(color: AppColors.textColor, fontSize: 14),
-              ),*/
-              const SizedBox(height: 30), // Add a spacer to push buttons toward the center
+              const SizedBox(height: 30),
               CustomButton(
-                text: "talk_to_ai".tr, // Updated
-                onPressed: () => Get.to(() => ChatLandingScreen()), //Get.toNamed(AppRoutes.chat),
+                text: "TALK TO TITI",
+                onPressed: () => Get.to(() => ChatLandingScreen()),
               ),
               const SizedBox(height: 80),
-              /*const SizedBox(height: 20),
-              CustomButton(text: "STRUCTURED Q&A", onPressed: () {}),*/
-              // Add another spacer to balance bottom space
             ],
           ),
         ),
       ),
-      /*bottomNavigationBar: Obx(
-            () => CustomBottomNavigationBar(
-          selectedIndex: navController.selectedIndex.value,
-          onItemSelected: navController.changePage,
-        ),
-      ),*/
     );
   }
 }
