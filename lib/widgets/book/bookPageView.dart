@@ -33,6 +33,9 @@ class BookPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Convert episodeIndex to chapter number (e.g., "0" -> "Chapter 1")
+    final chapterNumber = (int.parse(episodeIndex) + 1).toString();
+
     return Scaffold(
       appBar: const CustomAppbar(title: ''),
       body: Obx(() {
@@ -53,7 +56,7 @@ class BookPageView extends StatelessWidget {
                     if (index == 0) {
                       return Center(
                         child: BookCover(
-                          haveTitle: true,
+                          haveTitle: false, // No title on cover page
                           isGrid: false,
                           title: title,
                           coverImage: coverImage,
@@ -66,9 +69,13 @@ class BookPageView extends StatelessWidget {
                     if (controller.allPages.isEmpty ||
                         pageIndex >= controller.allPages.length ||
                         pageIndex >= controller.allPageChapters.length ||
-                        index >= controller.allPageImages.length) {
+                        pageIndex >= controller.allPageImages.length) {
                       return const Center(child: Text('No content available'));
                     }
+
+                    // Prepare the story content
+                    final storyContent = controller.allPages[pageIndex];
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
                       child: Container(
@@ -81,22 +88,47 @@ class BookPageView extends StatelessWidget {
                                 children: [
                                   const SizedBox(height: 30),
                                   Text(
-                                    'Chapter - 1',
-                                    style: const TextStyle(fontSize: 12),
+                                    "Chapter $chapterNumber", // Dynamic chapter based on episodeIndex
+                                    style: const TextStyle(fontSize: 18),
                                   ),
                                   const SizedBox(height: 20),
                                   SvgPicture.asset(
                                     "assets/images/book/chapter_underline_1.svg",
                                     width: 140,
                                   ),
-                                  Text(
-                                    title,
-                                    style: const TextStyle(fontSize: 12),
-                                  ),
+                                  const SizedBox(height: 20),
+                                  if (index == 1) // Show title only on second page
+                                    Text(
+                                      title,
+                                      style: const TextStyle(fontSize: 20),
+                                    ),
                                   Padding(
                                     padding: const EdgeInsets.all(16),
-                                    child: Text(
-                                      controller.allPages[pageIndex],
+                                    child: pageIndex == 0 // Apply drop cap only to the first story page
+                                        ? RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          // First letter with larger size
+                                          TextSpan(
+                                            text: storyContent.isNotEmpty ? storyContent[0] : '',
+                                            style: const TextStyle(
+                                              fontSize: 40, // Larger size for the first letter
+                                              color: AppColors.bookTextColor,
+                                            ),
+                                          ),
+                                          // Rest of the content
+                                          TextSpan(
+                                            text: storyContent.isNotEmpty ? storyContent.substring(1) : '',
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              color: AppColors.bookTextColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                        : Text(
+                                      storyContent,
                                       style: const TextStyle(
                                         fontSize: 16,
                                         color: AppColors.bookTextColor,

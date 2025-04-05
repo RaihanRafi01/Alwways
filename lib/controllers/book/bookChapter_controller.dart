@@ -128,7 +128,7 @@ class BookChapterController extends GetxController {
     }
   }
 
-  void _splitContentIntoPages({String? convoId}) {
+  Future<void> _splitContentIntoPages({String? convoId}) async {
     allPages.clear();
     allPageChapters.clear();
     pageConversationIds.clear();
@@ -145,21 +145,51 @@ class BookChapterController extends GetxController {
       return;
     }
 
-    const int wordsPerPage = 50;
-    List<String> words = story.value.split(' ');
-    print("Total words in story: ${words.length}");
+    // Fetch sections from the database
+    final sections = await dbHelper.getSections(); // Assuming sections are related to the episode
+    print("Fetched ${sections.length} sections for dynamic chaptering");
 
-    for (var i = 0; i < words.length; i += wordsPerPage) {
-      final pageWords = words.sublist(
-        i,
-        i + wordsPerPage < words.length ? i + wordsPerPage : words.length,
-      );
-      allPages.add(pageWords.join(' '));
-      allPageChapters.add("Part ${allPages.length}");
-      pageConversationIds.add(convoId ?? '');
-      allPageImages.add(null);
+    if (sections.isNotEmpty) {
+      // Use sections to determine chapter breaks
+      int sectionIndex = 0;
+      const int wordsPerPage = 50;
+      List<String> words = story.value.split(' ');
+      print("Total words in story: ${words.length}");
+
+      for (var i = 0; i < words.length; i += wordsPerPage) {
+        final pageWords = words.sublist(
+          i,
+          i + wordsPerPage < words.length ? i + wordsPerPage : words.length,
+        );
+        allPages.add(pageWords.join(' '));
+        // Assign chapter title based on section or fallback to "Part X"
+        allPageChapters.add(
+          sectionIndex < sections.length
+              ? sections[sectionIndex].name
+              : "Part ${allPageChapters.length + 1}",
+        );
+        pageConversationIds.add(convoId ?? '');
+        allPageImages.add(null);
+        sectionIndex++;
+      }
+    } else {
+      // Fallback to original logic if no sections
+      const int wordsPerPage = 50;
+      List<String> words = story.value.split(' ');
+      print("Total words in story: ${words.length}");
+
+      for (var i = 0; i < words.length; i += wordsPerPage) {
+        final pageWords = words.sublist(
+          i,
+          i + wordsPerPage < words.length ? i + wordsPerPage : words.length,
+        );
+        allPages.add(pageWords.join(' '));
+        allPageChapters.add("Part ${allPages.length}");
+        pageConversationIds.add(convoId ?? '');
+        allPageImages.add(null);
+      }
     }
-    print("Split into ${allPages.length} pages with $wordsPerPage words per page");
+    print("Split into ${allPages.length} pages with dynamic chapters");
     print("allPages.length: ${allPages.length}, allPageChapters.length: ${allPageChapters.length}, allPageImages.length: ${allPageImages.length}");
   }
 
