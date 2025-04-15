@@ -73,6 +73,7 @@ class BookCover extends StatelessWidget {
                 bookController.getTitle(bookId).isNotEmpty
                     ? bookController.getTitle(bookId)
                     : title,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: isGrid ? 14 : 24,

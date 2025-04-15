@@ -92,13 +92,13 @@ class Book {
 class Episode {
   final String id;
   final String bookId;
-  final String title;
+  final Map<String, String> title; // Changed from String to Map<String, String>
   final String coverImage;
   final String? backgroundCover;
   final double percentage;
   final List<dynamic> conversations;
-  final String? story; // New field for the story
-  final String? storyId; // New field
+  final String? story;
+  final String? storyId;
 
   Episode({
     required this.id,
@@ -108,7 +108,7 @@ class Episode {
     this.backgroundCover = 'assets/images/book/cover_image_1.svg',
     required this.percentage,
     required this.conversations,
-    this.story, // Nullable, as it may not exist initially
+    this.story,
     this.storyId,
   });
 
@@ -116,12 +116,12 @@ class Episode {
     return Episode(
       id: json['_id'],
       bookId: bookId ?? json['bookId'] ?? '',
-      title: json['title']['en'] as String? ?? '',
+      title: Map<String, String>.from(json['title'] ?? {'en': ''}), // Parse title as a map
       coverImage: json['coverImage'] ?? '',
       percentage: json['percentage'].toDouble(),
       conversations: json['conversations'] ?? [],
-      story: json['story'], // From API response
-      storyId: json['storyId'], // From API if provided
+      story: json['story'],
+      storyId: json['storyId'],
     );
   }
 
@@ -129,12 +129,12 @@ class Episode {
     return {
       '_id': id,
       'bookId': bookId,
-      'title': {'en': title},
+      'title': title, // Store as a map
       'coverImage': coverImage,
       'percentage': percentage,
       'conversations': conversations,
       'story': story,
-      'storyId': storyId, // Add to database
+      'storyId': storyId,
     };
   }
 
@@ -142,13 +142,13 @@ class Episode {
     return {
       'id': id,
       'bookId': bookId,
-      'title': title,
+      'title': jsonEncode(title), // Store as JSON string
       'coverImage': coverImage,
       'backgroundCover': backgroundCover,
       'percentage': percentage,
       'conversations': jsonEncode(conversations),
-      'story': story, // Add to database
-      'storyId': storyId, // Add to database
+      'story': story,
+      'storyId': storyId,
     };
   }
 
@@ -156,7 +156,7 @@ class Episode {
     return Episode(
       id: map['id'] as String,
       bookId: map['bookId'] as String,
-      title: map['title'] as String,
+      title: Map<String, String>.from(jsonDecode(map['title'])), // Parse JSON string back to map
       coverImage: map['coverImage'] as String? ?? '',
       backgroundCover: map['backgroundCover'] as String? ?? 'assets/images/book/cover_image_1.svg',
       percentage: map['percentage'] as double,
@@ -171,7 +171,7 @@ class Episode {
   Episode copyWith({
     String? id,
     String? bookId,
-    String? title,
+    Map<String, String>? title,
     String? coverImage,
     String? backgroundCover,
     double? percentage,
@@ -190,6 +190,12 @@ class Episode {
       story: story ?? this.story,
       storyId: storyId ?? this.storyId,
     );
+  }
+
+  // Getter for localized title
+  String get localizedTitle {
+    final lang = Get.locale?.languageCode ?? 'en';
+    return title[lang] ?? title['en'] ?? '';
   }
 }
 

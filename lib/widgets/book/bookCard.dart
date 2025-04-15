@@ -14,7 +14,6 @@ import 'bookProgress.dart';
 import 'package:http/http.dart' as http;
 
 class BookCard extends StatelessWidget {
-  final String title;
   final String coverImage;
   final double progress;
   final bool isGrid;
@@ -23,14 +22,13 @@ class BookCard extends StatelessWidget {
 
   BookCard({
     super.key,
-    required this.title,
     required this.coverImage,
     required this.progress,
     this.isGrid = false,
     required this.bookId,
     required this.isEpisode,
   }) {
-    print("BookCard - title: $title, coverImage: $coverImage, isEpisode: $isEpisode, bookId: $bookId");
+    print("BookCard - coverImage: $coverImage, isEpisode: $isEpisode, bookId: $bookId");
   }
 
   Future<pw.ImageProvider> _loadImage(String url) async {
@@ -154,9 +152,9 @@ class BookCard extends StatelessWidget {
             alignment: pw.Alignment.topCenter,
             child: pw.Column(
               children: [
-                pw.Text(episode.title, style: headerStyle, textAlign: pw.TextAlign.center),
+                pw.Text(episode.localizedTitle, style: headerStyle, textAlign: pw.TextAlign.center),
                 pw.SizedBox(height: 12),
-                pw.Image(episodeUnderlinePng, width: 260), // Smaller size for episode underline
+                pw.Image(episodeUnderlinePng, width: 260),
               ],
             ),
           ),
@@ -170,12 +168,11 @@ class BookCard extends StatelessWidget {
 
         final paragraphs = episode.story!.split('\n\n');
         print('Episode ${episode.id} has ${paragraphs.length} paragraphs');
-        bool isFirstParagraph = true; // Track the first non-empty paragraph
+        bool isFirstParagraph = true;
 
         for (final paragraph in paragraphs) {
           if (paragraph.trim().isNotEmpty) {
             if (isFirstParagraph) {
-              // Apply drop cap to the first paragraph
               final firstLetter = paragraph[0];
               final restOfParagraph = paragraph.substring(1);
               episodeContent.add(
@@ -273,7 +270,8 @@ class BookCard extends StatelessWidget {
       if (result.type != ResultType.done) {
         Get.snackbar('Error', 'Could not open PDF: ${result.message}');
       } else {
-        Get.snackbar('Success',
+        Get.snackbar(
+          'Success',
           'PDF generated successfully! ${pdfFiles.length} file(s) created. First file opened.',
           duration: const Duration(seconds: 5),
         );
@@ -286,7 +284,7 @@ class BookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Get.lazyPut(() => BookController());
+    final bookController = Get.find<BookController>();
     return Container(
       height: isGrid ? 270 : 450,
       padding: EdgeInsets.all(isGrid ? 16 : 20),
@@ -302,7 +300,7 @@ class BookCard extends StatelessWidget {
             child: BookCover(
               isGrid: isGrid,
               isEdit: true,
-              title: title,
+              title: bookController.getTitle(bookId),
               coverImage: coverImage,
               bookId: bookId,
               isEpisode: isEpisode,

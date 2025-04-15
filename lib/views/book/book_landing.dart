@@ -108,7 +108,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
             }
           },
           child: BookCard(
-            title: item.title,
+            //title: item.title,
             coverImage: item.coverImage,
             progress: item.percentage,
             isGrid: true,

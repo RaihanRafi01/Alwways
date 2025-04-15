@@ -47,13 +47,13 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
   void _checkContent() {
     print("Checking content for bookId: ${widget.bookId}, isEpisode: ${widget.isEpisode}");
     try {
-      print("Books: ${bookController.books.map((b) => {'id': b.id, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.title}).toList()})}");
+      print("Books: ${bookController.books.map((b) => {'id': b.id, 'episodes': b.episodes.map((e) => {'id': e.id, 'title': e.localizedTitle}).toList()})}");
       if (widget.isEpisode) {
         final book = bookController.books.firstWhereOrNull((b) => b.episodes.any((e) => e.id == widget.bookId));
         if (book == null) {
           print("Episode ${widget.bookId} not found");
           setState(() {
-            errorMessage = "episode_not_found".trParams({'bookId': widget.bookId}); // Updated
+            errorMessage = "episode_not_found".trParams({'bookId': widget.bookId});
           });
           return;
         }
@@ -64,7 +64,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
         if (book == null) {
           print("Book ${widget.bookId} not found");
           setState(() {
-            errorMessage = "book_not_found".trParams({'bookId': widget.bookId}); // Updated
+            errorMessage = "book_not_found".trParams({'bookId': widget.bookId});
           });
           return;
         }
@@ -75,7 +75,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
     } catch (e) {
       print("Exception in _checkContent: $e");
       setState(() {
-        errorMessage = "error_with_message".trParams({'error': e.toString()}); // Updated
+        errorMessage = "error_with_message".trParams({'error': e.toString()});
       });
     }
   }
@@ -83,7 +83,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
   Future<void> _pickCoverImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      bookController.updateCoverImage(widget.bookId, image.path);
+      bookController.updateCoverImage(widget.bookId, image.path, isEpisode: isEpisodeEdit);
       if (isEpisodeEdit) {
         chapterController.allPageImages[episodeIndex] = image.path;
       }
@@ -95,7 +95,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
     print("Building UI for bookId: ${widget.bookId}");
     if (errorMessage != null) {
       return Scaffold(
-        appBar: CustomAppbar(title: "error".tr, showIcon: false), // Updated
+        appBar: CustomAppbar(title: "error".tr, showIcon: false),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -107,7 +107,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () => Get.back(),
-                child: Text("go_back".tr), // Updated
+                child: Text("go_back".tr),
               ),
             ],
           ),
@@ -128,7 +128,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
 
     return Scaffold(
       appBar: CustomAppbar(
-        title: isEpisodeEdit ? "edit_episode_cover".tr : "edit_cover".tr, // Updated
+        title: isEpisodeEdit ? "edit_episode_cover".tr : "edit_cover".tr,
         showIcon: false,
       ),
       body: Stack(
@@ -146,7 +146,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
                       title: bookController.getTitle(widget.bookId),
                       coverImage: isEpisodeEdit
                           ? (chapterController.allPageImages.isNotEmpty
-                          ? (chapterController.allPageImages[0] ?? widget.image)
+                          ? (chapterController.allPageImages[episodeIndex] ?? widget.image)
                           : widget.image)
                           : (bookController.getCoverImage(widget.bookId, widget.image)),
                       bookId: widget.bookId,
@@ -162,9 +162,12 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
                       suffixIcon: Icons.edit,
                       radius: 20,
                       onChanged: (value) {
-                        bookController.updateTitle(widget.bookId, value);
                         if (isEpisodeEdit) {
+                          final lang = Get.locale?.languageCode ?? 'en';
+                          bookController.updateEpisodeTitle(widget.bookId, {lang: value});
                           chapterController.allPageChapters[episodeIndex] = value;
+                        } else {
+                          bookController.updateBookTitle(widget.bookId, value);
                         }
                       },
                       label: '',
@@ -174,7 +177,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 10.0),
                   child: Text(
-                    "select_background_cover".tr, // Updated
+                    "select_background_cover".tr,
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -257,7 +260,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
                       ),
                     )
                         : Text(
-                      "save_changes".tr, // Updated
+                      "save_changes".tr,
                       style: const TextStyle(color: Colors.white),
                     ),
                   ),

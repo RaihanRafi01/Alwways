@@ -84,7 +84,7 @@ class BookController extends GetxController {
       return 0.0;
     }
     double totalPercentage = book.episodes.fold(0.0, (sum, episode) {
-      print("Episode '${episode.title}' (ID: ${episode.id}) percentage: ${episode.percentage}%");
+      print("Episode '${episode.localizedTitle}' (ID: ${episode.id}) percentage: ${episode.percentage}%");
       return sum + episode.percentage;
     });
     double averagePercentage = totalPercentage / book.episodes.length;
@@ -130,6 +130,7 @@ class BookController extends GetxController {
         percentage: serverEpisode.percentage,
         conversations: serverEpisode.conversations,
         story: localEpisode?.story,
+        storyId: localEpisode?.storyId,
       );
     }).toList();
   }
@@ -181,18 +182,21 @@ class BookController extends GetxController {
     print("Updated cover image for ${isEpisode ? 'episode' : 'book'} ID $id: $imagePath");
   }
 
-  void updateTitle(String id, String newTitle) {
+  void updateBookTitle(String id, String newTitle) {
     final bookIndex = books.indexWhere((b) => b.id == id);
     if (bookIndex != -1) {
       books[bookIndex] = books[bookIndex].copyWith(title: newTitle);
-    } else {
-      for (var book in books) {
-        final episodeIndex = book.episodes.indexWhere((e) => e.id == id);
-        if (episodeIndex != -1) {
-          book.episodes[episodeIndex] = book.episodes[episodeIndex].copyWith(title: newTitle);
-          books.refresh();
-          break;
-        }
+      books.refresh();
+    }
+  }
+
+  void updateEpisodeTitle(String id, Map<String, String> newTitle) {
+    for (var book in books) {
+      final episodeIndex = book.episodes.indexWhere((e) => e.id == id);
+      if (episodeIndex != -1) {
+        book.episodes[episodeIndex] = book.episodes[episodeIndex].copyWith(title: newTitle);
+        books.refresh();
+        break;
       }
     }
   }
@@ -217,7 +221,7 @@ class BookController extends GetxController {
     if (book != null) return book.title;
     for (var b in books) {
       final episode = b.episodes.firstWhereOrNull((e) => e.id == id);
-      if (episode != null) return episode.title;
+      if (episode != null) return episode.localizedTitle;
     }
     return '';
   }
@@ -245,7 +249,7 @@ class BookController extends GetxController {
         book.episodes[episodeIndex] = updatedEpisode;
         await dbHelper.updateEpisode(updatedEpisode);
         books.refresh();
-        print("Database updated for episodeId: $episodeId with title: ${updatedEpisode.title}, coverImage: ${updatedEpisode.coverImage}");
+        print("Database updated for episodeId: $episodeId with title: ${updatedEpisode.localizedTitle}, coverImage: ${updatedEpisode.coverImage}");
         break;
       }
     }
@@ -278,12 +282,10 @@ class BookController extends GetxController {
       for (var book in books) {
         final episode = book.episodes.firstWhereOrNull((e) => e.id == episodeId);
         if (episode != null) {
-          // Use the same composite key as in BookCover
-          final compositeKey = "$episodeId-${episode.title}";
-          final newCoverImagePath = coverImages[compositeKey] ?? episode.coverImage; // Fallback to current image
+          final compositeKey = "$episodeId-${episode.localizedTitle}";
+          final newCoverImagePath = coverImages[compositeKey] ?? episode.coverImage;
           print("Updating episode $episodeId - compositeKey: $compositeKey, newCoverImagePath: $newCoverImagePath");
 
-          // Always update DB with latest image, even if API isn't called
           await updateEpisodeInDb(episodeId);
 
           if (newCoverImagePath.isNotEmpty && newCoverImagePath != episode.coverImage) {
@@ -305,7 +307,7 @@ class BookController extends GetxController {
             Get.snackbar('Success', 'Episode updated locally');
             Get.back();
           }
-          break; // Exit loop once episode is found
+          break;
         }
       }
       if (books.every((book) => book.episodes.every((e) => e.id != episodeId))) {
@@ -389,13 +391,13 @@ extension EpisodeExtension on Episode {
   Episode copyWith({
     String? id,
     String? bookId,
-    String? title,
+    Map<String, String>? title,
     String? coverImage,
     String? backgroundCover,
     double? percentage,
     List<dynamic>? conversations,
     String? story,
-    String? storyId, // Added storyId parameter
+    String? storyId,
   }) {
     return Episode(
       id: id ?? this.id,
