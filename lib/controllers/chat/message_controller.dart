@@ -42,30 +42,84 @@ class MessageController extends GetxController {
       fetchQuestionsAndLoadHistory(sectionId!);
     } else {
       print("MessageController initialized in initial chat mode (no book selected)");
+      final lang = Get.locale?.languageCode ?? 'en';
+      questionController.questions.value = [
+        Question(
+          id: "1",
+          episodeId: '',
+          sectionId: 'initial',
+          text: {lang: "question_1".tr}, // e.g., "Who is this book for?"
+          v: 0,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+        ),
+        // Other initial questions updated similarly
+      ];
     }
   }
 
   Future<void> fetchQuestionsAndLoadHistory(String sectionId) async {
+    this.sectionId = sectionId;
     await questionController.fetchQuestions(sectionId);
     final bookId = botController.selectedBookId.value;
-    final episodeID = botController.selectedEpisodeId.value;
-    final history = await dbHelper.getChatHistory(bookId, episodeID);
-    print("Chat history for bookId: $bookId, episodeId: $episodeID, sectionId: $sectionId: $history");
+    final episodeId = botController.selectedEpisodeId.value;
+    final history = await dbHelper.getChatHistory(bookId, episodeId);
+    print("Chat history for bookId: $bookId, episodeId: $episodeId, sectionId: $sectionId: $history");
 
     messages.clear();
     userAnswers.clear();
 
+    // Rebuild conversation from history
     for (var entry in history) {
       messages.add(BotMessage(message: entry['question']!));
       messages.add(UserMessage(message: entry['answer']!));
       userAnswers.add({'question': entry['question']!, 'answer': entry['answer']!});
-      }
-
-      questionController.currentQuestionIndex.value = 0;
-      questionController.skipToNextUnansweredQuestion(history);
-      await _calculateAndPrintCompletionPercentage(sectionId);
-      askQuestion();
     }
+
+    // Restore last state
+    if (history.isNotEmpty) {
+      final lastQuestion = history.last['question']!;
+      final lastMainQuestionIndex = questionController.questions.indexWhere((q) => q.localizedText == lastQuestion);
+
+      if (lastMainQuestionIndex != -1) {
+        // Last question was a main question
+        questionController.currentQuestionIndex.value = lastMainQuestionIndex;
+        questionController.isSubQuestionMode.value = false;
+        questionController.subQuestions.clear();
+        questionController.currentSubQuestionIndex.value = 0;
+      } else {
+        // Last question was a sub-question; find parent and restore sub-question state
+        // This requires sub-questions to be persisted or refetched
+        // For now, find the last main question and assume sub-questions need refetching
+        final parentQuestionIndex = questionController.questions.indexWhere((q) => history.any((h) => h['question'] == q.localizedText));
+        if (parentQuestionIndex != -1) {
+          questionController.currentQuestionIndex.value = parentQuestionIndex;
+          // Simulate fetching sub-questions (replace with actual API call if needed)
+          final lastMainQuestion = questionController.questions[parentQuestionIndex].localizedText;
+          final lastAnswer = history.lastWhere((h) => h['question'] == lastMainQuestion, orElse: () => {'answer': ''})['answer']!;
+          final response = await apiService.generateSubQuestion(lastMainQuestion, lastAnswer);
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            final subQuestions = List<String>.from(data['content']);
+            questionController.subQuestions.value = subQuestions;
+            questionController.isSubQuestionMode.value = true;
+            questionController.currentSubQuestionIndex.value = subQuestions.indexOf(lastQuestion) + 1;
+            if (questionController.currentSubQuestionIndex.value >= subQuestions.length) {
+              questionController.isSubQuestionMode.value = false;
+              questionController.subQuestions.clear();
+              questionController.currentSubQuestionIndex.value = 0;
+              questionController.currentQuestionIndex.value++;
+            }
+          }
+        }
+      }
+    }
+
+    // Skip to next unanswered question
+    questionController.skipToNextUnansweredQuestion(history);
+    await _calculateAndPrintCompletionPercentage(sectionId);
+    askQuestion();
+  }
 
     void askQuestion() {
       _removeLoadingMessage();
@@ -146,6 +200,7 @@ class MessageController extends GetxController {
               !lowerAnswer.contains("someone else");
 
           print("::: Debugging isForSelf ::: isForSelf: $isForSelf");
+          final lang = Get.locale?.languageCode ?? 'en';
 
           if (isForSelf) {
             questionController.questions.value = [
@@ -153,7 +208,7 @@ class MessageController extends GetxController {
                 id: "2",
                 episodeId: '',
                 sectionId: 'initial',
-                text: "question_2".tr, // "What is your name?"
+                text: {lang: "question_2".tr}, // "What is your name?"
                 v: 0,
                 createdAt: DateTime.now().toIso8601String(),
                 updatedAt: DateTime.now().toIso8601String(),
@@ -162,7 +217,7 @@ class MessageController extends GetxController {
                 id: "3",
                 episodeId: '',
                 sectionId: 'initial',
-                text: "question_3".tr, // "What title would you like to give the book? ..."
+                text: {lang: "question_3".tr}, // "What title would you like to give the book? ..."
                 v: 0,
                 createdAt: DateTime.now().toIso8601String(),
                 updatedAt: DateTime.now().toIso8601String(),
@@ -175,7 +230,7 @@ class MessageController extends GetxController {
                 id: "2",
                 episodeId: '',
                 sectionId: 'initial',
-                text: "question_2_1".tr, // "What is their name?"
+                text: {lang: "question_2_1".tr}, // "What is their name?"
                 v: 0,
                 createdAt: DateTime.now().toIso8601String(),
                 updatedAt: DateTime.now().toIso8601String(),
@@ -184,7 +239,7 @@ class MessageController extends GetxController {
                 id: "3",
                 episodeId: '',
                 sectionId: 'initial',
-                text: "question_3".tr, // "What title would you like to give the book? ..."
+                text: {lang: "question_3".tr}, // "What title would you like to give the book? ..."
                 v: 0,
                 createdAt: DateTime.now().toIso8601String(),
                 updatedAt: DateTime.now().toIso8601String(),
@@ -221,6 +276,7 @@ class MessageController extends GetxController {
       await _handleGenerateSubQuestion(currentQuestion, userAnswer);
     }
   }
+
 
 
     Future<void> _createBookAndNavigate() async {
@@ -298,60 +354,60 @@ class MessageController extends GetxController {
       final sections = await dbHelper.getSections();
       Section? currentSection;
 
-      try {
-        currentSection = sections.firstWhere((section) => section.id == sectionId);
-      } catch (e) {
-        print("Error: No section found for sectionId: $sectionId");
-        Get.snackbar('Error', 'Section not found');
-        return;
-      }
-
-      final totalQuestions = currentSection.questionsCount;
-      final bookId = botController.selectedBookId.value;
-      final episodeID = botController.selectedEpisodeId.value;
-      final history = await dbHelper.getChatHistory(bookId, episodeID);
-
-      final mainQuestions = questionController.questions.map((q) => q.text).toList();
-      final uniqueAnsweredQuestions = history
-          .where((entry) => mainQuestions.contains(entry['question']))
-          .map((entry) => entry['question'])
-          .toSet()
-          .toList();
-      final answeredMainQuestions = uniqueAnsweredQuestions.length;
-
-      final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions / totalQuestions) * 100 : 0;
-      print("Section: ${currentSection.name}, Total: $totalQuestions, Answered: $answeredMainQuestions, Completion: ${completionPercentage.toStringAsFixed(2)}%");
-
-      final episodeIndex = botController.getSelectedSectionId();
-      print("::::::::::::::::::::::Selected section index: $episodeIndex");
-      try {
-        final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
-        print(":::updateEpisodePercentage::: Status Code: ${response.statusCode}");
-        print(":::updateEpisodePercentage::: Response Body: ${response.body}");
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          final db = await dbHelper.database;
-          final episodeMaps = await db.query(
-            'episodes',
-            where: 'bookId = ? AND id = ?',
-            whereArgs: [bookId, episodeID],
-          );
-          if (episodeMaps.isNotEmpty) {
-            final episode = Episode.fromMap(episodeMaps.first);
-            final updatedEpisode = episode.copyWith(percentage: completionPercentage.toDouble());
-            await dbHelper.updateEpisode(updatedEpisode);
-            print("Updated episode percentage in database: ${updatedEpisode.percentage}");
-          }
-          final bookController = Get.put(BookLandingController());
-          await bookController.fetchBooks();
-          print("Refreshed BookLandingController with updated data");
-        } else {
-          Get.snackbar('Error', 'Failed to update percentage: ${response.statusCode}');
-        }
-      } catch (e) {
-        print("Error updating percentage: $e");
-        Get.snackbar('Error', 'Failed to update percentage: $e');
-      }
+    try {
+      currentSection = sections.firstWhere((section) => section.id == sectionId);
+    } catch (e) {
+      print("Error: No section found for sectionId: $sectionId  Error :::::::::::::::::::::::: $e");
+      Get.snackbar('Error', 'Section not found for ID: $sectionId');
+      return;
     }
+
+    final totalQuestions = currentSection.questionsCount;
+    final bookId = botController.selectedBookId.value;
+    final episodeId = botController.selectedEpisodeId.value; // Use episodeId consistently
+    final history = await dbHelper.getChatHistory(bookId, episodeId);
+
+    final mainQuestions = questionController.questions.map((q) => q.localizedText).toList(); // Use localizedText
+    final uniqueAnsweredQuestions = history
+        .where((entry) => mainQuestions.contains(entry['question']))
+        .map((entry) => entry['question'])
+        .toSet()
+        .toList();
+    final answeredMainQuestions = uniqueAnsweredQuestions.length;
+
+    final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions / totalQuestions) * 100 : 0;
+    print("Section: ${currentSection.localizedName}, Total: $totalQuestions, Answered: $answeredMainQuestions, Completion: ${completionPercentage.toStringAsFixed(2)}%");
+
+    final episodeIndex = currentSection.episodeIndex?.toString() ?? '0'; // Use section's episodeIndex
+    print("::::::::::::::::::::::Selected section index: $episodeIndex");
+    try {
+      final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
+      print(":::updateEpisodePercentage::: Status Code: ${response.statusCode}");
+      print(":::updateEpisodePercentage::: Response Body: ${response.body}");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final db = await dbHelper.database;
+        final episodeMaps = await db.query(
+          'episodes',
+          where: 'bookId = ? AND id = ?',
+          whereArgs: [bookId, episodeId],
+        );
+        if (episodeMaps.isNotEmpty) {
+          final episode = Episode.fromMap(episodeMaps.first);
+          final updatedEpisode = episode.copyWith(percentage: completionPercentage.toDouble());
+          await dbHelper.updateEpisode(updatedEpisode);
+          print("Updated episode percentage in database: ${updatedEpisode.percentage}");
+        }
+        final bookController = Get.put(BookLandingController());
+        await bookController.fetchBooks();
+        print("Refreshed BookLandingController with updated data");
+      } else {
+        Get.snackbar('Error', 'Failed to update percentage: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Error updating percentage: $e");
+      Get.snackbar('Error', 'Failed to update percentage: $e');
+    }
+  }
 
     Future<void> _handleGenerateSubQuestion(String question, String answer) async {
       final response = await apiService.generateSubQuestion(question, answer);
@@ -372,7 +428,7 @@ class MessageController extends GetxController {
           await dbHelper.insertChatHistory(
             botController.selectedBookId.value,
             botController.selectedSectionId.value,
-            question,
+            question, // Already localized from getCurrentQuestion
             answer,
           );
           await _calculateAndPrintCompletionPercentage(sectionId!);
@@ -384,6 +440,7 @@ class MessageController extends GetxController {
           Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
         }
       } else if (response.statusCode == 400) {
+        _removeLoadingMessage();
         messages.add(BotMessage(message: "Could you please elaborate on: $question"));
       } else {
         Get.snackbar('Error', 'Failed to generate sub-questions');
@@ -417,6 +474,7 @@ class MessageController extends GetxController {
           Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
         }
       } else if (relevancyResponse.statusCode == 400) {
+        _removeLoadingMessage();
         messages.add(BotMessage(message: "Could you provide a more relevant answer on: $subQuestion"));
       } else {
         Get.snackbar('Error', 'Failed to check relevancy: ${relevancyResponse.statusCode}');

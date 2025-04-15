@@ -50,12 +50,14 @@ class BookChapterController extends GetxController {
     isLoading.value = true;
 
     try {
+      // Find the book
       final book = bookController.books.firstWhere(
             (b) => b.id == bookId,
         orElse: () => throw Exception("Book not found: $bookId"),
       );
       print("Book found: ${book.title}");
 
+      // Validate episode index and set episodeId
       final episodes = book.episodes;
       final index = int.parse(episodeIndex);
       if (index < 0 || index >= episodes.length) {
@@ -64,6 +66,7 @@ class BookChapterController extends GetxController {
       episodeId = episodes[index].id;
       print("Episode loaded: ${episodes[index].title}");
 
+      // Fetch episode from database or use the one from book
       final db = await dbHelper.database;
       final episodeMaps = await db.query(
         'episodes',
@@ -78,27 +81,39 @@ class BookChapterController extends GetxController {
         episode = episodes[index];
       }
 
+      // Clear existing content
       allPages.clear();
       allPageChapters.clear();
       allPageImages.clear();
       pageConversationIds.clear();
       allPageImages.add(episodeCoverImage);
 
+      // Fetch sections (assuming they relate to the episode)
+      final sections = await dbHelper.getSections();
+      print("Fetched ${sections.length} sections");
+
+      // Check for story conversations
       final storyConversations = episode.conversations.where((c) => c['storyGenerated'] == true).toList();
       print("Found ${storyConversations.length} story conversations");
 
       if (storyConversations.isNotEmpty) {
         usingConversations.value = true;
-        final combinedStory = storyConversations.map((c) => c['botResponse'] as String).join(' ');
-        story.value = combinedStory;
-        print("Combined botResponses: ${story.value.substring(0, story.value.length < 50 ? story.value.length : 50)}...");
-        _splitContentIntoPages(convoId: storyConversations.first['_id']);
+        // Each conversation is a separate page
+        allPages.value = storyConversations.map((c) => c['botResponse'] as String).toList();
+        pageConversationIds.value = storyConversations.map((c) => c['_id'] as String).toList();
+        // Assign chapter titles based on sections or fallback to numbered chapters
+        if (sections.length == storyConversations.length) {
+          allPageChapters.value = sections.map((s) => s.localizedName).toList(); // Use localizedName
+        } else {
+          allPageChapters.value = List.generate(allPages.length, (i) => "Chapter ${i + 1}");
+        }
+        allPageImages.value = List.filled(allPages.length, null);
+        print("Loaded ${allPages.length} pages from conversations");
       } else {
         usingConversations.value = false;
         if (episode.story != null && episode.story!.isNotEmpty) {
           story.value = episode.story!;
-          print("Story field found: ${story.value.substring(0, story.value.length < 50 ? story.value.length : 50)}...");
-          _splitContentIntoPages();
+          _splitStoryContent(sections);
         } else {
           print("No story field, fetching from API");
           final response = await apiService.generateStory(bookId, episodeIndex);
@@ -106,7 +121,7 @@ class BookChapterController extends GetxController {
             final data = jsonDecode(response.body);
             story.value = data['story'];
             print("Story fetched: ${story.value.substring(0, story.value.length < 50 ? story.value.length : 50)}...");
-            _splitContentIntoPages();
+            _splitStoryContent(sections);
 
             final updatedEpisode = episode.copyWith(story: story.value);
             if (episodeMaps.isEmpty) {
@@ -116,68 +131,47 @@ class BookChapterController extends GetxController {
             }
             print("Fetched and saved story from API for episode $episodeId");
           } else {
-            Get.snackbar('Error', 'Failed to generate story: ${response.statusCode}');
+            throw Exception("Failed to generate story: ${response.statusCode}");
           }
         }
       }
     } catch (e) {
       print("Error in loadStory: $e");
       Get.snackbar('Error', 'Failed to load story: $e');
+      // Set fallback content
+      allPages.add("Error loading story");
+      allPageChapters.add("Error");
+      pageConversationIds.add('');
+      allPageImages.add(null);
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> _splitContentIntoPages({String? convoId}) async {
-    allPages.clear();
-    allPageChapters.clear();
-    pageConversationIds.clear();
-    while (allPageImages.length > 1) {
-      allPageImages.removeLast();
-    }
-
+  void _splitStoryContent(List<Section> sections) {
     if (story.value.isEmpty) {
-      print("Story is empty, no pages created.");
       allPages.add("No story content available");
       allPageChapters.add("Part 1");
-      pageConversationIds.add(convoId ?? '');
+      pageConversationIds.add('');
       allPageImages.add(null);
       return;
     }
 
-    // Fetch sections from the database
-    final sections = await dbHelper.getSections(); // Assuming sections are related to the episode
-    print("Fetched ${sections.length} sections for dynamic chaptering");
-
     if (sections.isNotEmpty) {
-      // Use sections to determine chapter breaks
-      int sectionIndex = 0;
-      const int wordsPerPage = 50;
-      List<String> words = story.value.split(' ');
-      print("Total words in story: ${words.length}");
-
-      for (var i = 0; i < words.length; i += wordsPerPage) {
-        final pageWords = words.sublist(
-          i,
-          i + wordsPerPage < words.length ? i + wordsPerPage : words.length,
-        );
-        allPages.add(pageWords.join(' '));
-        // Assign chapter title based on section or fallback to "Part X"
-        allPageChapters.add(
-          sectionIndex < sections.length
-              ? sections[sectionIndex].name
-              : "Part ${allPageChapters.length + 1}",
-        );
-        pageConversationIds.add(convoId ?? '');
-        allPageImages.add(null);
-        sectionIndex++;
-      }
+      // Split story into equal parts based on number of sections
+      final partLength = (story.value.length / sections.length).ceil();
+      allPages.value = List.generate(sections.length, (index) {
+        final start = index * partLength;
+        final end = (index + 1) * partLength < story.value.length ? (index + 1) * partLength : story.value.length;
+        return story.value.substring(start, end);
+      });
+      allPageChapters.value = sections.map((s) => s.localizedName).toList(); // Use localizedName
+      pageConversationIds.value = List.filled(sections.length, '');
+      allPageImages.value = List.filled(sections.length, null);
     } else {
-      // Fallback to original logic if no sections
+      // Fallback to fixed-size pages
       const int wordsPerPage = 50;
       List<String> words = story.value.split(' ');
-      print("Total words in story: ${words.length}");
-
       for (var i = 0; i < words.length; i += wordsPerPage) {
         final pageWords = words.sublist(
           i,
@@ -185,29 +179,25 @@ class BookChapterController extends GetxController {
         );
         allPages.add(pageWords.join(' '));
         allPageChapters.add("Part ${allPages.length}");
-        pageConversationIds.add(convoId ?? '');
+        pageConversationIds.add('');
         allPageImages.add(null);
       }
     }
-    print("Split into ${allPages.length} pages with dynamic chapters");
-    print("allPages.length: ${allPages.length}, allPageChapters.length: ${allPageChapters.length}, allPageImages.length: ${allPageImages.length}");
+    print("Split story into ${allPages.length} pages");
   }
 
   Future<void> updateChapterContent(int index, String newContent) async {
     if (index < 0 || index >= allPages.length) {
-      throw Exception("Invalid page index");
+      throw Exception("Invalid page index: $index");
     }
-    // Safely log new content, avoiding RangeError
-    final previewLength = newContent.length < 60 ? newContent.length : 60;
-    print("Updating page $index with new content: ${newContent.substring(0, previewLength)}...");
+    print("Updating page $index with new content: ${newContent.substring(0, newContent.length < 60 ? newContent.length : 60)}...");
 
-    // Update the specific page locally
     allPages[index] = newContent;
 
     final conversationId = pageConversationIds[index];
-    if (conversationId.isNotEmpty) {
-      // Update full story via API to preserve other pages
-      final apiData = {'botResponse': allPages.join(' ')};
+    if (usingConversations.value && conversationId.isNotEmpty) {
+      // Update specific conversation via API
+      final apiData = {'botResponse': newContent};
       try {
         final response = await apiService.updateConversation(bookId!, episodeId!, conversationId, apiData);
         if (response.statusCode == 200 || response.statusCode == 201) {
@@ -215,13 +205,12 @@ class BookChapterController extends GetxController {
           print("Successfully updated content for page $index via API");
         } else {
           Get.snackbar('Error', 'Failed to update server: ${response.body}');
-          // Revert on failure (optional: store old content if needed)
         }
       } catch (e) {
         Get.snackbar('Error', 'API call error: $e');
       }
     } else {
-      // Local update only
+      // Update story field locally
       await updateDatabaseStory();
       print("Updated content locally for page $index");
     }
@@ -229,16 +218,16 @@ class BookChapterController extends GetxController {
 
   Future<void> updateChapterTitle(int index, String newTitle) async {
     if (index < 0 || index >= allPageChapters.length) {
-      throw Exception("Invalid chapter index");
+      throw Exception("Invalid chapter index: $index");
     }
     allPageChapters[index] = newTitle;
-    await updateDatabaseStory();
     print("Updated title for page $index to: $newTitle");
+    // Note: Titles are not persisted in the database in this implementation
   }
 
   void updateChapterImage(int index, String? imagePath) {
     if (index < 0 || index >= allPageImages.length) {
-      throw Exception("Invalid chapter index");
+      throw Exception("Invalid chapter index: $index");
     }
     allPageImages[index] = imagePath;
     print("Updated image for page $index to: $imagePath");
@@ -258,10 +247,12 @@ class BookChapterController extends GetxController {
       final episode = Episode.fromMap(episodeMaps.first);
       if (usingConversations.value) {
         final updatedConversations = List.from(episode.conversations);
-        final combinedStory = allPages.join(' ');
-        final convoIndex = updatedConversations.indexWhere((c) => c['_id'] == pageConversationIds.first);
-        if (convoIndex != -1) {
-          updatedConversations[convoIndex]['botResponse'] = combinedStory;
+        for (int i = 0; i < allPages.length; i++) {
+          final convoId = pageConversationIds[i];
+          final convoIndex = updatedConversations.indexWhere((c) => c['_id'] == convoId);
+          if (convoIndex != -1) {
+            updatedConversations[convoIndex]['botResponse'] = allPages[i];
+          }
         }
         final updatedEpisode = episode.copyWith(conversations: updatedConversations);
         await dbHelper.updateEpisode(updatedEpisode);
@@ -270,7 +261,7 @@ class BookChapterController extends GetxController {
         final updatedStory = allPages.join(' ');
         final updatedEpisode = episode.copyWith(story: updatedStory);
         await dbHelper.updateEpisode(updatedEpisode);
-        print("Updated story in database for episode $episodeId: ${updatedStory.substring(0, updatedStory.length < 50 ? updatedStory.length : 50)}...");
+        print("Updated story in database for episode $episodeId");
       }
     }
   }

@@ -21,7 +21,9 @@ class SettingView extends GetView<SettingController> {
     Get.put(SettingController());
 
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: AppBar(
+        backgroundColor: AppColors.appBackground,
         title: Text("settings".tr, style: const TextStyle(fontSize: 26)),
         centerTitle: true,
       ),

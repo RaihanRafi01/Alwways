@@ -147,7 +147,7 @@ class AuthController extends GetxController {
       }
 
       final response =
-          await _service.updateProfile(token, userData, pickedImage.value);
+      await _service.updateProfile(token, userData, pickedImage.value);
 
       print('::::::::::::::::::::UPDATE : request ${jsonEncode(userData)}');
       print('::::::::::::::::::::UPDATE : statusCode ${response.statusCode}');

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:playground_02/controllers/book/book_controller.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -233,7 +235,7 @@ class DatabaseHelper {
           'id': question.id,
           'episodeId': question.episodeId, // Can be empty or removed if not needed
           'sectionId': sectionId, // Explicitly use sectionId
-          'text': question.text,
+          'text': jsonEncode(question.text),
           'v': question.v,
           'createdAt': question.createdAt,
           'updatedAt': question.updatedAt,

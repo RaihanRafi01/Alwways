@@ -6,6 +6,7 @@ import 'package:playground_02/views/authentication/signup_screen.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
 import 'package:playground_02/widgets/authentication/profileImage.dart';
 
+import '../../constants/color/app_colors.dart';
 import '../setting/views/setting_view.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -18,6 +19,7 @@ class ProfileScreen extends StatelessWidget {
     return GetBuilder<AuthController>(
       builder: (controller) {
         return Scaffold(
+          backgroundColor: AppColors.appBackground,
           appBar: CustomAppbar(title: "profile".tr, isHome: true),
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),

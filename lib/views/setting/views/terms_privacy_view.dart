@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../constants/color/app_colors.dart';
+
 class TermsPrivacyView extends GetView {
   final bool isTerms;
   const TermsPrivacyView({required this.isTerms,super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: AppBar(
+        backgroundColor: AppColors.appBackground,
         title: isTerms? const Text('Terms & Condition') : const Text('Privacy policy'),
         centerTitle: true,
       ),

@@ -27,7 +27,7 @@ class _HomePageLandingState extends State<HomePageLanding> {
     var name = authController.firstName.value;
     Get.put(BookController());
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.appBackground,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: SingleChildScrollView(

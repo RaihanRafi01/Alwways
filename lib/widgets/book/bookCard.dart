@@ -55,11 +55,10 @@ class BookCard extends StatelessWidget {
     // Load assets
     final fontRegular = pw.Font.ttf(await rootBundle.load('assets/fonts/Roboto-Regular.ttf'));
     final fontBold = pw.Font.ttf(await rootBundle.load('assets/fonts/Roboto-Bold.ttf'));
-    // Load PNGs with different sizes
     final bookUnderlinePng = await _loadPngFromAssets('assets/images/book/book_underline_4x.png');
     final episodeUnderlinePng = await _loadPngFromAssets('assets/images/book/book_underline_4x.png');
 
-    // Styles - Increased line spacing from 1.0 to 1.5
+    // Styles
     final titleStyle = pw.TextStyle(fontSize: 48, font: fontBold, color: PdfColors.black);
     final headerStyle = pw.TextStyle(fontSize: 32, font: fontBold, color: PdfColors.black);
     final bodyStyle = pw.TextStyle(
@@ -68,9 +67,8 @@ class BookCard extends StatelessWidget {
       color: PdfColors.black,
       lineSpacing: 3,
     );
-    // Style for the first letter (drop cap)
     final dropCapStyle = pw.TextStyle(
-      fontSize: 40, // Larger size for the first letter
+      fontSize: 40,
       font: fontRegular,
       color: PdfColors.black,
     );
@@ -120,7 +118,7 @@ class BookCard extends StatelessWidget {
 
     final pdf = pw.Document();
 
-    // Add title page with increased spacing and larger book underline
+    // Add title page
     pdf.addPage(
       pw.Page(
         pageTheme: commonPageTheme,
@@ -133,7 +131,7 @@ class BookCard extends StatelessWidget {
               children: [
                 pw.Text(book.title, style: titleStyle, textAlign: pw.TextAlign.center),
                 pw.SizedBox(height: 20),
-                pw.Image(bookUnderlinePng, width: 350), // Larger size for book underline
+                pw.Image(bookUnderlinePng, width: 350),
                 pw.SizedBox(height: 30),
                 if (bookCoverImage != null)
                   pw.Image(bookCoverImage, width: 300, height: 400),
@@ -186,20 +184,19 @@ class BookCard extends StatelessWidget {
                     children: [
                       pw.TextSpan(
                         text: firstLetter,
-                        style: dropCapStyle, // Larger first letter
+                        style: dropCapStyle,
                       ),
                       pw.TextSpan(
                         text: restOfParagraph,
-                        style: bodyStyle, // Rest of the paragraph
+                        style: bodyStyle,
                       ),
                     ],
                   ),
                   textAlign: pw.TextAlign.justify,
                 ),
               );
-              isFirstParagraph = false; // Only apply to the first paragraph
+              isFirstParagraph = false;
             } else {
-              // Regular paragraph styling for subsequent paragraphs
               episodeContent.add(
                 pw.Text(
                   paragraph,

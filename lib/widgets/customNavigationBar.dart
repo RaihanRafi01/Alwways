@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import '../constants/color/app_colors.dart';
 import '../views/dashboard/controllers/dashboard_controller.dart';
 
 class CustomNavigationBar extends StatelessWidget {
@@ -30,7 +31,7 @@ class CustomNavigationBar extends StatelessWidget {
 
     return Container(
       height: 60,
-      color: Colors.white,
+      color: AppColors.appBackground,
       child: Obx(() => Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(navItems.length, (index) {

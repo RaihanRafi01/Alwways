@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:get/get.dart';
+
 class Book {
   final String id;
   final String userId;
@@ -114,7 +116,7 @@ class Episode {
     return Episode(
       id: json['_id'],
       bookId: bookId ?? json['bookId'] ?? '',
-      title: json['title'],
+      title: json['title']['en'] as String? ?? '',
       coverImage: json['coverImage'] ?? '',
       percentage: json['percentage'].toDouble(),
       conversations: json['conversations'] ?? [],
@@ -127,7 +129,7 @@ class Episode {
     return {
       '_id': id,
       'bookId': bookId,
-      'title': title,
+      'title': {'en': title},
       'coverImage': coverImage,
       'percentage': percentage,
       'conversations': conversations,
@@ -193,14 +195,14 @@ class Episode {
 
 class Section {
   final String id;
-  final String name;
+  final Map<String, String> name; // Changed from String to Map<String, String>
   final int numberOfQuestions;
   final bool published;
   final String createdAt;
   final String updatedAt;
   final int v;
   final int questionsCount;
-  final int? episodeIndex; // Optional field, as it’s not always present
+  final int? episodeIndex;
 
   Section({
     required this.id,
@@ -217,7 +219,7 @@ class Section {
   factory Section.fromJson(Map<String, dynamic> json) {
     return Section(
       id: json['_id'] as String,
-      name: json['name'] as String,
+      name: Map<String, String>.from(json['name']), // Parse name as a map
       numberOfQuestions: json['numberOfQuestions'] as int,
       published: json['published'] as bool,
       createdAt: json['createdAt'] as String,
@@ -231,9 +233,9 @@ class Section {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'name': name,
+      'name': jsonEncode(name), // Store as JSON string
       'numberOfQuestions': numberOfQuestions,
-      'published': published ? 1 : 0, // SQLite uses 1/0 for boolean
+      'published': published ? 1 : 0,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'v': v,
@@ -245,7 +247,7 @@ class Section {
   factory Section.fromMap(Map<String, dynamic> map) {
     return Section(
       id: map['id'] as String,
-      name: map['name'] as String,
+      name: Map<String, String>.from(jsonDecode(map['name'])), // Parse JSON string back to map
       numberOfQuestions: map['numberOfQuestions'] as int,
       published: (map['published'] as int) == 1,
       createdAt: map['createdAt'] as String,
@@ -255,14 +257,20 @@ class Section {
       episodeIndex: map['episodeIndex'] as int?,
     );
   }
+
+  // Getter for localized name
+  String get localizedName {
+    final lang = Get.locale?.languageCode ?? 'en';
+    return name[lang] ?? name['en'] ?? '';
+  }
 }
 
 // New Question model
 class Question {
   final String id;
-  final String episodeId; // Can be deprecated or removed if not needed
+  final String episodeId;
   final String sectionId;
-  final String text;
+  final Map<String, String> text; // Changed from String to Map<String, String>
   final int v;
   final String createdAt;
   final String updatedAt;
@@ -280,24 +288,12 @@ class Question {
   factory Question.fromJson(Map<String, dynamic> json) {
     return Question(
       id: json['_id'] as String,
-      episodeId: '', // Set to empty since we’re using sectionId
+      episodeId: '', // Remains empty as per your usage
       sectionId: json['sectionId'] as String,
-      text: json['text'] as String,
+      text: Map<String, String>.from(json['text']), // Parse text as a map
       v: json['__v'] as int,
       createdAt: json['createdAt'] as String,
       updatedAt: json['updatedAt'] as String,
-    );
-  }
-
-  factory Question.fromMap(Map<String, dynamic> map) {
-    return Question(
-      id: map['id'] as String,
-      episodeId: map['episodeId'] as String,
-      sectionId: map['sectionId'] as String,
-      text: map['text'] as String,
-      v: map['v'] as int,
-      createdAt: map['createdAt'] as String,
-      updatedAt: map['updatedAt'] as String,
     );
   }
 
@@ -306,10 +302,28 @@ class Question {
       'id': id,
       'episodeId': episodeId,
       'sectionId': sectionId,
-      'text': text,
+      'text': jsonEncode(text), // Store as JSON string
       'v': v,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
+  }
+
+  factory Question.fromMap(Map<String, dynamic> map) {
+    return Question(
+      id: map['id'] as String,
+      episodeId: map['episodeId'] as String,
+      sectionId: map['sectionId'] as String,
+      text: Map<String, String>.from(jsonDecode(map['text'])), // Expects valid JSON
+      v: map['v'] as int,
+      createdAt: map['createdAt'] as String,
+      updatedAt: map['updatedAt'] as String,
+    );
+  }
+
+  // Getter for localized text
+  String get localizedText {
+    final lang = Get.locale?.languageCode ?? 'en';
+    return text[lang] ?? text['en'] ?? '';
   }
 }

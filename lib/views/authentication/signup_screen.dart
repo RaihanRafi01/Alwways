@@ -7,6 +7,8 @@ import 'package:playground_02/widgets/authentication/custom_textField.dart';
 import 'package:playground_02/widgets/authentication/profileImage.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
 
+import '../../constants/color/app_colors.dart';
+
 class SignupScreen extends StatelessWidget {
   final bool isEdit;
   final String? title;
@@ -45,6 +47,7 @@ class SignupScreen extends StatelessWidget {
     final TextEditingController confirmPasswordController = TextEditingController();
 
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: CustomAppbar(title: title!),
       body: Obx(() {
         return Stack(

@@ -25,7 +25,9 @@ class ChatLandingScreen extends StatelessWidget {
       isFree = authController.subscriptionType.value;
     }
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: AppBar(
+        backgroundColor: AppColors.appBackground,
         title: Text("ai_bot".tr),
       ),
       body: Padding(
@@ -113,7 +115,7 @@ class ChatLandingScreen extends StatelessWidget {
                   items: controller.sections.map<DropdownMenuItem<String>>((Section section) {
                     return DropdownMenuItem<String>(
                       value: section.id,
-                      child: Text(section.name),
+                      child: Text(section.localizedName), // Fix 1: Use localizedName
                     );
                   }).toList(),
                   onChanged: (selectedSectionId) {
@@ -121,7 +123,7 @@ class ChatLandingScreen extends StatelessWidget {
                       // Check subscription status and section position
                       final sectionIndex = controller.sections.indexWhere((section) => section.id == selectedSectionId);
 
-                      if (isFree == 'Free' && sectionIndex > 2) {  // Index > 2 means 4th section or beyond
+                      if (isFree == 'Free' && sectionIndex > 2) { // Index > 2 means 4th section or beyond
                         Get.snackbar(
                           "Upgrade Required",
                           "Free users can only access the first 3 sections. Please upgrade your subscription to access more.",
@@ -135,7 +137,7 @@ class ChatLandingScreen extends StatelessWidget {
                         Get.off(() => ChatScreen(
                           bookId: controller.selectedBookId.value,
                           sectionId: controller.selectedSectionId.value,
-                          episodeId: controller.selectedSectionId.value,
+                          episodeId: controller.selectedEpisodeId.value, // Fix 3: Use selectedEpisodeId
                         ));
                       }
                     }
@@ -155,12 +157,13 @@ class ChatLandingScreen extends StatelessWidget {
     void initializeInitialChat() {
       messageController.messages.clear();
       messageController.userAnswers.clear();
+      final lang = Get.locale?.languageCode ?? 'en'; // Get current language
       messageController.questionController.questions.value = [
         Question(
           id: "1",
           episodeId: '',
           sectionId: 'initial',
-          text: "question_1".tr,
+          text: {lang: "question_1".tr}, // Fix 2: Use map for text
           v: 0,
           createdAt: DateTime.now().toIso8601String(),
           updatedAt: DateTime.now().toIso8601String(),
