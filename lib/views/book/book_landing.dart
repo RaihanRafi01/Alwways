@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/constants/routes.dart';
+import 'package:playground_02/controllers/book/book_controller.dart';
 import 'package:playground_02/widgets/book/bookCard.dart';
 import 'package:playground_02/widgets/home/custom_bottom_navigation_bar.dart';
 import '../../controllers/book/bookLanding_controller.dart';
@@ -20,6 +21,7 @@ class BookLandingScreen extends StatefulWidget {
 class _BookLandingScreenState extends State<BookLandingScreen> {
   final NavigationController navController = Get.put(NavigationController());
   final BookLandingController bookController = Get.put(BookLandingController());
+  final BookController bookController1 = Get.put(BookController());
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +86,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
                 print("Episode coverImage '${item.coverImage}'");
                 Get.to(
                   BookPageView(
-                    title: item.title,
+                    title: bookController1.getTitle(bookId),
                     bookId: bookId,
                     coverImage: item.coverImage ?? 'assets/images/default_cover.jpg',
                     isEpisode: isEpisode,
