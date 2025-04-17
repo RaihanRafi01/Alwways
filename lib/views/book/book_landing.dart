@@ -21,7 +21,7 @@ class BookLandingScreen extends StatefulWidget {
 class _BookLandingScreenState extends State<BookLandingScreen> {
   final NavigationController navController = Get.put(NavigationController());
   final BookLandingController bookController = Get.put(BookLandingController());
-  final BookController bookController1 = Get.put(BookController());
+  //final bookController1 = Get.find<BookController>();
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +86,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
                 print("Episode coverImage '${item.coverImage}'");
                 Get.to(
                   BookPageView(
-                    title: bookController1.getTitle(bookId),
+                    title: item.localizedTitle,
                     bookId: bookId,
                     coverImage: item.coverImage ?? 'assets/images/default_cover.jpg',
                     isEpisode: isEpisode,

@@ -56,7 +56,7 @@ class BookPageView extends StatelessWidget {
                     if (index == 0) {
                       return Center(
                         child: BookCover(
-                          haveTitle: false, // No title on cover page
+                          haveTitle: true, // No title on cover page
                           isGrid: false,
                           title: title,
                           coverImage: coverImage,
