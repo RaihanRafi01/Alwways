@@ -309,15 +309,24 @@ class BookCard extends StatelessWidget {
           const SizedBox(height: 16),
           BookProgressBar(progress: progress),
           const SizedBox(height: 16),
-          if (progress != 100 && !isEpisode)
+          if (!isEpisode) // Only show button for books, not episodes
             Align(
               alignment: Alignment.center,
               child: SizedBox(
                 height: 22,
                 child: ElevatedButton(
                   onPressed: () async {
-                    print('Download Book button pressed for bookId: $bookId');
-                    await _generateAndOpenPdf(bookId);
+                    print('${progress == 100 ? "Download" : "View"} Book button pressed for bookId: $bookId');
+                    if (progress == 100) {
+                      await _generateAndOpenPdf(bookId);
+                    } else {
+                      // Placeholder for "View Book" logic
+                      // Replace this with the actual logic to display the book
+                      print('View Book action for bookId: $bookId');
+                      Get.snackbar('Info', 'View Book functionality to be implemented');
+                      // Example: Navigate to a book viewer screen
+                      // Navigator.push(context, MaterialPageRoute(builder: (context) => BookViewerScreen(bookId: bookId)));
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.appColor,
@@ -326,10 +335,14 @@ class BookCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.file_download_outlined, size: 17, color: Colors.white),
+                      Icon(
+                        progress == 100 ? Icons.file_download_outlined : Icons.visibility_outlined,
+                        size: 17,
+                        color: Colors.white,
+                      ),
                       const SizedBox(width: 4),
                       Text(
-                        "download_book".tr,
+                        progress == 100 ? "download_book".tr : "view_book".tr,
                         style: const TextStyle(fontSize: 10, color: Colors.white),
                       ),
                     ],
