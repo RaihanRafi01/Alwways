@@ -9,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/controllers/book/book_controller.dart';
 import '../../services/database/databaseHelper.dart';
+import '../../views/book/allEpisodesView.dart';
 import 'bookCover.dart';
 import 'bookProgress.dart';
 import 'package:http/http.dart' as http;
@@ -320,12 +321,12 @@ class BookCard extends StatelessWidget {
                     if (progress == 100) {
                       await _generateAndOpenPdf(bookId);
                     } else {
-                      // Placeholder for "View Book" logic
-                      // Replace this with the actual logic to display the book
-                      print('View Book action for bookId: $bookId');
-                      Get.snackbar('Info', 'View Book functionality to be implemented');
-                      // Example: Navigate to a book viewer screen
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => BookViewerScreen(bookId: bookId)));
+                      // Navigate to AllEpisodesView to view all episodes
+                      Get.to(() => AllEpisodesView(
+                        title: bookController.getTitle(bookId),
+                        bookId: bookId,
+                        coverImage: coverImage,
+                      ));
                     }
                   },
                   style: ElevatedButton.styleFrom(
