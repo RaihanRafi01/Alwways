@@ -33,8 +33,10 @@ class ChatLandingScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Obx(() {
-          // Ensure books are loaded or refreshed when returning
-          if (controller.books.isEmpty) {
+          // If a book is already selected, skip initial chat
+          if (controller.selectedBookId.value.isNotEmpty) {
+            return _buildRegularLandingScreen(context);
+          } else if (controller.books.isEmpty) {
             return _buildInitialChatScreen(context);
           } else {
             return _buildRegularLandingScreen(context);

@@ -10,6 +10,7 @@ import 'package:playground_02/widgets/chat/userMessage.dart';
 import 'package:playground_02/widgets/chat/botMessage.dart';
 import '../../services/model/bookModel.dart';
 import '../../views/chatWithAI/chatScreen.dart';
+import '../../views/home/home_landing.dart';
 import '../book/bookLanding_controller.dart';
 import 'botLanding_controller.dart';
 
@@ -279,76 +280,75 @@ class MessageController extends GetxController {
 
 
 
-    Future<void> _createBookAndNavigate() async {
-      print("Creating book with answers: ${userAnswers.toList()}");
-      String bookName = userAnswers.firstWhere(
-            (a) => a['question'] == 'What title would you like to give the book? Don\'t worry, you can change it anytime.',
-        orElse: () => {'answer': 'My Memoir'},
-      )['answer'] ?? 'My Memoir';
-      bookController.bookNameController.text = bookName; // Use the answer directly as book name
+  Future<void> _createBookAndNavigate() async {
+    print("Creating book with answers: ${userAnswers.toList()}");
+    String bookName = userAnswers.firstWhere(
+          (a) => a['question'] == 'What title would you like to give the book? Don\'t worry, you can change it anytime.',
+      orElse: () => {'answer': 'My Memoir'},
+    )['answer'] ?? 'My Memoir';
+    bookController.bookNameController.text = bookName;
 
-      // Show loading dialog immediately
-      Get.dialog(
-        const Dialog(
-          child: Padding(
-            padding: EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 20),
-                Text("Creating your book..."),
-              ],
-            ),
+    Get.dialog(
+      const Dialog(
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text("Creating your book..."),
+            ],
           ),
         ),
-        barrierDismissible: false,
-      );
+      ),
+      barrierDismissible: false,
+    );
 
-      try {
-        print("Calling createBook()...");
-        await bookController.createBook();
+    try {
+      print("Calling createBook()...");
+      await bookController.createBook();
 
-        print("Books after creation: ${botController.books.length}, Sections: ${botController.sections.length}");
-        if (botController.books.isEmpty || botController.sections.isEmpty) {
-          throw Exception("Failed to initialize book or sections");
-        }
-
-        String newBookId = botController.books.first['id']!;
-        String firstSectionId = botController.sections.first.id;
-        Book newBook = bookController.books.firstWhere((b) => b.id == newBookId);
-        String firstEpisodeId = newBook.episodes.isNotEmpty ? newBook.episodes.first.id : '';
-
-        if (firstEpisodeId.isEmpty) {
-          throw Exception("No episodes found for new book");
-        }
-
-        print("::::::::::::::: GGG ::::::::::::::::::::::: book id : $newBookId , sectionId : $firstSectionId , episodeId : $firstEpisodeId");
-
-        botController.selectBook(newBookId);
-        botController.selectSection(firstSectionId);
-        botController.selectedEpisodeId.value = firstEpisodeId;
-        print("Selected section: $firstSectionId, episode: $firstEpisodeId");
-
-        sectionId = firstSectionId;
-        await fetchQuestionsAndLoadHistory(firstSectionId);
-
-        print("Waiting 3 seconds before navigation...");
-        await Future.delayed(const Duration(seconds: 3));
-
-        print("Navigating to ChatScreen...");
-        Get.back(); // Close the loading dialog
-        Get.off(() => ChatScreen(
-          bookId: newBookId,
-          sectionId: firstSectionId,
-          episodeId: firstEpisodeId,
-        ));
-      } catch (e) {
-        print("Error in book creation or question fetching: $e");
-        Get.back(); // Close loading dialog
-        Get.snackbar('Error', e.toString());
+      print("Books after creation: ${botController.books.length}, Sections: ${botController.sections.length}");
+      if (botController.books.isEmpty || botController.sections.isEmpty) {
+        throw Exception("Failed to initialize book or sections");
       }
+
+      String newBookId = botController.books.first['id']!;
+      String firstSectionId = botController.sections.first.id;
+      Book newBook = bookController.books.firstWhere((b) => b.id == newBookId);
+      String firstEpisodeId = newBook.episodes.isNotEmpty ? newBook.episodes.first.id : '';
+
+      if (firstEpisodeId.isEmpty) {
+        throw Exception("No episodes found for new book");
+      }
+
+      print("::::::::::::::: GGG ::::::::::::::::::::::: book id : $newBookId , sectionId : $firstSectionId , episodeId : $firstEpisodeId");
+
+      botController.selectBook(newBookId);
+      botController.selectSection(firstSectionId);
+      botController.selectedEpisodeId.value = firstEpisodeId;
+      print("Selected section: $firstSectionId, episode: $firstEpisodeId");
+
+      sectionId = firstSectionId;
+      await fetchQuestionsAndLoadHistory(firstSectionId);
+
+      print("Waiting 3 seconds before navigation...");
+      await Future.delayed(const Duration(seconds: 3));
+
+      print("Navigating to HomePageLanding...");
+      Get.back(); // Close the loading dialog
+      Get.offAll(() => HomePageLanding(
+        bookId: newBookId,
+        bookTitle: bookName,
+        coverImage: bookController.getCoverImage(newBookId, 'assets/images/book/cover_image_1.svg'),
+      ));
+    } catch (e) {
+      print("Error in book creation or question fetching: $e");
+      Get.back(); // Close loading dialog
+      Get.snackbar('Error', e.toString());
     }
+  }
 
     Future<void> _calculateAndPrintCompletionPercentage(String sectionId) async {
       final sections = await dbHelper.getSections();

@@ -6,6 +6,7 @@ import 'package:playground_02/views/dashboard/views/dashboard_view.dart';
 import '../../services/api_service/api_service.dart';
 import '../../services/database/databaseHelper.dart';
 import '../../services/model/bookModel.dart';
+import '../chat/botLanding_controller.dart';
 
 class BookController extends GetxController {
   TextEditingController bookNameController = TextEditingController();
@@ -266,8 +267,10 @@ class BookController extends GetxController {
       print('Body: ${response.body}');
       if (response.statusCode == 201 || response.statusCode == 200) {
         await initializeBooks();
+        // Notify BotController to refresh sections
+        final botController = Get.find<BotController>();
+        await botController.fetchSections();
         Get.snackbar('Success', 'Successfully created the book');
-        //Get.offAll(const DashboardView(index: 1));
       } else {
         Get.snackbar('Error', 'Failed to create book: ${response.body}');
       }
