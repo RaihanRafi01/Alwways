@@ -24,6 +24,7 @@ class AllEpisodesController extends GetxController {
 
   final RxBool usingConversations = false.obs;
   final RxBool isLoading = true.obs;
+  final RxInt currentPage = 0.obs; // Added to track current page
 
   String? bookId;
   String? bookTitle;
@@ -43,7 +44,7 @@ class AllEpisodesController extends GetxController {
   }
 
   void _onPageChanged() {
-    // Optional: Track current page if needed
+    currentPage.value = pageController.page?.round() ?? 0;
   }
 
   Future<void> loadAllEpisodes(String bookId, String bookTitle, String bookCoverImage) async {

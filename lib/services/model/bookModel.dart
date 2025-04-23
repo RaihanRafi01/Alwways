@@ -232,7 +232,7 @@ class Section {
       updatedAt: json['updatedAt'] as String,
       v: json['__v'] as int,
       questionsCount: json['questionsCount'] as int,
-      episodeIndex: json['episodeIndex'] as int?,
+      episodeIndex: json['episodeIndex'] != null ? int.tryParse(json['episodeIndex'].toString()) : null,
     );
   }
 

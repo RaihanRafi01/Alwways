@@ -10,7 +10,7 @@ import '../../services/model/bookModel.dart';
 class BotController extends GetxController {
   var selectedBookId = ''.obs;
   var selectedSectionId = ''.obs;
-  var selectedSectionIndex = (-1).obs; // -1 means no selection
+  var selectedSectionIndex = (-1).obs; // Index in sections list
   var selectedEpisodeIndex = ''.obs;
   var selectedEpisodeId = ''.obs;
 
@@ -49,31 +49,41 @@ class BotController extends GetxController {
       }
       await dbHelper.insertSections(fetchedSections);
       sections.value = await dbHelper.getSections();
+      // Log sections for debugging
+      print('Fetched sections: ${sections.map((s) => 'ID: ${s.id}, Name: ${s.localizedName}, EpisodeIndex: ${s.episodeIndex}').toList()}');
     } else {
-      // Get.snackbar('Error', 'Failed to fetch sections: ${response.statusCode}');
+      print('Failed to fetch sections: ${response.statusCode}');
     }
   }
 
   void selectBook(String bookId) {
     selectedBookId.value = bookId;
     selectedSectionId.value = '';
-    selectedEpisodeId.value = ''; // Reset episode ID
+    selectedEpisodeId.value = '';
     selectedSectionIndex.value = -1;
+    print('Selected book: $bookId');
   }
 
   void selectSection(String sectionId) {
     selectedSectionId.value = sectionId;
     selectedSectionIndex.value = sections.indexWhere((section) => section.id == sectionId);
 
-    // Map section to episode (assuming episodeIndex relates to episode order)
     if (selectedSectionIndex.value >= 0 && episodes.isNotEmpty) {
       final section = sections[selectedSectionIndex.value];
-      final episodeIndex = section.episodeIndex ?? 0; // Default to first episode if no index
+      final episodeIndex = section.episodeIndex ?? 0; // Use episodeIndex from section
       if (episodeIndex < episodes.length) {
         selectedEpisodeId.value = episodes[episodeIndex].id;
+        selectedEpisodeIndex.value = episodeIndex.toString();
+      } else {
+        print('Warning: episodeIndex $episodeIndex is out of range for episodes: ${episodes.length}');
+        selectedEpisodeId.value = episodes.isNotEmpty ? episodes[0].id : '';
+        selectedEpisodeIndex.value = '0';
       }
+    } else {
+      selectedEpisodeId.value = '';
+      selectedEpisodeIndex.value = '';
     }
-    print("Selected section: $sectionId, episode: ${selectedEpisodeId.value}");
+    print("Selected section: ID=$sectionId, Index=$selectedSectionIndex, EpisodeIndex=$selectedEpisodeIndex, EpisodeID=${selectedEpisodeId.value}");
   }
 
   Future<List<Map<String, String>>> getChatHistory() async {
@@ -84,11 +94,12 @@ class BotController extends GetxController {
   void selectEpisode(String sectionId) {
     selectedSectionId.value = sectionId;
     selectedSectionIndex.value = sections.indexWhere((section) => section.id == sectionId);
-    print("::::::::::::::::::::::Selected section index: ${selectedSectionIndex.value}, ID: $sectionId");
+    print("Selected section: ID=$sectionId, Index=$selectedSectionIndex");
   }
 
   String getSelectedSectionId() {
-    print("::::::::::::::::::::::Selected section index: ${selectedSectionIndex.value}");
-    return selectedSectionIndex.value >= 0 ? selectedSectionIndex.value.toString() : '';
+    // Return sectionId instead of index, unless backend specifically needs episodeIndex
+    print("Getting selected section: ID=${selectedSectionId.value}, Index=$selectedSectionIndex");
+    return selectedSectionId.value;
   }
 }

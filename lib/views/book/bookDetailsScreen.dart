@@ -35,11 +35,11 @@ class BookDetailsScreen extends StatelessWidget {
                 child: Stack(
                   alignment: Alignment.bottomRight,
                   children: [
-                    const BookCover(isGrid: false),
+                    const BookCover(isGrid: false, title: '', coverImage: '', isEpisode: true, bookId: '',),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20, right: 16),
                       child: GestureDetector(
-                        onTap: () => Get.toNamed(AppRoutes.bookCoverEditScreen),
+                        onTap: () => Get.toNamed(AppRoutes.splash1),
                         child: SvgPicture.asset(
                           "assets/images/book/edit_icon.svg",
                           height: 24,

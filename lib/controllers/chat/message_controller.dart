@@ -338,7 +338,7 @@ class MessageController extends GetxController {
 
       print("Navigating to HomePageLanding...");
       Get.back(); // Close the loading dialog
-      Get.offAll(() => HomePageLanding(
+      Get.to(() => HomePageLanding(
         bookId: newBookId,
         bookTitle: bookName,
         coverImage: bookController.getCoverImage(newBookId, 'assets/images/book/cover_image_1.svg'),
@@ -350,9 +350,9 @@ class MessageController extends GetxController {
     }
   }
 
-    Future<void> _calculateAndPrintCompletionPercentage(String sectionId) async {
-      final sections = await dbHelper.getSections();
-      Section? currentSection;
+  Future<void> _calculateAndPrintCompletionPercentage(String sectionId) async {
+    final sections = await dbHelper.getSections();
+    Section? currentSection;
 
     try {
       currentSection = sections.firstWhere((section) => section.id == sectionId);
@@ -364,10 +364,10 @@ class MessageController extends GetxController {
 
     final totalQuestions = currentSection.questionsCount;
     final bookId = botController.selectedBookId.value;
-    final episodeId = botController.selectedEpisodeId.value; // Use episodeId consistently
+    final episodeId = botController.selectedEpisodeId.value;
     final history = await dbHelper.getChatHistory(bookId, episodeId);
 
-    final mainQuestions = questionController.questions.map((q) => q.localizedText).toList(); // Use localizedText
+    final mainQuestions = questionController.questions.map((q) => q.localizedText).toList();
     final uniqueAnsweredQuestions = history
         .where((entry) => mainQuestions.contains(entry['question']))
         .map((entry) => entry['question'])
@@ -378,7 +378,7 @@ class MessageController extends GetxController {
     final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions / totalQuestions) * 100 : 0;
     print("Section: ${currentSection.localizedName}, Total: $totalQuestions, Answered: $answeredMainQuestions, Completion: ${completionPercentage.toStringAsFixed(2)}%");
 
-    final episodeIndex = currentSection.episodeIndex?.toString() ?? '0'; // Use section's episodeIndex
+    final episodeIndex = botController.selectedSectionIndex.toString() ?? '0'; // Use section's episodeIndex
     print("::::::::::::::::::::::Selected section index: $episodeIndex");
     try {
       final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
