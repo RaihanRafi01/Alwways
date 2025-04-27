@@ -81,11 +81,13 @@ class BookChapterController extends GetxController {
         episode = episodes[index];
       }
 
-      // Clear existing content
+      // Reset all lists to ensure clean state
       allPages.clear();
       allPageChapters.clear();
       allPageImages.clear();
       pageConversationIds.clear();
+
+      // Add the episode cover image as the first image
       allPageImages.add(episodeCoverImage);
 
       // Fetch sections (assuming they relate to the episode)
@@ -103,11 +105,12 @@ class BookChapterController extends GetxController {
         pageConversationIds.value = storyConversations.map((c) => c['_id'] as String).toList();
         // Assign chapter titles based on sections or fallback to numbered chapters
         if (sections.length == storyConversations.length) {
-          allPageChapters.value = sections.map((s) => s.localizedName).toList(); // Use localizedName
+          allPageChapters.value = sections.map((s) => s.localizedName).toList();
         } else {
           allPageChapters.value = List.generate(allPages.length, (i) => "Chapter ${i + 1}");
         }
-        allPageImages.value = List.filled(allPages.length, null);
+        // Initialize images for all pages (excluding the cover image already added)
+        allPageImages.addAll(List<String?>.filled(allPages.length, null));
         print("Loaded ${allPages.length} pages from conversations");
       } else {
         usingConversations.value = false;
@@ -135,14 +138,24 @@ class BookChapterController extends GetxController {
           }
         }
       }
+
+      // Reset page controller to the first page
+      if (pageController.hasClients) {
+        pageController.jumpToPage(0);
+      }
+      currentPage.value = 0;
     } catch (e) {
       print("Error in loadStory: $e");
       Get.snackbar('Error', 'Failed to load story: $e');
       // Set fallback content
+      allPages.clear();
+      allPageChapters.clear();
+      allPageImages.clear();
+      pageConversationIds.clear();
       allPages.add("Error loading story");
       allPageChapters.add("Error");
-      pageConversationIds.add('');
       allPageImages.add(null);
+      pageConversationIds.add('');
     } finally {
       isLoading.value = false;
     }
@@ -165,9 +178,9 @@ class BookChapterController extends GetxController {
         final end = (index + 1) * partLength < story.value.length ? (index + 1) * partLength : story.value.length;
         return story.value.substring(start, end);
       });
-      allPageChapters.value = sections.map((s) => s.localizedName).toList(); // Use localizedName
+      allPageChapters.value = sections.map((s) => s.localizedName).toList();
       pageConversationIds.value = List.filled(sections.length, '');
-      allPageImages.value = List.filled(sections.length, null);
+      allPageImages.addAll(List<String?>.filled(sections.length, null));
     } else {
       // Fallback to fixed-size pages
       const int wordsPerPage = 50;

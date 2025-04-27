@@ -11,8 +11,10 @@ class ApiService {
   final FlutterSecureStorage _storage =
       FlutterSecureStorage(); // For secure storage
   // Base URL for the API
-  final String baseUrl = 'http://164.92.65.230:5002/api/';
+  final String baseUrl = 'https://api.alwways.com/api/';
   final String baseUrl2 = 'http://144.126.209.250/';
+  final String baseUrl3 = 'http://164.92.65.230:5002/api/';
+
 
 
   Future<http.Response> getProfile(String token) async {
