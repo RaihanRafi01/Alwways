@@ -5,6 +5,7 @@ import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/widgets/book/bookCover.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
 import '../../controllers/book/allEpisodes_controller.dart';
+import '../../controllers/book/bookChapter_controller.dart';
 import '../../views/book/bookPageEditScreen.dart';
 
 class AllEpisodesView extends StatelessWidget {
@@ -19,33 +20,36 @@ class AllEpisodesView extends StatelessWidget {
     required this.bookId,
     required this.coverImage,
   }) {
-    print(
-        "AllEpisodesView - bookId: $bookId, title: $title, coverImage: $coverImage");
+    print("AllEpisodesView - bookId: $bookId, title: $title, coverImage: $coverImage");
     controller.loadAllEpisodes(bookId, title, coverImage);
   }
 
   String _getChapterTitle(AllEpisodesController controller) {
     final currentPage = controller.currentPage.value;
-    if (currentPage != 0 && controller.flatPages.isNotEmpty) {
+    if (currentPage >= 0 && controller.flatPages.isNotEmpty && currentPage < controller.flatPages.length) {
       final pageData = controller.flatPages[currentPage];
       final episodeIndex = pageData['episodeIndex'] ?? -1;
       final pageIndex = pageData['pageIndex'] ?? -1;
-      if (episodeIndex >= 0 &&
+      if (pageData['type'] == 'story' &&
+          episodeIndex >= 0 &&
           pageIndex >= 0 &&
           episodeIndex < controller.allPageChapters.length &&
           pageIndex < controller.allPageChapters[episodeIndex].length) {
         return controller.allPageChapters[episodeIndex][pageIndex];
       } else if (pageData['type'] == 'episode_cover' &&
+          episodeIndex >= 0 &&
           episodeIndex < controller.episodes.length) {
         return controller.episodes[episodeIndex].localizedTitle;
       }
     }
-    return '';
+    return title; // Default to book title for book cover or invalid cases
   }
 
   @override
   Widget build(BuildContext context) {
+    Get.put(BookChapterController());
     return Scaffold(
+      backgroundColor: AppColors.bookBackground,
       appBar: CustomAppbar(title: title),
       body: SingleChildScrollView(
         child: Column(
@@ -99,15 +103,17 @@ class AllEpisodesView extends StatelessWidget {
                 if (controller.flatPages.isEmpty) {
                   return const Center(child: Text('No content available'));
                 }
+                print("Building PageView with ${controller.flatPages.length} pages");
                 return PageView.builder(
                   controller: controller.pageController,
                   itemCount: controller.flatPages.length,
                   onPageChanged: (index) {
                     controller.currentPage.value = index;
+                    print("Page changed to index: $index");
                   },
                   itemBuilder: (context, index) {
                     print(
-                        "Building page at index: $index, total pages: ${controller.flatPages.length}");
+                        "Building page at index: $index, total pages: ${controller.flatPages.length}, page data: ${controller.flatPages[index]}");
                     final pageData = controller.flatPages[index];
                     final pageType = pageData['type'];
                     final episodeIndex = pageData['episodeIndex'] ?? -1;
@@ -125,6 +131,9 @@ class AllEpisodesView extends StatelessWidget {
                         ),
                       );
                     } else if (pageType == 'episode_cover') {
+                      if (episodeIndex < 0 || episodeIndex >= controller.episodes.length) {
+                        return const Center(child: Text('Invalid episode index'));
+                      }
                       final episode = controller.episodes[episodeIndex];
                       return Center(
                         child: BookCover(
@@ -137,16 +146,21 @@ class AllEpisodesView extends StatelessWidget {
                         ),
                       );
                     } else if (pageType == 'story') {
+                      if (episodeIndex < 0 ||
+                          episodeIndex >= controller.allPages.length ||
+                          pageIndex < 0 ||
+                          pageIndex >= controller.allPages[episodeIndex].length) {
+                        return const Center(child: Text('Invalid story page index'));
+                      }
                       final episode = controller.episodes[episodeIndex];
-                      final storyContent =
-                      controller.allPages[episodeIndex][pageIndex];
-                      final chapterTitle =
-                      controller.allPageChapters[episodeIndex][pageIndex];
+                      final storyContent = controller.allPages[episodeIndex][pageIndex];
+                      final chapterTitle = controller.allPageChapters[episodeIndex][pageIndex];
                       final isFirstPage = pageIndex == 0;
 
+                      print("Rendering story page: episode $episodeIndex, page $pageIndex, content: ${storyContent.length > 60 ? storyContent.substring(0, 60) : storyContent}");
+
                       return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 60, vertical: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
                         child: Container(
                           color: AppColors.bookBackground,
                           child: SingleChildScrollView(
@@ -183,19 +197,16 @@ class AllEpisodesView extends StatelessWidget {
                                                   : '',
                                               style: const TextStyle(
                                                 fontSize: 40,
-                                                color: AppColors
-                                                    .bookTextColor,
+                                                color: AppColors.bookTextColor,
                                               ),
                                             ),
                                             TextSpan(
                                               text: storyContent.isNotEmpty
-                                                  ? storyContent
-                                                  .substring(1)
+                                                  ? storyContent.substring(1)
                                                   : '',
                                               style: const TextStyle(
                                                 fontSize: 16,
-                                                color: AppColors
-                                                    .bookTextColor,
+                                                color: AppColors.bookTextColor,
                                               ),
                                             ),
                                           ],
@@ -205,8 +216,7 @@ class AllEpisodesView extends StatelessWidget {
                                         storyContent,
                                         style: const TextStyle(
                                           fontSize: 16,
-                                          color:
-                                          AppColors.bookTextColor,
+                                          color: AppColors.bookTextColor,
                                         ),
                                       ),
                                     ),
@@ -215,14 +225,11 @@ class AllEpisodesView extends StatelessWidget {
                                 Align(
                                   alignment: Alignment.bottomRight,
                                   child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        bottom: 16, right: 16),
+                                    padding: const EdgeInsets.only(bottom: 16, right: 16),
                                     child: GestureDetector(
                                       onTap: () async {
-                                        final isCover = storyContent
-                                            .contains("ChapterCover");
-                                        final result =
-                                        await Get.to(() => BookEditPage(
+                                        final isCover = storyContent.contains("ChapterCover");
+                                        final result = await Get.to(() => BookEditPage(
                                           index: pageIndex,
                                           chapterTitle: chapterTitle,
                                           chapterContent: storyContent,
@@ -230,13 +237,9 @@ class AllEpisodesView extends StatelessWidget {
                                         ));
                                         if (result != null) {
                                           await controller.updateChapterTitle(
-                                              episodeIndex,
-                                              pageIndex,
-                                              result["title"]);
+                                              episodeIndex, pageIndex, result["title"]);
                                           await controller.updateChapterContent(
-                                              episodeIndex,
-                                              pageIndex,
-                                              result["content"]);
+                                              episodeIndex, pageIndex, result["content"]);
                                         }
                                       },
                                       child: SvgPicture.asset(

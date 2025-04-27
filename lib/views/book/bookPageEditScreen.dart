@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -31,6 +30,7 @@ class _BookEditPageState extends State<BookEditPage> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
   final BookChapterController controller = Get.find<BookChapterController>();
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -46,46 +46,102 @@ class _BookEditPageState extends State<BookEditPage> {
     super.dispose();
   }
 
+  void _saveChanges() {
+    setState(() {
+      _isSaving = true;
+    });
+    _performSave().then((_) {
+      setState(() {
+        _isSaving = false;
+      });
+    });
+  }
+
+  Future<void> _performSave() async {
+    try {
+      if (_contentController.text.trim().isEmpty) {
+        Get.snackbar('Error', 'Content cannot be empty');
+        return;
+      }
+      await controller.updateChapterContent(
+        widget.index,
+        _contentController.text.trim(),
+      );
+      await controller.updateChapterTitle(
+        widget.index,
+        _titleController.text.trim(),
+      );
+      await controller.loadStory(
+        controller.bookId!,
+        controller.episodeId!,
+        controller.allPageImages[0] ?? '',
+      );
+      Get.back(result: {
+        "title": _titleController.text.trim(),
+        "content": _contentController.text.trim(),
+      });
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to save changes: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppbar(
-        title: "edit_memory".tr, // Updated
+        title: "edit_memory".tr,
         isEdit: true,
       ),
       body: Container(
         color: AppColors.bookBackground,
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Expanded(
-              child: TextField(
-                controller: _contentController,
-                maxLines: null,
-                expands: true,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "edit_content_hint".tr, // Updated
-                ),
-                style: const TextStyle(fontSize: 16.0),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: CustomButton(
-                    text: "save".tr, // Updated
-                    onPressed: () async {
-                      await controller.updateChapterContent(widget.index, _contentController.text.trim());
-                      Get.back();
-                    },
-                    isEditPage: true,
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: "chapter_title".tr,
+                    hintText: "enter_chapter_title".tr,
                   ),
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: TextField(
+                    controller: _contentController,
+                    maxLines: null,
+                    expands: true,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      labelText: "chapter_content".tr,
+                      hintText: "edit_content_hint".tr,
+                    ),
+                    textAlign: TextAlign.justify,
+                    style: const TextStyle(fontSize: 16.0),
+                    textInputAction: TextInputAction.done,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        text: "save".tr,
+                        onPressed: _isSaving ? (){} : _saveChanges,
+                        isEditPage: true,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
+            if (_isSaving)
+              const Center(child: CircularProgressIndicator()),
           ],
         ),
       ),
