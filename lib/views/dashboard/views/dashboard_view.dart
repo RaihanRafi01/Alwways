@@ -31,7 +31,7 @@ class DashboardView extends StatelessWidget {
     return Obx(() {
       if (authController.isProfileLoaded.value) {
         return Scaffold(
-          backgroundColor: AppColors.appColor,
+          backgroundColor: AppColors.appBackground,
           body: Stack(
             children: [
               SafeArea(

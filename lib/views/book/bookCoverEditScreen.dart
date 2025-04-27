@@ -127,6 +127,7 @@ class _BookCoverEditScreenState extends State<BookCoverEditScreen> {
     });
 
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: CustomAppbar(
         title: isEpisodeEdit ? "edit_episode_cover".tr : "edit_cover".tr,
         showIcon: false,

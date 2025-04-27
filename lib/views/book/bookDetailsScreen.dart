@@ -5,6 +5,7 @@ import 'package:playground_02/views/subscription/cupon_view.dart';
 import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/book/bookPageView.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
+import '../../constants/color/app_colors.dart';
 import '../../constants/routes.dart';
 import '../../widgets/book/bookCover.dart';
 
@@ -14,6 +15,7 @@ class BookDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: const CustomAppbar(
         title: "", // Still empty; let me know if you want to add a title
         isHome: true,

@@ -5,6 +5,7 @@ import 'package:playground_02/constants/routes.dart';
 import 'package:playground_02/controllers/book/book_controller.dart';
 import 'package:playground_02/widgets/book/bookCard.dart';
 import 'package:playground_02/widgets/home/custom_bottom_navigation_bar.dart';
+import '../../constants/color/app_colors.dart';
 import '../../controllers/book/bookLanding_controller.dart';
 import '../../services/model/bookModel.dart';
 import '../../widgets/book/bookPageView.dart';
@@ -26,6 +27,7 @@ class _BookLandingScreenState extends State<BookLandingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: CustomAppbar(
         title: widget.isEpisode ? "episodes".tr : "all_books".tr, // Updated
         isHome: !widget.isEpisode,

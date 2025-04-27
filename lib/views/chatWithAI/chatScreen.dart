@@ -4,6 +4,8 @@ import 'package:playground_02/controllers/chat/botLanding_controller.dart';
 import 'package:playground_02/controllers/chat/message_controller.dart';
 import 'package:playground_02/widgets/chat/messageInput.dart';
 
+import '../../constants/color/app_colors.dart';
+
 class ChatScreen extends StatelessWidget {
   final String bookId;
   final String sectionId;
@@ -57,7 +59,7 @@ class ChatScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.appBackground,
       appBar: AppBar(
         backgroundColor: Colors.white,
         scrolledUnderElevation: 0,

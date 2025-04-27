@@ -4,18 +4,20 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../constants/color/app_colors.dart';
-import '../../controllers/book/bookChapter_controller.dart';
+import '../../controllers/book/allEpisodes_controller.dart'; // Import AllEpisodesController
 import '../../widgets/authentication/custom_button.dart';
 import '../../widgets/customAppBar.dart';
 
 class BookEditPage extends StatefulWidget {
+  final int episodeIndex; // Add episodeIndex
+  final int index;
   final String chapterTitle;
   final String chapterContent;
-  final int index;
   final bool isCover;
 
   const BookEditPage({
     super.key,
+    required this.episodeIndex, // Add episodeIndex
     required this.index,
     required this.chapterTitle,
     required this.chapterContent,
@@ -29,7 +31,7 @@ class BookEditPage extends StatefulWidget {
 class _BookEditPageState extends State<BookEditPage> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
-  final BookChapterController controller = Get.find<BookChapterController>();
+  final AllEpisodesController controller = Get.find<AllEpisodesController>(); // Use AllEpisodesController
   bool _isSaving = false;
 
   @override
@@ -63,18 +65,16 @@ class _BookEditPageState extends State<BookEditPage> {
         Get.snackbar('Error', 'Content cannot be empty');
         return;
       }
+      print("Saving changes for episode ${widget.episodeIndex}, page ${widget.index}");
       await controller.updateChapterContent(
+        widget.episodeIndex,
         widget.index,
         _contentController.text.trim(),
       );
       await controller.updateChapterTitle(
+        widget.episodeIndex,
         widget.index,
         _titleController.text.trim(),
-      );
-      await controller.loadStory(
-        controller.bookId!,
-        controller.episodeId!,
-        controller.allPageImages[0] ?? '',
       );
       Get.back(result: {
         "title": _titleController.text.trim(),
@@ -132,7 +132,7 @@ class _BookEditPageState extends State<BookEditPage> {
                     Expanded(
                       child: CustomButton(
                         text: "save".tr,
-                        onPressed: _isSaving ? (){} : _saveChanges,
+                        onPressed: _isSaving ? () {} : _saveChanges,
                         isEditPage: true,
                       ),
                     ),

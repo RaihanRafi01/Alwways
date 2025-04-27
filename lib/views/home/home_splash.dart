@@ -24,6 +24,7 @@ class _HomeSplashscreenState extends State<HomeSplashscreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

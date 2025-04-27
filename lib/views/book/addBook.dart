@@ -15,6 +15,7 @@ class AddBook extends StatelessWidget {
     final controller = Get.put(BookController());
 
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: CustomAppbar(title: "create_a_book".tr, showIcon: false), // Updated
       body: SingleChildScrollView(
         child: Column(

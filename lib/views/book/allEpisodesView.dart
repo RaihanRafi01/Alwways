@@ -5,7 +5,6 @@ import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/widgets/book/bookCover.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
 import '../../controllers/book/allEpisodes_controller.dart';
-import '../../controllers/book/bookChapter_controller.dart';
 import '../../views/book/bookPageEditScreen.dart';
 
 class AllEpisodesView extends StatelessWidget {
@@ -26,28 +25,56 @@ class AllEpisodesView extends StatelessWidget {
 
   String _getChapterTitle(AllEpisodesController controller) {
     final currentPage = controller.currentPage.value;
-    if (currentPage >= 0 && controller.flatPages.isNotEmpty && currentPage < controller.flatPages.length) {
-      final pageData = controller.flatPages[currentPage];
-      final episodeIndex = pageData['episodeIndex'] ?? -1;
-      final pageIndex = pageData['pageIndex'] ?? -1;
-      if (pageData['type'] == 'story' &&
-          episodeIndex >= 0 &&
-          pageIndex >= 0 &&
+    print("Getting chapter title for page: $currentPage, flatPages length: ${controller.flatPages.length}");
+
+    if (currentPage < 0 || currentPage >= controller.flatPages.length || controller.flatPages.isEmpty) {
+      print("Invalid page index or empty flatPages, returning book title: $title");
+      return title;
+    }
+
+    final pageData = controller.flatPages[currentPage];
+    final pageType = pageData['type'] as String?;
+    final episodeIndex = pageData['episodeIndex'] as int? ?? -1;
+    final pageIndex = pageData['pageIndex'] as int? ?? -1;
+
+    print("Page data: type=$pageType, episodeIndex=$episodeIndex, pageIndex=$pageIndex");
+
+    if (pageType == 'book_cover') {
+      print("Book cover page, returning book title: $title");
+      return title;
+    }
+
+    if (episodeIndex < 0 || episodeIndex >= controller.episodes.length) {
+      print("Invalid episodeIndex: $episodeIndex, returning book title: $title");
+      return title;
+    }
+
+    if (pageType == 'episode_cover') {
+      final episodeTitle = controller.episodes[episodeIndex].localizedTitle;
+      print("Episode cover page, returning episode title: $episodeTitle");
+      return episodeTitle;
+    }
+
+    if (pageType == 'story') {
+      if (pageIndex >= 0 &&
           episodeIndex < controller.allPageChapters.length &&
           pageIndex < controller.allPageChapters[episodeIndex].length) {
-        return controller.allPageChapters[episodeIndex][pageIndex];
-      } else if (pageData['type'] == 'episode_cover' &&
-          episodeIndex >= 0 &&
-          episodeIndex < controller.episodes.length) {
-        return controller.episodes[episodeIndex].localizedTitle;
+        final chapterTitle = controller.allPageChapters[episodeIndex][pageIndex];
+        print("Story page, returning chapter title: $chapterTitle");
+        return chapterTitle;
+      } else {
+        final episodeTitle = controller.episodes[episodeIndex].localizedTitle;
+        print("Invalid story page indices, returning episode title: $episodeTitle");
+        return episodeTitle;
       }
     }
-    return title; // Default to book title for book cover or invalid cases
+
+    print("Unknown page type, returning book title: $title");
+    return title;
   }
 
   @override
   Widget build(BuildContext context) {
-    Get.put(BookChapterController());
     return Scaffold(
       backgroundColor: AppColors.bookBackground,
       appBar: CustomAppbar(title: title),
@@ -230,6 +257,7 @@ class AllEpisodesView extends StatelessWidget {
                                       onTap: () async {
                                         final isCover = storyContent.contains("ChapterCover");
                                         final result = await Get.to(() => BookEditPage(
+                                          episodeIndex: episodeIndex,
                                           index: pageIndex,
                                           chapterTitle: chapterTitle,
                                           chapterContent: storyContent,

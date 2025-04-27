@@ -47,7 +47,8 @@ class AllEpisodesController extends GetxController {
     currentPage.value = pageController.page?.round() ?? 0;
   }
 
-  Future<void> loadAllEpisodes(String bookId, String bookTitle, String bookCoverImage) async {
+  Future<void> loadAllEpisodes(
+      String bookId, String bookTitle, String bookCoverImage) async {
     this.bookId = bookId;
     this.bookTitle = bookTitle;
     this.bookCoverImage = bookCoverImage;
@@ -58,7 +59,7 @@ class AllEpisodesController extends GetxController {
       // Fetch book and episodes
       final books = await dbHelper.getBooks();
       final book = books.firstWhere(
-            (b) => b.id == bookId,
+        (b) => b.id == bookId,
         orElse: () => throw Exception("Book not found: $bookId"),
       );
       print("Book found: ${book.title}");
@@ -71,10 +72,13 @@ class AllEpisodesController extends GetxController {
       allPages.value = List.generate(episodes.length, (_) => <String>[]);
       allPageChapters.value = List.generate(episodes.length, (_) => <String>[]);
       allPageImages.value = List.generate(episodes.length, (_) => <String?>[]);
-      pageConversationIds.value = List.generate(episodes.length, (_) => <String>[]);
+      pageConversationIds.value =
+          List.generate(episodes.length, (_) => <String>[]);
 
       // Load content for each episode
-      for (var episodeIndex = 0; episodeIndex < episodes.length; episodeIndex++) {
+      for (var episodeIndex = 0;
+          episodeIndex < episodes.length;
+          episodeIndex++) {
         await _loadEpisodeContent(episodeIndex);
       }
 
@@ -105,7 +109,9 @@ class AllEpisodesController extends GetxController {
       print("Added episode cover for episode $episodeIndex");
 
       // Story pages
-      for (var pageIndex = 0; pageIndex < allPages[episodeIndex].length; pageIndex++) {
+      for (var pageIndex = 0;
+          pageIndex < allPages[episodeIndex].length;
+          pageIndex++) {
         flatPages.add({
           'type': 'story',
           'episodeIndex': episodeIndex,
@@ -114,7 +120,8 @@ class AllEpisodesController extends GetxController {
         print("Added story page $pageIndex for episode $episodeIndex");
       }
     }
-    print("Flattened ${flatPages.length} pages for PageView: ${flatPages.map((p) => p['type'])}");
+    print(
+        "Flattened ${flatPages.length} pages for PageView: ${flatPages.map((p) => p['type'])}");
   }
 
   Future<void> _loadEpisodeContent(int episodeIndex) async {
@@ -151,8 +158,11 @@ class AllEpisodesController extends GetxController {
       print("Fetched ${sections.length} sections for episode $episodeId");
 
       // Check for story conversations
-      final storyConversations = updatedEpisode.conversations.where((c) => c['storyGenerated'] == true).toList();
-      print("Found ${storyConversations.length} story conversations for episode $episodeId");
+      final storyConversations = updatedEpisode.conversations
+          .where((c) => c['storyGenerated'] == true)
+          .toList();
+      print(
+          "Found ${storyConversations.length} story conversations for episode $episodeId");
 
       if (storyConversations.isNotEmpty) {
         usingConversations.value = true;
@@ -161,20 +171,32 @@ class AllEpisodesController extends GetxController {
           final conversation = storyConversations[0];
           final storyContent = conversation['botResponse'] as String;
           final conversationId = conversation['_id'] as String;
-          print("Single conversation for episode $episodeId, content: ${storyContent.length > 60 ? storyContent.substring(0, 60) : storyContent}");
-          _splitStoryContent(episodeIndex, storyContent, sections, conversationId);
-          print("Split conversation into ${allPages[episodeIndex].length} pages for episode $episodeId");
+          print(
+              "Single conversation for episode $episodeId, content: ${storyContent.length > 60 ? storyContent.substring(0, 60) : storyContent}");
+          _splitStoryContent(
+              episodeIndex, storyContent, sections, conversationId);
+          print(
+              "Split conversation into ${allPages[episodeIndex].length} pages for episode $episodeId");
         } else {
           // Multiple conversations: Each conversation is a page
-          allPages[episodeIndex] = storyConversations.map((c) => c['botResponse'] as String).toList();
-          pageConversationIds[episodeIndex] = storyConversations.map((c) => c['_id'] as String).toList();
+          allPages[episodeIndex] = storyConversations
+              .map((c) => c['botResponse'] as String)
+              .toList();
+          pageConversationIds[episodeIndex] =
+              storyConversations.map((c) => c['_id'] as String).toList();
           if (sections.length >= storyConversations.length) {
-            allPageChapters[episodeIndex] = sections.map((s) => s.localizedName).take(storyConversations.length).toList();
+            allPageChapters[episodeIndex] = sections
+                .map((s) => s.localizedName)
+                .take(storyConversations.length)
+                .toList();
           } else {
-            allPageChapters[episodeIndex] = List.generate(allPages[episodeIndex].length, (i) => "Chapter ${i + 1}");
+            allPageChapters[episodeIndex] = List.generate(
+                allPages[episodeIndex].length, (i) => "Chapter ${i + 1}");
           }
-          allPageImages[episodeIndex].addAll(List<String?>.filled(allPages[episodeIndex].length, null));
-          print("Loaded ${allPages[episodeIndex].length} pages from conversations for episode $episodeId: ${allPages[episodeIndex].map((p) => p.length > 60 ? p.substring(0, 60) : p)}");
+          allPageImages[episodeIndex].addAll(
+              List<String?>.filled(allPages[episodeIndex].length, null));
+          print(
+              "Loaded ${allPages[episodeIndex].length} pages from conversations for episode $episodeId: ${allPages[episodeIndex].map((p) => p.length > 60 ? p.substring(0, 60) : p)}");
         }
       } else {
         usingConversations.value = false;
@@ -182,7 +204,8 @@ class AllEpisodesController extends GetxController {
           _splitStoryContent(episodeIndex, updatedEpisode.story!, sections, '');
         } else {
           print("No story field, fetching from API for episode $episodeId");
-          final response = await apiService.generateStory(bookId!, episodeIndex.toString());
+          final response =
+              await apiService.generateStory(bookId!, episodeIndex.toString());
           if (response.statusCode == 200) {
             final data = jsonDecode(response.body);
             final story = data['story'];
@@ -209,9 +232,13 @@ class AllEpisodesController extends GetxController {
     }
   }
 
-  void _splitStoryContent(int episodeIndex, String story, List<Section> sections, [String conversationId = '']) {
-    print("Starting _splitStoryContent for episode $episodeIndex with story length: ${story.length}");
-    print("Story content (first 100 chars): ${story.length > 100 ? story.substring(0, 100) : story}");
+  void _splitStoryContent(
+      int episodeIndex, String story, List<Section> sections,
+      [String conversationId = '']) {
+    print(
+        "Starting _splitStoryContent for episode $episodeIndex with story length: ${story.length}");
+    print(
+        "Story content (first 100 chars): ${story.length > 100 ? story.substring(0, 100) : story}");
 
     allPages[episodeIndex].clear();
     allPageChapters[episodeIndex].clear();
@@ -219,76 +246,89 @@ class AllEpisodesController extends GetxController {
     // Note: allPageImages[episodeIndex] already has the episode cover image, so we don't clear it
 
     if (story.isEmpty) {
-      print("Story is empty, adding single empty page for episode $episodeIndex");
+      print(
+          "Story is empty, adding single empty page for episode $episodeIndex");
       allPages[episodeIndex].add('');
-      allPageChapters[episodeIndex].add(sections.isNotEmpty ? sections[0].localizedName : 'Chapter 1');
+      allPageChapters[episodeIndex]
+          .add(episodes[episodeIndex].localizedTitle); // Use episode title
       pageConversationIds[episodeIndex].add(conversationId);
       allPageImages[episodeIndex].add(null);
       return;
     }
 
-    final words = story.split(RegExp(r'\s+')).where((word) => word.isNotEmpty).toList();
+    final words =
+        story.split(RegExp(r'\s+')).where((word) => word.isNotEmpty).toList();
     print("Found ${words.length} words for episode $episodeIndex");
 
     const wordsPerPage = 50;
+    final episodeTitle = episodes[episodeIndex].localizedTitle;
     for (var i = 0; i < words.length; i += wordsPerPage) {
       final pageWords = words.skip(i).take(wordsPerPage).toList();
       final pageContent = pageWords.join(' ').trim();
       if (pageContent.isNotEmpty) {
         allPages[episodeIndex].add(pageContent);
-        allPageChapters[episodeIndex].add(
-          sections.length > allPages[episodeIndex].length - 1
-              ? sections[allPages[episodeIndex].length - 1].localizedName
-              : 'Chapter ${allPages[episodeIndex].length}',
-        );
+        // Use episode title for all pages, with part number for multi-page stories
+        final pageNumber = allPages[episodeIndex].length;
+        allPageChapters[episodeIndex].add(episodeTitle);
         pageConversationIds[episodeIndex].add(conversationId);
         allPageImages[episodeIndex].add(null);
-        print("Added page ${allPages[episodeIndex].length} for episode $episodeIndex: ${pageContent.length > 60 ? pageContent.substring(0, 60) : pageContent}...");
+        print(
+            "Added page $pageNumber for episode $episodeIndex: ${pageContent.length > 60 ? pageContent.substring(0, 60) : pageContent}...");
       }
     }
 
     // Ensure at least one page for short content
     if (allPages[episodeIndex].isEmpty) {
       allPages[episodeIndex].add(story);
-      allPageChapters[episodeIndex].add(sections.isNotEmpty ? sections[0].localizedName : 'Chapter 1');
+      allPageChapters[episodeIndex].add(episodeTitle);
       pageConversationIds[episodeIndex].add(conversationId);
       allPageImages[episodeIndex].add(null);
-      print("Added single page for short content in episode $episodeIndex: ${story.length > 60 ? story.substring(0, 60) : story}");
+      print(
+          "Added single page for short content in episode $episodeIndex: ${story.length > 60 ? story.substring(0, 60) : story}");
     }
 
     // Ensure minimum pages (e.g., 2)
     while (allPages[episodeIndex].length < 2) {
       allPages[episodeIndex].add('');
-      allPageChapters[episodeIndex].add(
-        sections.length > allPages[episodeIndex].length - 1
-            ? sections[allPages[episodeIndex].length - 1].localizedName
-            : 'Chapter ${allPages[episodeIndex].length}',
-      );
+      allPageChapters[episodeIndex].add(episodeTitle);
       pageConversationIds[episodeIndex].add(conversationId);
       allPageImages[episodeIndex].add(null);
-      print("Added empty page to reach minimum page count for episode $episodeIndex: ${allPages[episodeIndex].length}");
+      print(
+          "Added empty page to reach minimum page count for episode $episodeIndex: ${allPages[episodeIndex].length}");
     }
 
-    print("Split story into ${allPages[episodeIndex].length} pages for episode $episodeIndex");
-    print("allPages content for episode $episodeIndex: ${allPages[episodeIndex].map((p) => p.length > 60 ? p.substring(0, 60) : p)}");
+    print(
+        "Split story into ${allPages[episodeIndex].length} pages for episode $episodeIndex");
+    print(
+        "allPages content for episode $episodeIndex: ${allPages[episodeIndex].map((p) => p.length > 60 ? p.substring(0, 60) : p)}");
+    print(
+        "allPageChapters for episode $episodeIndex: ${allPageChapters[episodeIndex]}");
   }
 
-  Future<void> updateChapterContent(int episodeIndex, int pageIndex, String newContent) async {
-    if (episodeIndex < 0 || episodeIndex >= allPages.length || pageIndex < 0 || pageIndex >= allPages[episodeIndex].length) {
-      throw Exception("Invalid indices: episodeIndex=$episodeIndex, pageIndex=$pageIndex");
+  Future<void> updateChapterContent(
+      int episodeIndex, int pageIndex, String newContent) async {
+    if (episodeIndex < 0 ||
+        episodeIndex >= allPages.length ||
+        pageIndex < 0 ||
+        pageIndex >= allPages[episodeIndex].length) {
+      throw Exception(
+          "Invalid indices: episodeIndex=$episodeIndex, pageIndex=$pageIndex");
     }
-    print("Updating episode $episodeIndex, page $pageIndex with new content: ${newContent.length > 60 ? newContent.substring(0, 60) : newContent}...");
+    print(
+        "Updating episode $episodeIndex, page $pageIndex with new content: ${newContent.length > 60 ? newContent.substring(0, 60) : newContent}...");
 
     allPages[episodeIndex][pageIndex] = newContent;
 
     final conversationId = pageConversationIds[episodeIndex][pageIndex];
     if (usingConversations.value && conversationId.isNotEmpty) {
-      final apiData = {'botResponse': allPages[episodeIndex].join(' ')}; // Join all pages to update the full conversation
+      final apiData = {'botResponse': allPages[episodeIndex].join(' ')};
       try {
-        final response = await apiService.updateConversation(bookId!, episodes[episodeIndex].id, conversationId, apiData);
+        final response = await apiService.updateConversation(
+            bookId!, episodes[episodeIndex].id, conversationId, apiData);
         if (response.statusCode == 200 || response.statusCode == 201) {
           await updateDatabaseStory(episodeIndex);
-          print("Successfully updated content for episode $episodeIndex, page $pageIndex via API");
+          print(
+              "Successfully updated content for episode $episodeIndex, page $pageIndex via API");
         } else {
           Get.snackbar('Error', 'Failed to update server: ${response.body}');
         }
@@ -297,19 +337,26 @@ class AllEpisodesController extends GetxController {
       }
     } else {
       await updateDatabaseStory(episodeIndex);
-      print("Updated content locally for episode $episodeIndex, page $pageIndex");
+      print(
+          "Updated content locally for episode $episodeIndex, page $pageIndex");
     }
 
     // Re-flatten pages to update PageView
     _flattenPages();
   }
 
-  Future<void> updateChapterTitle(int episodeIndex, int pageIndex, String newTitle) async {
-    if (episodeIndex < 0 || episodeIndex >= allPageChapters.length || pageIndex < 0 || pageIndex >= allPageChapters[episodeIndex].length) {
-      throw Exception("Invalid indices: episodeIndex=$episodeIndex, pageIndex=$pageIndex");
+  Future<void> updateChapterTitle(
+      int episodeIndex, int pageIndex, String newTitle) async {
+    if (episodeIndex < 0 ||
+        episodeIndex >= allPageChapters.length ||
+        pageIndex < 0 ||
+        pageIndex >= allPageChapters[episodeIndex].length) {
+      throw Exception(
+          "Invalid indices: episodeIndex=$episodeIndex, pageIndex=$pageIndex");
     }
     allPageChapters[episodeIndex][pageIndex] = newTitle;
-    print("Updated title for episode $episodeIndex, page $pageIndex to: $newTitle");
+    print(
+        "Updated title for episode $episodeIndex, page $pageIndex to: $newTitle");
 
     // Re-flatten pages to update PageView
     _flattenPages();
@@ -330,12 +377,16 @@ class AllEpisodesController extends GetxController {
       final episode = Episode.fromMap(episodeMaps.first);
       if (usingConversations.value) {
         final updatedConversations = List.from(episode.conversations);
-        final convoIndex = updatedConversations.indexWhere((c) => c['_id'] == pageConversationIds[episodeIndex][0]);
+        final convoIndex = updatedConversations.indexWhere(
+            (c) => c['_id'] == pageConversationIds[episodeIndex][0]);
         if (convoIndex != -1) {
-          updatedConversations[convoIndex]['botResponse'] = allPages[episodeIndex].join(' ');
-          updatedConversations[convoIndex]['title'] = allPageChapters[episodeIndex][0];
+          updatedConversations[convoIndex]['botResponse'] =
+              allPages[episodeIndex].join(' ');
+          updatedConversations[convoIndex]['title'] =
+              allPageChapters[episodeIndex][0];
         }
-        final updatedEpisode = episode.copyWith(conversations: updatedConversations);
+        final updatedEpisode =
+            episode.copyWith(conversations: updatedConversations);
         await dbHelper.updateEpisode(updatedEpisode);
         print("Updated conversations in database for episode $episodeId");
       } else {

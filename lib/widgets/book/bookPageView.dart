@@ -37,6 +37,7 @@ class BookPageView extends StatelessWidget {
     final chapterNumber = (int.parse(episodeIndex) + 1).toString();
 
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: const CustomAppbar(title: ''),
       body: Obx(() {
         if (controller.isLoading.value) {
@@ -145,14 +146,15 @@ class BookPageView extends StatelessWidget {
                                     onTap: () async {
                                       final isCover = controller.allPages[pageIndex].contains("ChapterCover");
                                       final result = await Get.to(() => BookEditPage(
+                                        episodeIndex: int.parse(episodeIndex), // Pass the episodeIndex
                                         index: pageIndex,
                                         chapterTitle: controller.allPageChapters[pageIndex],
                                         chapterContent: controller.allPages[pageIndex],
                                         isCover: isCover,
                                       ));
                                       if (result != null) {
-                                        controller.updateChapterTitle(pageIndex, result["title"]);
-                                        controller.updateChapterContent(pageIndex, result["content"]);
+                                        await controller.updateChapterTitle(pageIndex, result["title"]);
+                                        await controller.updateChapterContent(pageIndex, result["content"]);
                                       }
                                     },
                                     child: SvgPicture.asset(
