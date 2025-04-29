@@ -102,4 +102,10 @@ class BotController extends GetxController {
     print("Getting selected section: ID=${selectedSectionId.value}, Index=$selectedSectionIndex");
     return selectedSectionId.value;
   }
+
+  RxInt getSectionIndex() {
+    // Return sectionId instead of index, unless backend specifically needs episodeIndex
+    print("Getting selected section: ID=${selectedSectionId.value}, Index=$selectedSectionIndex");
+    return selectedSectionIndex;
+  }
 }

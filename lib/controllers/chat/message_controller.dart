@@ -415,13 +415,18 @@ class MessageController extends GetxController {
       print(':::generateSubQuestion::: Response Body: ${response.body}');
 
 
+
       if (response.statusCode == 200) {
         final saveResponse = await apiService.saveAnswer(
           botController.selectedBookId.value,
-          botController.getSelectedSectionId(),
+          botController.getSectionIndex().toString(),
           question,
           answer,
         );
+        print(':::saveAnswer::: botController.selectedBookId.value: -------> ${botController.selectedBookId.value}');
+        print(':::saveAnswer::: botController.getSelectedSectionId(): -------> ${botController.getSectionIndex().toString()}');
+        print(':::saveAnswer::: question -------> $question');
+        print(':::saveAnswer::: answer -------> $answer');
         print(':::saveAnswer::: Status Code: ${saveResponse.statusCode}');
         print(':::saveAnswer::: Response Body: ${saveResponse.body}');
         if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
@@ -459,8 +464,8 @@ class MessageController extends GetxController {
           subQuestion,
           answer,
         );
-        print(':::saveAnswer::: Status Code: ${saveResponse.statusCode}');
-        print(':::saveAnswer::: Response Body: ${saveResponse.body}');
+        print(':::saveAnswer ================= Status Code: ${saveResponse.statusCode}');
+        print(':::saveAnswer ================= Response Body: ${saveResponse.body}');
         if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
           await dbHelper.insertChatHistory(
             botController.selectedBookId.value,
