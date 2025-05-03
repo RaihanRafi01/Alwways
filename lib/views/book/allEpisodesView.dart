@@ -86,7 +86,6 @@ class AllEpisodesView extends StatelessWidget {
                 return const SizedBox.shrink();
               }
               return Container(
-                padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Text(
@@ -187,7 +186,7 @@ class AllEpisodesView extends StatelessWidget {
                       print("Rendering story page: episode $episodeIndex, page $pageIndex, content: ${storyContent.length > 60 ? storyContent.substring(0, 60) : storyContent}");
 
                       return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 20),
                         child: Container(
                           color: AppColors.bookBackground,
                           child: SingleChildScrollView(

@@ -260,7 +260,7 @@ class AllEpisodesController extends GetxController {
         story.split(RegExp(r'\s+')).where((word) => word.isNotEmpty).toList();
     print("Found ${words.length} words for episode $episodeIndex");
 
-    const wordsPerPage = 50;
+    const wordsPerPage = 100;
     final episodeTitle = episodes[episodeIndex].localizedTitle;
     for (var i = 0; i < words.length; i += wordsPerPage) {
       final pageWords = words.skip(i).take(wordsPerPage).toList();

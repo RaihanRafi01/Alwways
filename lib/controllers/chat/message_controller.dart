@@ -358,7 +358,7 @@ class MessageController extends GetxController {
       currentSection = sections.firstWhere((section) => section.id == sectionId);
     } catch (e) {
       print("Error: No section found for sectionId: $sectionId  Error :::::::::::::::::::::::: $e");
-      Get.snackbar('Error', 'Section not found for ID: $sectionId');
+      //Get.snackbar('Error', 'Section not found for ID: $sectionId');
       return;
     }
 

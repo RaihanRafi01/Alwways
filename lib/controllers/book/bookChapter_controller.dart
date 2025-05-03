@@ -147,7 +147,13 @@ class BookChapterController extends GetxController {
           _splitStoryContent(story.value, '', sections);
         } else {
           print("No story field, fetching from API");
-          final response = await apiService.generateStory(bookId, episode.id);
+          final episodeIndex = book.episodes.indexWhere((e) => e.id == episode.id);
+          if (episodeIndex == -1) {
+            throw Exception("Episode not found in book episodes");
+          }
+          final response = await apiService.generateStory(bookId, episodeIndex.toString());
+          print("No story field, fetching from API-------statusCode---------> ${response.statusCode}");
+          print("No story field, fetching from API--------body--------> ${response.body}");
           if (response.statusCode == 200) {
             final data = jsonDecode(response.body);
             story.value = data['story'];
@@ -217,7 +223,7 @@ class BookChapterController extends GetxController {
     final words = story.split(RegExp(r'\s+')).where((word) => word.isNotEmpty).toList();
     print("Found ${words.length} words");
 
-    const wordsPerPage = 50;
+    const wordsPerPage = 100;
     for (var i = 0; i < words.length; i += wordsPerPage) {
       final pageWords = words.skip(i).take(wordsPerPage).toList();
       final pageContent = pageWords.join(' ').trim();
