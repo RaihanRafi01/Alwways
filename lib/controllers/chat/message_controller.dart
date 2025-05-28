@@ -460,12 +460,14 @@ class MessageController extends GetxController {
       if (relevancyResponse.statusCode == 200) {
         final saveResponse = await apiService.saveAnswer(
           botController.selectedBookId.value,
-          botController.getSelectedSectionId(),
+          botController.getSectionIndex().toString(),
           subQuestion,
           answer,
         );
         print(':::saveAnswer ================= Status Code: ${saveResponse.statusCode}');
         print(':::saveAnswer ================= Response Body: ${saveResponse.body}');
+        print(':::saveAnswer ================= request: ${saveResponse.request}');
+        print(':::saveAnswer ================= saveAnswer: ${botController.selectedBookId.value} === ${botController.getSelectedSectionId()} === $subQuestion === $answer');
         if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
           await dbHelper.insertChatHistory(
             botController.selectedBookId.value,
@@ -473,6 +475,12 @@ class MessageController extends GetxController {
             subQuestion,
             answer,
           );
+          /*final saveResponse = await apiService.saveAnswer(
+            botController.selectedBookId.value,
+            botController.getSectionIndex().toString(),
+            question,
+            answer,
+          );*/
           questionController.nextQuestion();
           askQuestion();
         } else {

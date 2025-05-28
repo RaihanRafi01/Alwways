@@ -71,7 +71,7 @@ class BookCard extends StatelessWidget {
       font: fontRegular,
       color: PdfColors.black,
     );
-    var backgroundColor = PdfColor.fromInt(AppColors.bookBackground1.value);
+    var backgroundColor = PdfColor.fromInt(AppColors.bookBackground.value);
 
     final commonPageTheme = pw.PageTheme(
       pageFormat: PdfPageFormat.a4.copyWith(
@@ -318,7 +318,7 @@ class BookCard extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () async {
                     print('${progress == 100 ? "Download" : "View"} Book button pressed for bookId: $bookId');
-                    if (progress == 100) {
+                    if (progress != 100) {
                       await _generateAndOpenPdf(bookId);
                     } else {
                       // Navigate to AllEpisodesView to view all episodes
