@@ -80,14 +80,18 @@ class BookCover extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ))
-                  : Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isGrid ? 14 : 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+                  : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 130),
+                    child: Text(
+                                    title,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isGrid ? 14 : 24,
+                    fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                  ),
               const SizedBox(height: 4),
               SvgPicture.asset(
                 "assets/images/book/book_underline_1.svg",

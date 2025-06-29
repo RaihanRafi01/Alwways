@@ -162,10 +162,19 @@ class ChatLandingScreen extends StatelessWidget {
       final lang = Get.locale?.languageCode ?? 'en'; // Get current language
       messageController.questionController.questions.value = [
         Question(
-          id: "1",
+          id: "2",
           episodeId: '',
           sectionId: 'initial',
-          text: {lang: "question_1".tr}, // Fix 2: Use map for text
+          text: {lang: "question_2".tr}, // "What is your name?"
+          v: 0,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+        ),
+        Question(
+          id: "3",
+          episodeId: '',
+          sectionId: 'initial',
+          text: {lang: "question_3".tr}, // "What title would you like to give the book? ..."
           v: 0,
           createdAt: DateTime.now().toIso8601String(),
           updatedAt: DateTime.now().toIso8601String(),

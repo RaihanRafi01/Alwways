@@ -45,16 +45,33 @@ class MessageController extends GetxController {
       print("MessageController initialized in initial chat mode (no book selected)");
       final lang = Get.locale?.languageCode ?? 'en';
       questionController.questions.value = [
+        // Question(
+        //   id: "1",
+        //   episodeId: '',
+        //   sectionId: 'initial',
+        //   text: {lang: "question_1".tr}, // e.g., "Who is this book for?"
+        //   v: 0,
+        //   createdAt: DateTime.now().toIso8601String(),
+        //   updatedAt: DateTime.now().toIso8601String(),
+        // ),
         Question(
-          id: "1",
+          id: "2",
           episodeId: '',
           sectionId: 'initial',
-          text: {lang: "question_1".tr}, // e.g., "Who is this book for?"
+          text: {lang: "question_2".tr}, // "What is your name?"
           v: 0,
           createdAt: DateTime.now().toIso8601String(),
           updatedAt: DateTime.now().toIso8601String(),
         ),
-        // Other initial questions updated similarly
+        Question(
+          id: "3",
+          episodeId: '',
+          sectionId: 'initial',
+          text: {lang: "question_3".tr}, // "What title would you like to give the book? ..."
+          v: 0,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+        ),
       ];
     }
   }
@@ -227,7 +244,7 @@ class MessageController extends GetxController {
             print("::: Set questions for self ::: ['What is your name?', 'What title ...']");
           } else {
             questionController.questions.value = [
-              Question(
+              /*Question(
                 id: "2",
                 episodeId: '',
                 sectionId: 'initial',
@@ -235,7 +252,7 @@ class MessageController extends GetxController {
                 v: 0,
                 createdAt: DateTime.now().toIso8601String(),
                 updatedAt: DateTime.now().toIso8601String(),
-              ),
+              ),*/
               Question(
                 id: "3",
                 episodeId: '',
@@ -437,7 +454,10 @@ class MessageController extends GetxController {
             answer,
           );
           await _calculateAndPrintCompletionPercentage(sectionId!);
-          final data = jsonDecode(response.body);
+
+          final responseBody = utf8.decode(response.bodyBytes);
+
+          final data = jsonDecode(responseBody);
           final subQuestions = List<String>.from(data['content']);
           questionController.setSubQuestions(subQuestions);
           askQuestion();

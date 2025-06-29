@@ -6,6 +6,7 @@ import 'package:playground_02/services/api_service/api_service.dart';
 import 'package:playground_02/services/database/databaseHelper.dart';
 
 import '../../services/model/bookModel.dart';
+import '../auth_controller.dart';
 
 class BotController extends GetxController {
   var selectedBookId = ''.obs;
@@ -51,7 +52,12 @@ class BotController extends GetxController {
       sections.value = await dbHelper.getSections();
       // Log sections for debugging
       print('Fetched sections: ${sections.map((s) => 'ID: ${s.id}, Name: ${s.localizedName}, EpisodeIndex: ${s.episodeIndex}').toList()}');
-    } else {
+    }
+    else if (response.statusCode == 401){
+      final authController = Get.find<AuthController>();
+      await authController.logout();
+    }
+    else {
       print('Failed to fetch sections: ${response.statusCode}');
     }
   }
