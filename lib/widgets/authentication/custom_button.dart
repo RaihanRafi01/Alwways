@@ -25,7 +25,7 @@ class CustomButton extends StatelessWidget {
     this.borderRadius = 20.0,
     this.padding = const EdgeInsets.symmetric(vertical: 5),
     this.isEditPage = false,
-    this.width = double.maxFinite,
+    this.width = double.infinity,
     this.height = 45,
     this.fontSize = 16
   });

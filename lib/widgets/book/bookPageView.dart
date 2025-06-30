@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
 import 'package:playground_02/widgets/book/bookCover.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
+import '../../controllers/book/allEpisodes_controller.dart';
 import '../../controllers/book/bookChapter_controller.dart';
 import '../../views/book/bookPageEditScreen.dart';
 
@@ -33,6 +34,7 @@ class BookPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Get.put(AllEpisodesController());
     // Convert episodeIndex to chapter number (e.g., "0" -> "Chapter 1")
     final chapterNumber = (int.parse(episodeIndex) + 1).toString();
 
