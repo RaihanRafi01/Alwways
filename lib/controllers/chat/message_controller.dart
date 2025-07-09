@@ -24,7 +24,7 @@ class MessageController extends GetxController {
   final DatabaseHelper dbHelper = DatabaseHelper();
   String? sectionId;
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          void _showLoadingMessage() {
+  void _showLoadingMessage() {
     messages.add(const BotMessage(message: "", isLoading: true));
   }
 
@@ -45,15 +45,6 @@ class MessageController extends GetxController {
       print("MessageController initialized in initial chat mode (no book selected)");
       final lang = Get.locale?.languageCode ?? 'en';
       questionController.questions.value = [
-        // Question(
-        //   id: "1",
-        //   episodeId: '',
-        //   sectionId: 'initial',
-        //   text: {lang: "question_1".tr}, // e.g., "Who is this book for?"
-        //   v: 0,
-        //   createdAt: DateTime.now().toIso8601String(),
-        //   updatedAt: DateTime.now().toIso8601String(),
-        // ),
         Question(
           id: "2",
           episodeId: '',
@@ -107,12 +98,9 @@ class MessageController extends GetxController {
         questionController.currentSubQuestionIndex.value = 0;
       } else {
         // Last question was a sub-question; find parent and restore sub-question state
-        // This requires sub-questions to be persisted or refetched
-        // For now, find the last main question and assume sub-questions need refetching
         final parentQuestionIndex = questionController.questions.indexWhere((q) => history.any((h) => h['question'] == q.localizedText));
         if (parentQuestionIndex != -1) {
           questionController.currentQuestionIndex.value = parentQuestionIndex;
-          // Simulate fetching sub-questions (replace with actual API call if needed)
           final lastMainQuestion = questionController.questions[parentQuestionIndex].localizedText;
           final lastAnswer = history.lastWhere((h) => h['question'] == lastMainQuestion, orElse: () => {'answer': ''})['answer']!;
           final response = await apiService.generateSubQuestion(lastMainQuestion, lastAnswer);
@@ -135,25 +123,33 @@ class MessageController extends GetxController {
 
     // Skip to next unanswered question
     questionController.skipToNextUnansweredQuestion(history);
+
+    // Add the introductory Bot message before asking the first main question
+    if (botController.selectedBookId.value.isNotEmpty && history.isEmpty) {
+      messages.add(BotMessage(
+          message:
+          "initial_message_1".tr));
+    }
+
     await _calculateAndPrintCompletionPercentage(sectionId);
     askQuestion();
   }
 
-    void askQuestion() {
-      _removeLoadingMessage();
-      final currentQuestion = questionController.getCurrentQuestion();
-      print("Asking question: $currentQuestion (Index: ${questionController.currentQuestionIndex.value}, Total Questions: ${questionController.questions.length})");
-      if (currentQuestion != 'No more questions') {
-        messages.add(BotMessage(message: currentQuestion));
-      } else {
-        messages.add(const BotMessage(message: "All questions answered!"));
-        print("All questions answered, checking for initial chat mode...");
-        if (botController.selectedBookId.value.isEmpty) {
-          print("Triggering book creation and navigation...");
-          _createBookAndNavigate();
-        }
+  void askQuestion() {
+    _removeLoadingMessage();
+    final currentQuestion = questionController.getCurrentQuestion();
+    print("Asking question: $currentQuestion (Index: ${questionController.currentQuestionIndex.value}, Total Questions: ${questionController.questions.length})");
+    if (currentQuestion != 'No more questions') {
+      messages.add(BotMessage(message: currentQuestion));
+    } else {
+      messages.add(const BotMessage(message: "All questions answered!"));
+      print("All questions answered, checking for initial chat mode...");
+      if (botController.selectedBookId.value.isEmpty) {
+        print("Triggering book creation and navigation...");
+        _createBookAndNavigate();
       }
     }
+  }
 
   Future<void> sendMessage(String userAnswer) async {
     if (userAnswer.trim().isEmpty) return;
@@ -179,9 +175,9 @@ class MessageController extends GetxController {
           String lowerAnswer = userAnswer.toLowerCase();
           print("::: Debugging isForSelf ::: lowerAnswer: '$lowerAnswer'");
 
-          bool isForSelf = (lowerAnswer.contains(" me ") || // "me" as a standalone word
+          bool isForSelf = (lowerAnswer.contains(" me ") ||
               lowerAnswer.contains("myself") ||
-              lowerAnswer.contains("i ") || // Already has a space
+              lowerAnswer.contains("i ") ||
               lowerAnswer.contains("my own") ||
               lowerAnswer.contains("for me") ||
               lowerAnswer.contains("mine") ||
@@ -214,7 +210,7 @@ class MessageController extends GetxController {
               lowerAnswer.contains("me too") ||
               lowerAnswer.contains("my journey") ||
               lowerAnswer.contains("i intend")) &&
-              !lowerAnswer.contains("someone") && // Explicitly exclude "someone"
+              !lowerAnswer.contains("someone") &&
               !lowerAnswer.contains("someone else");
 
           print("::: Debugging isForSelf ::: isForSelf: $isForSelf");
@@ -244,15 +240,6 @@ class MessageController extends GetxController {
             print("::: Set questions for self ::: ['What is your name?', 'What title ...']");
           } else {
             questionController.questions.value = [
-              /*Question(
-                id: "2",
-                episodeId: '',
-                sectionId: 'initial',
-                text: {lang: "question_2_1".tr}, // "What is their name?"
-                v: 0,
-                createdAt: DateTime.now().toIso8601String(),
-                updatedAt: DateTime.now().toIso8601String(),
-              ),*/
               Question(
                 id: "3",
                 episodeId: '',
@@ -263,7 +250,7 @@ class MessageController extends GetxController {
                 updatedAt: DateTime.now().toIso8601String(),
               ),
             ];
-            print("::: Set questions for other ::: ['What is their name?', 'What title ...']");
+            print("::: Set questions for other ::: ['What title ...']");
           }
           questionController.currentQuestionIndex.value = 0;
           askQuestion();
@@ -280,7 +267,6 @@ class MessageController extends GetxController {
       return;
     }
 
-    // Existing code for when a book is selected...
     final bookId = botController.selectedBookId.value;
     _showLoadingMessage();
 
@@ -294,8 +280,6 @@ class MessageController extends GetxController {
       await _handleGenerateSubQuestion(currentQuestion, userAnswer);
     }
   }
-
-
 
   Future<void> _createBookAndNavigate() async {
     print("Creating book with answers: ${userAnswers.toList()}");
@@ -354,7 +338,7 @@ class MessageController extends GetxController {
       await Future.delayed(const Duration(seconds: 3));
 
       print("Navigating to HomePageLanding...");
-      Get.back(); // Close the loading dialog
+      Get.back();
       Get.to(() => HomePageLanding(
         bookId: newBookId,
         bookTitle: bookName,
@@ -362,7 +346,7 @@ class MessageController extends GetxController {
       ));
     } catch (e) {
       print("Error in book creation or question fetching: $e");
-      Get.back(); // Close loading dialog
+      Get.back();
       Get.snackbar('Error', e.toString());
     }
   }
@@ -375,7 +359,6 @@ class MessageController extends GetxController {
       currentSection = sections.firstWhere((section) => section.id == sectionId);
     } catch (e) {
       print("Error: No section found for sectionId: $sectionId  Error :::::::::::::::::::::::: $e");
-      //Get.snackbar('Error', 'Section not found for ID: $sectionId');
       return;
     }
 
@@ -395,7 +378,7 @@ class MessageController extends GetxController {
     final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions / totalQuestions) * 100 : 0;
     print("Section: ${currentSection.localizedName}, Total: $totalQuestions, Answered: $answeredMainQuestions, Completion: ${completionPercentage.toStringAsFixed(2)}%");
 
-    final episodeIndex = botController.selectedSectionIndex.toString() ?? '0'; // Use section's episodeIndex
+    final episodeIndex = botController.selectedSectionIndex.toString() ?? '0';
     print("::::::::::::::::::::::Selected section index: $episodeIndex");
     try {
       final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
@@ -422,101 +405,92 @@ class MessageController extends GetxController {
       }
     } catch (e) {
       print("Error updating percentage: $e");
-      Get.snackbar('Error', 'Failed to update percentage: $e');
+      //Get.snackbar('Error', 'Failed to update percentage: $e');
     }
   }
 
-    Future<void> _handleGenerateSubQuestion(String question, String answer) async {
-      final response = await apiService.generateSubQuestion(question, answer);
-      print(':::generateSubQuestion::: Status Code: ${response.statusCode}');
-      print(':::generateSubQuestion::: Response Body: ${response.body}');
+  Future<void> _handleGenerateSubQuestion(String question, String answer) async {
+    final response = await apiService.generateSubQuestion(question, answer);
+    print(':::generateSubQuestion::: Status Code: ${response.statusCode}');
+    print(':::generateSubQuestion::: Response Body: ${response.body}');
 
-
-
-      if (response.statusCode == 200) {
-        final saveResponse = await apiService.saveAnswer(
+    if (response.statusCode == 200) {
+      final saveResponse = await apiService.saveAnswer(
+        botController.selectedBookId.value,
+        botController.getSectionIndex().toString(),
+        question,
+        answer,
+      );
+      print(':::saveAnswer::: botController.selectedBookId.value: -------> ${botController.selectedBookId.value}');
+      print(':::saveAnswer::: botController.getSelectedSectionId(): -------> ${botController.getSectionIndex().toString()}');
+      print(':::saveAnswer::: question -------> $question');
+      print(':::saveAnswer::: answer -------> $answer');
+      print(':::saveAnswer::: Status Code: ${saveResponse.statusCode}');
+      print(':::saveAnswer::: Response Body: ${saveResponse.body}');
+      if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
+        await dbHelper.insertChatHistory(
           botController.selectedBookId.value,
-          botController.getSectionIndex().toString(),
+          botController.selectedSectionId.value,
           question,
           answer,
         );
-        print(':::saveAnswer::: botController.selectedBookId.value: -------> ${botController.selectedBookId.value}');
-        print(':::saveAnswer::: botController.getSelectedSectionId(): -------> ${botController.getSectionIndex().toString()}');
-        print(':::saveAnswer::: question -------> $question');
-        print(':::saveAnswer::: answer -------> $answer');
-        print(':::saveAnswer::: Status Code: ${saveResponse.statusCode}');
-        print(':::saveAnswer::: Response Body: ${saveResponse.body}');
-        if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
-          await dbHelper.insertChatHistory(
-            botController.selectedBookId.value,
-            botController.selectedSectionId.value,
-            question, // Already localized from getCurrentQuestion
-            answer,
-          );
-          await _calculateAndPrintCompletionPercentage(sectionId!);
+        await _calculateAndPrintCompletionPercentage(sectionId!);
 
-          final responseBody = utf8.decode(response.bodyBytes);
-
-          final data = jsonDecode(responseBody);
-          final subQuestions = List<String>.from(data['content']);
-          questionController.setSubQuestions(subQuestions);
-          askQuestion();
-        } else {
-          Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
-        }
-      } else if (response.statusCode == 400) {
-        _removeLoadingMessage();
-        messages.add(BotMessage(message: "Could you please elaborate on: $question"));
+        final responseBody = utf8.decode(response.bodyBytes);
+        final data = jsonDecode(responseBody);
+        final subQuestions = List<String>.from(data['content']);
+        questionController.setSubQuestions(subQuestions);
+        askQuestion();
       } else {
-        Get.snackbar('Error', 'Failed to generate sub-questions');
+        Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
+    } else if (response.statusCode == 400) {
+      _removeLoadingMessage();
+      messages.add(BotMessage(message: "Could you please elaborate on: $question"));
+    } else {
+      Get.snackbar('Error', 'Failed to generate sub-questions');
     }
+  }
 
-    Future<void> _handleSubQuestionAnswer(String subQuestion, String answer) async {
-      final relevancyResponse = await apiService.checkRelevancy(subQuestion, answer);
-      print(':::checkRelevancy::: Status Code: ${relevancyResponse.statusCode}');
-      print(':::checkRelevancy::: Response Body: ${relevancyResponse.body}');
+  Future<void> _handleSubQuestionAnswer(String subQuestion, String answer) async {
+    final relevancyResponse = await apiService.checkRelevancy(subQuestion, answer);
+    print(':::checkRelevancy::: Status Code: ${relevancyResponse.statusCode}');
+    print(':::checkRelevancy::: Response Body: ${relevancyResponse.body}');
 
-      if (relevancyResponse.statusCode == 200) {
-        final saveResponse = await apiService.saveAnswer(
+    if (relevancyResponse.statusCode == 200) {
+      final saveResponse = await apiService.saveAnswer(
+        botController.selectedBookId.value,
+        botController.getSectionIndex().toString(),
+        subQuestion,
+        answer,
+      );
+      print(':::saveAnswer ================= Status Code: ${saveResponse.statusCode}');
+      print(':::saveAnswer ================= Response Body: ${saveResponse.body}');
+      print(':::saveAnswer ================= request: ${saveResponse.request}');
+      print(':::saveAnswer ================= saveAnswer: ${botController.selectedBookId.value} === ${botController.getSelectedSectionId()} === $subQuestion === $answer');
+      if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
+        await dbHelper.insertChatHistory(
           botController.selectedBookId.value,
-          botController.getSectionIndex().toString(),
+          botController.selectedSectionId.value,
           subQuestion,
           answer,
         );
-        print(':::saveAnswer ================= Status Code: ${saveResponse.statusCode}');
-        print(':::saveAnswer ================= Response Body: ${saveResponse.body}');
-        print(':::saveAnswer ================= request: ${saveResponse.request}');
-        print(':::saveAnswer ================= saveAnswer: ${botController.selectedBookId.value} === ${botController.getSelectedSectionId()} === $subQuestion === $answer');
-        if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
-          await dbHelper.insertChatHistory(
-            botController.selectedBookId.value,
-            botController.selectedSectionId.value,
-            subQuestion,
-            answer,
-          );
-          /*final saveResponse = await apiService.saveAnswer(
-            botController.selectedBookId.value,
-            botController.getSectionIndex().toString(),
-            question,
-            answer,
-          );*/
-          questionController.nextQuestion();
-          askQuestion();
-        } else {
-          Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
-        }
-      } else if (relevancyResponse.statusCode == 400) {
-        _removeLoadingMessage();
-        messages.add(BotMessage(message: "Could you provide a more relevant answer on: $subQuestion"));
+        questionController.nextQuestion();
+        askQuestion();
       } else {
-        Get.snackbar('Error', 'Failed to check relevancy: ${relevancyResponse.statusCode}');
+        Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
-    }
-
-    var hasText = false.obs;
-
-    void updateHasText(String text) {
-      hasText.value = text.isNotEmpty;
+    } else if (relevancyResponse.statusCode == 400) {
+      _removeLoadingMessage();
+      messages.add(BotMessage(message: "Could you provide a more relevant answer on: $subQuestion"));
+    } else {
+      Get.snackbar('Error', 'Failed to check relevancy: ${relevancyResponse.statusCode}');
     }
   }
+
+  var hasText = false.obs;
+
+  void updateHasText(String text) {
+    hasText.value = text.isNotEmpty;
+  }
+}

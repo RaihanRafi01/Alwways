@@ -4,6 +4,7 @@ class AppTranslations extends Translations {
   @override
   Map<String, Map<String, String>> get keys => {
     'en_US': {
+      "initial_message_1": "Let’s start writing your story. I’ll ask you a series of questions—some easy, some not so much—but don’t worry. If you don’t remember something or prefer not to answer, just let me know and I’ll move on to the next question. Based on your answers, we’ll build your story little by little. Let’s go!",
       "choose_language": "Choose your preferred language",
       "confirm": "Confirm",
       "english": "English",
@@ -125,6 +126,7 @@ class AppTranslations extends Translations {
       "thinking": "Thinking",
     },
     'es_ES': {
+      "initial_message_1": "Empecemos a escribir tu historia. Te haré una serie de preguntas, algunas fáciles, otras no tanto, pero no te preocupes. Si no recuerdas algo o prefieres no responder, házmelo saber y pasaré a la siguiente pregunta. Con base en tus respuestas, construiremos tu historia poco a poco. ¡Vamos!",
       "choose_language": "Elige tu idioma preferido",
       "confirm": "Confirmar",
       "english": "Inglés",
