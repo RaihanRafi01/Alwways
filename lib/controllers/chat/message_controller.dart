@@ -29,7 +29,8 @@ class MessageController extends GetxController {
   }
 
   void _removeLoadingMessage() {
-    if (messages.isNotEmpty && messages.last is BotMessage && (messages.last as BotMessage).isLoading) {
+    if (messages.isNotEmpty && messages.last is BotMessage &&
+        (messages.last as BotMessage).isLoading) {
       messages.removeLast();
     }
   }
@@ -42,14 +43,16 @@ class MessageController extends GetxController {
       print("Initializing MessageController with sectionId: $sectionId");
       fetchQuestionsAndLoadHistory(sectionId!);
     } else {
-      print("MessageController initialized in initial chat mode (no book selected)");
+      print(
+          "MessageController initialized in initial chat mode (no book selected)");
       final lang = Get.locale?.languageCode ?? 'en';
       questionController.questions.value = [
         Question(
           id: "2",
           episodeId: '',
           sectionId: 'initial',
-          text: {lang: "question_2".tr}, // "What is your name?"
+          text: {lang: "question_2".tr},
+          // "What is your name?"
           v: 0,
           createdAt: DateTime.now().toIso8601String(),
           updatedAt: DateTime.now().toIso8601String(),
@@ -58,7 +61,8 @@ class MessageController extends GetxController {
           id: "3",
           episodeId: '',
           sectionId: 'initial',
-          text: {lang: "question_3".tr}, // "What title would you like to give the book? ..."
+          text: {lang: "question_3".tr},
+          // "What title would you like to give the book? ..."
           v: 0,
           createdAt: DateTime.now().toIso8601String(),
           updatedAt: DateTime.now().toIso8601String(),
@@ -73,7 +77,8 @@ class MessageController extends GetxController {
     final bookId = botController.selectedBookId.value;
     final episodeId = botController.selectedEpisodeId.value;
     final history = await dbHelper.getChatHistory(bookId, episodeId);
-    print("Chat history for bookId: $bookId, episodeId: $episodeId, sectionId: $sectionId: $history");
+    print(
+        "Chat history for bookId: $bookId, episodeId: $episodeId, sectionId: $sectionId: $history");
 
     messages.clear();
     userAnswers.clear();
@@ -82,13 +87,15 @@ class MessageController extends GetxController {
     for (var entry in history) {
       messages.add(BotMessage(message: entry['question']!));
       messages.add(UserMessage(message: entry['answer']!));
-      userAnswers.add({'question': entry['question']!, 'answer': entry['answer']!});
+      userAnswers.add(
+          {'question': entry['question']!, 'answer': entry['answer']!});
     }
 
     // Restore last state
     if (history.isNotEmpty) {
       final lastQuestion = history.last['question']!;
-      final lastMainQuestionIndex = questionController.questions.indexWhere((q) => q.localizedText == lastQuestion);
+      final lastMainQuestionIndex = questionController.questions.indexWhere((
+          q) => q.localizedText == lastQuestion);
 
       if (lastMainQuestionIndex != -1) {
         // Last question was a main question
@@ -98,19 +105,26 @@ class MessageController extends GetxController {
         questionController.currentSubQuestionIndex.value = 0;
       } else {
         // Last question was a sub-question; find parent and restore sub-question state
-        final parentQuestionIndex = questionController.questions.indexWhere((q) => history.any((h) => h['question'] == q.localizedText));
+        final parentQuestionIndex = questionController.questions.indexWhere((
+            q) => history.any((h) => h['question'] == q.localizedText));
         if (parentQuestionIndex != -1) {
           questionController.currentQuestionIndex.value = parentQuestionIndex;
-          final lastMainQuestion = questionController.questions[parentQuestionIndex].localizedText;
-          final lastAnswer = history.lastWhere((h) => h['question'] == lastMainQuestion, orElse: () => {'answer': ''})['answer']!;
-          final response = await apiService.generateSubQuestion(lastMainQuestion, lastAnswer);
+          final lastMainQuestion = questionController
+              .questions[parentQuestionIndex].localizedText;
+          final lastAnswer = history.lastWhere((h) =>
+          h['question'] == lastMainQuestion,
+              orElse: () => {'answer': ''})['answer']!;
+          final response = await apiService.generateSubQuestion(
+              lastMainQuestion, lastAnswer);
           if (response.statusCode == 200) {
             final data = jsonDecode(response.body);
             final subQuestions = List<String>.from(data['content']);
             questionController.subQuestions.value = subQuestions;
             questionController.isSubQuestionMode.value = true;
-            questionController.currentSubQuestionIndex.value = subQuestions.indexOf(lastQuestion) + 1;
-            if (questionController.currentSubQuestionIndex.value >= subQuestions.length) {
+            questionController.currentSubQuestionIndex.value =
+                subQuestions.indexOf(lastQuestion) + 1;
+            if (questionController.currentSubQuestionIndex.value >=
+                subQuestions.length) {
               questionController.isSubQuestionMode.value = false;
               questionController.subQuestions.clear();
               questionController.currentSubQuestionIndex.value = 0;
@@ -138,7 +152,9 @@ class MessageController extends GetxController {
   void askQuestion() {
     _removeLoadingMessage();
     final currentQuestion = questionController.getCurrentQuestion();
-    print("Asking question: $currentQuestion (Index: ${questionController.currentQuestionIndex.value}, Total Questions: ${questionController.questions.length})");
+    print("Asking question: $currentQuestion (Index: ${questionController
+        .currentQuestionIndex.value}, Total Questions: ${questionController
+        .questions.length})");
     if (currentQuestion != 'No more questions') {
       messages.add(BotMessage(message: currentQuestion));
     } else {
@@ -152,10 +168,14 @@ class MessageController extends GetxController {
   }
 
   Future<void> sendMessage(String userAnswer) async {
-    if (userAnswer.trim().isEmpty) return;
+    if (userAnswer
+        .trim()
+        .isEmpty) return;
 
     final currentQuestion = questionController.getCurrentQuestion();
-    print("User answered: '$userAnswer' to question: '$currentQuestion' (Index: ${questionController.currentQuestionIndex.value})");
+    print(
+        "User answered: '$userAnswer' to question: '$currentQuestion' (Index: ${questionController
+            .currentQuestionIndex.value})");
     messages.add(UserMessage(message: userAnswer));
     userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
 
@@ -163,15 +183,19 @@ class MessageController extends GetxController {
       print("In initial chat mode, checking relevancy...");
       _showLoadingMessage();
 
-      final response = await apiService.checkRelevancy(currentQuestion, userAnswer);
-      print("Relevancy check - Status Code: ${response.statusCode}, Body: ${response.body}");
+      final response = await apiService.checkRelevancy(
+          currentQuestion, userAnswer);
+      print("Relevancy check - Status Code: ${response
+          .statusCode}, Body: ${response.body}");
 
       _removeLoadingMessage();
 
       if (response.statusCode == 400) {
-        messages.add(BotMessage(message: "Could you provide a more relevant answer to: $currentQuestion"));
+        messages.add(BotMessage(
+            message: "Could you provide a more relevant answer to: $currentQuestion"));
       } else {
-        if (questionController.currentQuestionIndex.value == 0 && userAnswers.length == 1) {
+        if (questionController.currentQuestionIndex.value == 0 &&
+            userAnswers.length == 1) {
           String lowerAnswer = userAnswer.toLowerCase();
           print("::: Debugging isForSelf ::: lowerAnswer: '$lowerAnswer'");
 
@@ -222,7 +246,8 @@ class MessageController extends GetxController {
                 id: "2",
                 episodeId: '',
                 sectionId: 'initial',
-                text: {lang: "question_2".tr}, // "What is your name?"
+                text: {lang: "question_2".tr},
+                // "What is your name?"
                 v: 0,
                 createdAt: DateTime.now().toIso8601String(),
                 updatedAt: DateTime.now().toIso8601String(),
@@ -231,20 +256,23 @@ class MessageController extends GetxController {
                 id: "3",
                 episodeId: '',
                 sectionId: 'initial',
-                text: {lang: "question_3".tr}, // "What title would you like to give the book? ..."
+                text: {lang: "question_3".tr},
+                // "What title would you like to give the book? ..."
                 v: 0,
                 createdAt: DateTime.now().toIso8601String(),
                 updatedAt: DateTime.now().toIso8601String(),
               ),
             ];
-            print("::: Set questions for self ::: ['What is your name?', 'What title ...']");
+            print(
+                "::: Set questions for self ::: ['What is your name?', 'What title ...']");
           } else {
             questionController.questions.value = [
               Question(
                 id: "3",
                 episodeId: '',
                 sectionId: 'initial',
-                text: {lang: "question_3".tr}, // "What title would you like to give the book? ..."
+                text: {lang: "question_3".tr},
+                // "What title would you like to give the book? ..."
                 v: 0,
                 createdAt: DateTime.now().toIso8601String(),
                 updatedAt: DateTime.now().toIso8601String(),
@@ -256,10 +284,12 @@ class MessageController extends GetxController {
           askQuestion();
         } else {
           questionController.nextQuestion();
-          if (questionController.currentQuestionIndex.value < questionController.questions.length) {
+          if (questionController.currentQuestionIndex.value <
+              questionController.questions.length) {
             askQuestion();
           } else {
-            print("All initial questions answered, proceeding to create book...");
+            print(
+                "All initial questions answered, proceeding to create book...");
             _createBookAndNavigate();
           }
         }
@@ -284,7 +314,9 @@ class MessageController extends GetxController {
   Future<void> _createBookAndNavigate() async {
     print("Creating book with answers: ${userAnswers.toList()}");
     String bookName = userAnswers.firstWhere(
-          (a) => a['question'] == 'What title would you like to give the book? Don\'t worry, you can change it anytime.',
+          (a) =>
+      a['question'] ==
+          'What title would you like to give the book? Don\'t worry, you can change it anytime.',
       orElse: () => {'answer': 'My Memoir'},
     )['answer'] ?? 'My Memoir';
     bookController.bookNameController.text = bookName;
@@ -310,7 +342,8 @@ class MessageController extends GetxController {
       print("Calling createBook()...");
       await bookController.createBook();
 
-      print("Books after creation: ${botController.books.length}, Sections: ${botController.sections.length}");
+      print("Books after creation: ${botController.books
+          .length}, Sections: ${botController.sections.length}");
       if (botController.books.isEmpty || botController.sections.isEmpty) {
         throw Exception("Failed to initialize book or sections");
       }
@@ -318,13 +351,15 @@ class MessageController extends GetxController {
       String newBookId = botController.books.first['id']!;
       String firstSectionId = botController.sections.first.id;
       Book newBook = bookController.books.firstWhere((b) => b.id == newBookId);
-      String firstEpisodeId = newBook.episodes.isNotEmpty ? newBook.episodes.first.id : '';
+      String firstEpisodeId = newBook.episodes.isNotEmpty ? newBook.episodes
+          .first.id : '';
 
       if (firstEpisodeId.isEmpty) {
         throw Exception("No episodes found for new book");
       }
 
-      print("::::::::::::::: GGG ::::::::::::::::::::::: book id : $newBookId , sectionId : $firstSectionId , episodeId : $firstEpisodeId");
+      print(
+          "::::::::::::::: GGG ::::::::::::::::::::::: book id : $newBookId , sectionId : $firstSectionId , episodeId : $firstEpisodeId");
 
       botController.selectBook(newBookId);
       botController.selectSection(firstSectionId);
@@ -339,11 +374,13 @@ class MessageController extends GetxController {
 
       print("Navigating to HomePageLanding...");
       Get.back();
-      Get.to(() => HomePageLanding(
-        bookId: newBookId,
-        bookTitle: bookName,
-        coverImage: bookController.getCoverImage(newBookId, 'assets/images/book/cover_image_1.svg'),
-      ));
+      Get.to(() =>
+          HomePageLanding(
+            bookId: newBookId,
+            bookTitle: bookName,
+            coverImage: bookController.getCoverImage(
+                newBookId, 'assets/images/book/cover_image_1.svg'),
+          ));
     } catch (e) {
       print("Error in book creation or question fetching: $e");
       Get.back();
@@ -356,9 +393,11 @@ class MessageController extends GetxController {
     Section? currentSection;
 
     try {
-      currentSection = sections.firstWhere((section) => section.id == sectionId);
+      currentSection =
+          sections.firstWhere((section) => section.id == sectionId);
     } catch (e) {
-      print("Error: No section found for sectionId: $sectionId  Error :::::::::::::::::::::::: $e");
+      print(
+          "Error: No section found for sectionId: $sectionId  Error :::::::::::::::::::::::: $e");
       return;
     }
 
@@ -367,7 +406,8 @@ class MessageController extends GetxController {
     final episodeId = botController.selectedEpisodeId.value;
     final history = await dbHelper.getChatHistory(bookId, episodeId);
 
-    final mainQuestions = questionController.questions.map((q) => q.localizedText).toList();
+    final mainQuestions = questionController.questions.map((q) =>
+    q.localizedText).toList();
     final uniqueAnsweredQuestions = history
         .where((entry) => mainQuestions.contains(entry['question']))
         .map((entry) => entry['question'])
@@ -375,14 +415,19 @@ class MessageController extends GetxController {
         .toList();
     final answeredMainQuestions = uniqueAnsweredQuestions.length;
 
-    final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions / totalQuestions) * 100 : 0;
-    print("Section: ${currentSection.localizedName}, Total: $totalQuestions, Answered: $answeredMainQuestions, Completion: ${completionPercentage.toStringAsFixed(2)}%");
+    final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions /
+        totalQuestions) * 100 : 0;
+    print("Section: ${currentSection
+        .localizedName}, Total: $totalQuestions, Answered: $answeredMainQuestions, Completion: ${completionPercentage
+        .toStringAsFixed(2)}%");
 
     final episodeIndex = botController.selectedSectionIndex.toString() ?? '0';
     print("::::::::::::::::::::::Selected section index: $episodeIndex");
     try {
-      final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
-      print(":::updateEpisodePercentage::: Status Code: ${response.statusCode}");
+      final response = await apiService.updateEpisodePercentage(
+          bookId, episodeIndex, completionPercentage);
+      print(
+          ":::updateEpisodePercentage::: Status Code: ${response.statusCode}");
       print(":::updateEpisodePercentage::: Response Body: ${response.body}");
       if (response.statusCode == 200 || response.statusCode == 201) {
         final db = await dbHelper.database;
@@ -393,15 +438,18 @@ class MessageController extends GetxController {
         );
         if (episodeMaps.isNotEmpty) {
           final episode = Episode.fromMap(episodeMaps.first);
-          final updatedEpisode = episode.copyWith(percentage: completionPercentage.toDouble());
+          final updatedEpisode = episode.copyWith(
+              percentage: completionPercentage.toDouble());
           await dbHelper.updateEpisode(updatedEpisode);
-          print("Updated episode percentage in database: ${updatedEpisode.percentage}");
+          print("Updated episode percentage in database: ${updatedEpisode
+              .percentage}");
         }
         final bookController = Get.put(BookLandingController());
         await bookController.fetchBooks();
         print("Refreshed BookLandingController with updated data");
       } else {
-        Get.snackbar('Error', 'Failed to update percentage: ${response.statusCode}');
+        Get.snackbar(
+            'Error', 'Failed to update percentage: ${response.statusCode}');
       }
     } catch (e) {
       print("Error updating percentage: $e");
@@ -409,7 +457,8 @@ class MessageController extends GetxController {
     }
   }
 
-  Future<void> _handleGenerateSubQuestion(String question, String answer) async {
+  Future<void> _handleGenerateSubQuestion(String question,
+      String answer) async {
     final response = await apiService.generateSubQuestion(question, answer);
     print(':::generateSubQuestion::: Status Code: ${response.statusCode}');
     print(':::generateSubQuestion::: Response Body: ${response.body}');
@@ -421,8 +470,12 @@ class MessageController extends GetxController {
         question,
         answer,
       );
-      print(':::saveAnswer::: botController.selectedBookId.value: -------> ${botController.selectedBookId.value}');
-      print(':::saveAnswer::: botController.getSelectedSectionId(): -------> ${botController.getSectionIndex().toString()}');
+      print(
+          ':::saveAnswer::: botController.selectedBookId.value: -------> ${botController
+              .selectedBookId.value}');
+      print(
+          ':::saveAnswer::: botController.getSelectedSectionId(): -------> ${botController
+              .getSectionIndex().toString()}');
       print(':::saveAnswer::: question -------> $question');
       print(':::saveAnswer::: answer -------> $answer');
       print(':::saveAnswer::: Status Code: ${saveResponse.statusCode}');
@@ -442,18 +495,22 @@ class MessageController extends GetxController {
         questionController.setSubQuestions(subQuestions);
         askQuestion();
       } else {
-        Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
+        Get.snackbar(
+            'Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
     } else if (response.statusCode == 400) {
       _removeLoadingMessage();
-      messages.add(BotMessage(message: "Could you please elaborate on: $question"));
+      messages.add(
+          BotMessage(message: "Could you please elaborate on: $question"));
     } else {
       Get.snackbar('Error', 'Failed to generate sub-questions');
     }
   }
 
-  Future<void> _handleSubQuestionAnswer(String subQuestion, String answer) async {
-    final relevancyResponse = await apiService.checkRelevancy(subQuestion, answer);
+  Future<void> _handleSubQuestionAnswer(String subQuestion,
+      String answer) async {
+    final relevancyResponse = await apiService.checkRelevancy(
+        subQuestion, answer);
     print(':::checkRelevancy::: Status Code: ${relevancyResponse.statusCode}');
     print(':::checkRelevancy::: Response Body: ${relevancyResponse.body}');
 
@@ -464,10 +521,14 @@ class MessageController extends GetxController {
         subQuestion,
         answer,
       );
-      print(':::saveAnswer ================= Status Code: ${saveResponse.statusCode}');
-      print(':::saveAnswer ================= Response Body: ${saveResponse.body}');
+      print(':::saveAnswer ================= Status Code: ${saveResponse
+          .statusCode}');
+      print(':::saveAnswer ================= Response Body: ${saveResponse
+          .body}');
       print(':::saveAnswer ================= request: ${saveResponse.request}');
-      print(':::saveAnswer ================= saveAnswer: ${botController.selectedBookId.value} === ${botController.getSelectedSectionId()} === $subQuestion === $answer');
+      print(':::saveAnswer ================= saveAnswer: ${botController
+          .selectedBookId.value} === ${botController
+          .getSelectedSectionId()} === $subQuestion === $answer');
       if (saveResponse.statusCode == 200 || saveResponse.statusCode == 201) {
         await dbHelper.insertChatHistory(
           botController.selectedBookId.value,
@@ -478,13 +539,16 @@ class MessageController extends GetxController {
         questionController.nextQuestion();
         askQuestion();
       } else {
-        Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
+        Get.snackbar(
+            'Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
     } else if (relevancyResponse.statusCode == 400) {
       _removeLoadingMessage();
-      messages.add(BotMessage(message: "Could you provide a more relevant answer on: $subQuestion"));
+      messages.add(BotMessage(
+          message: "Could you provide a more relevant answer on: $subQuestion"));
     } else {
-      Get.snackbar('Error', 'Failed to check relevancy: ${relevancyResponse.statusCode}');
+      Get.snackbar('Error',
+          'Failed to check relevancy: ${relevancyResponse.statusCode}');
     }
   }
 
