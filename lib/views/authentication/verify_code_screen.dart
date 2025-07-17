@@ -5,6 +5,7 @@ import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/authentication/pinCode_InputField.dart';
 import 'package:playground_02/widgets/authentication/signupWithOther.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
+import '../../constants/color/app_colors.dart';
 import '../../controllers/auth_controller.dart';
 
 class VerifyCodeScreen extends StatelessWidget {
@@ -17,6 +18,7 @@ class VerifyCodeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: CustomAppbar(title: "verify_code".tr), // Updated
       body: Padding(
         padding: const EdgeInsets.all(16.0),

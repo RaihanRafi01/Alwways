@@ -5,6 +5,7 @@ import 'package:playground_02/widgets/authentication/custom_button.dart';
 import 'package:playground_02/widgets/authentication/custom_textField.dart';
 import 'package:playground_02/widgets/authentication/signupWithOther.dart';
 import 'package:playground_02/widgets/customAppBar.dart';
+import '../../constants/color/app_colors.dart';
 import '../../controllers/auth_controller.dart';
 
 class SetNewPasswordScreen extends StatelessWidget {
@@ -19,6 +20,7 @@ class SetNewPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.appBackground,
       appBar: CustomAppbar(title: 'set_new_password'.tr), // Use .tr for dynamic translation
       body: Padding(
         padding: const EdgeInsets.all(16.0),
