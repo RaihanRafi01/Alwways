@@ -207,13 +207,29 @@ class AuthController extends GetxController {
   Future<void> _signUp() async {
     isLoading.value = true;
     try {
+      // Map gender values to English
+      String mappedGender;
+      switch (gender.value) {
+        case 'Masculino':
+          mappedGender = 'Male';
+          break;
+        case 'Femenino':
+          mappedGender = 'Female';
+          break;
+        case 'Otro':
+          mappedGender = 'Other';
+          break;
+        default:
+          mappedGender = gender.value; // Fallback to original value if no match
+      }
+
       final response = await _service.signUp(
           firstName.value,
           lastName.value,
           email.value,
           contact.value,
           location.value,
-          gender.value,
+          mappedGender,
           dateOfBirth.value.toString(),
           password.value,
           pickedImage.value!);
@@ -233,7 +249,6 @@ class AuthController extends GetxController {
       isLoading.value = false;
     }
   }
-
   // Login, OTP, and reset password methods remain unchanged
   Future<void> login(String username, String password) async {
     isLoading.value = true;

@@ -38,6 +38,14 @@ class BookPageView extends StatelessWidget {
     // Convert episodeIndex to chapter number (e.g., "0" -> "Chapter 1")
     final chapterNumber = (int.parse(episodeIndex) + 1).toString();
 
+    // Define a common text style for all story content
+    const storyTextStyle = TextStyle(
+      fontSize: 16,
+      color: AppColors.bookTextColor,
+      height: 1.5, // Ensure consistent line spacing
+      fontWeight: FontWeight.normal, // Explicitly set to avoid inherited variations
+    );
+
     return Scaffold(
       backgroundColor: AppColors.appBackground,
       appBar: const CustomAppbar(title: ''),
@@ -59,7 +67,7 @@ class BookPageView extends StatelessWidget {
                     if (index == 0) {
                       return Center(
                         child: BookCover(
-                          haveTitle: true, // No title on cover page
+                          haveTitle: true,
                           isGrid: false,
                           title: title,
                           coverImage: coverImage,
@@ -91,7 +99,7 @@ class BookPageView extends StatelessWidget {
                                 children: [
                                   const SizedBox(height: 30),
                                   Text(
-                                    "Chapter $chapterNumber", // Dynamic chapter based on episodeIndex
+                                    "${'chapter'.tr} $chapterNumber",
                                     style: const TextStyle(fontSize: 18),
                                   ),
                                   const SizedBox(height: 20),
@@ -110,32 +118,32 @@ class BookPageView extends StatelessWidget {
                                     child: pageIndex == 0 // Apply drop cap only to the first story page
                                         ? RichText(
                                       text: TextSpan(
+                                        style: DefaultTextStyle.of(context).style.copyWith(
+                                          // Inherit defaults but override with storyTextStyle
+                                          fontSize: storyTextStyle.fontSize,
+                                          color: storyTextStyle.color,
+                                          height: storyTextStyle.height,
+                                          fontWeight: storyTextStyle.fontWeight,
+                                        ),
                                         children: [
                                           // First letter with larger size
                                           TextSpan(
                                             text: storyContent.isNotEmpty ? storyContent[0] : '',
-                                            style: const TextStyle(
+                                            style: storyTextStyle.copyWith(
                                               fontSize: 40, // Larger size for the first letter
-                                              color: AppColors.bookTextColor,
                                             ),
                                           ),
-                                          // Rest of the content
+                                          // Rest of the content with matching style
                                           TextSpan(
                                             text: storyContent.isNotEmpty ? storyContent.substring(1) : '',
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              color: AppColors.bookTextColor,
-                                            ),
+                                            style: storyTextStyle, // Use the same style as other pages
                                           ),
                                         ],
                                       ),
                                     )
                                         : Text(
                                       storyContent,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        color: AppColors.bookTextColor,
-                                      ),
+                                      style: storyTextStyle, // Use the same style as the first page
                                     ),
                                   ),
                                 ],
@@ -148,7 +156,7 @@ class BookPageView extends StatelessWidget {
                                     onTap: () async {
                                       final isCover = controller.allPages[pageIndex].contains("ChapterCover");
                                       final result = await Get.to(() => BookEditPage(
-                                        episodeIndex: int.parse(episodeIndex), // Pass the episodeIndex
+                                        episodeIndex: int.parse(episodeIndex),
                                         index: pageIndex,
                                         chapterTitle: controller.allPageChapters[pageIndex],
                                         chapterContent: controller.allPages[pageIndex],
@@ -176,7 +184,7 @@ class BookPageView extends StatelessWidget {
                 );
               }),
             ),
-            const SizedBox(height: 100,)
+            const SizedBox(height: 100),
           ],
         );
       }),

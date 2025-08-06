@@ -223,7 +223,7 @@ class BookChapterController extends GetxController {
     final words = story.split(RegExp(r'\s+')).where((word) => word.isNotEmpty).toList();
     print("Found ${words.length} words");
 
-    const wordsPerPage = 100;
+    const wordsPerPage = 70;
     for (var i = 0; i < words.length; i += wordsPerPage) {
       final pageWords = words.skip(i).take(wordsPerPage).toList();
       final pageContent = pageWords.join(' ').trim();
