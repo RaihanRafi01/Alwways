@@ -186,7 +186,7 @@ class BookChapterController extends GetxController {
       allPageChapters.clear();
       allPageImages.clear();
       pageConversationIds.clear();
-      allPages.add("Error loading story");
+      allPages.add("No stories yet");
       allPageChapters.add("Error");
       allPageImages.add(null);
       pageConversationIds.add('');

@@ -87,7 +87,7 @@ class AllEpisodesController extends GetxController {
     } catch (e) {
       print("Error in loadAllEpisodes: $e");
       Get.snackbar('Error', 'Failed to load episodes: $e');
-      flatPages.add({'type': 'error', 'message': 'Error loading content'});
+      flatPages.add({'type': 'error', 'message': 'No content yet'});
     } finally {
       isLoading.value = false;
     }
@@ -225,7 +225,7 @@ class AllEpisodesController extends GetxController {
       }
     } catch (e) {
       print("Error loading episode $episodeId: $e");
-      allPages[episodeIndex].add("Error loading story");
+      allPages[episodeIndex].add("No stories yet");
       allPageChapters[episodeIndex].add("Error");
       pageConversationIds[episodeIndex].add('');
       allPageImages[episodeIndex].add(null);
