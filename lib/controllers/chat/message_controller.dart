@@ -17,6 +17,7 @@ import 'botLanding_controller.dart';
 class MessageController extends GetxController {
   var messages = <Widget>[].obs;
   var userAnswers = <Map<String, String>>[].obs;
+  var bookTitle = ''.obs; // Observable to store the book title
   final QuestionController questionController = Get.put(QuestionController());
   final BotController botController = Get.put(BotController());
   final BookController bookController = Get.put(BookController());
@@ -179,119 +180,116 @@ class MessageController extends GetxController {
     messages.add(UserMessage(message: userAnswer));
     userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
 
+    // Store the answer to question 3 (book title) in bookTitle observable
+    if (currentQuestion ==
+        "What title would you like to give the book? Don't worry, you can change it anytime.") {
+      bookTitle.value = userAnswer;
+      print("Stored book title: ${bookTitle.value}");
+    }
+
     if (botController.selectedBookId.value.isEmpty) {
-      print("In initial chat mode, checking relevancy...");
+      print("In initial chat mode, skipping relevancy check...");
       _showLoadingMessage();
 
-      final response = await apiService.checkRelevancy(
-          currentQuestion, userAnswer);
-      print("Relevancy check - Status Code: ${response
-          .statusCode}, Body: ${response.body}");
+      if (questionController.currentQuestionIndex.value == 0 &&
+          userAnswers.length == 1) {
+        String lowerAnswer = userAnswer.toLowerCase();
+        print("::: Debugging isForSelf ::: lowerAnswer: '$lowerAnswer'");
 
-      _removeLoadingMessage();
+        bool isForSelf = (lowerAnswer.contains(" me ") ||
+            lowerAnswer.contains("myself") ||
+            lowerAnswer.contains("i ") ||
+            lowerAnswer.contains("my own") ||
+            lowerAnswer.contains("for me") ||
+            lowerAnswer.contains("mine") ||
+            lowerAnswer.contains("my book") ||
+            lowerAnswer.contains("personal") ||
+            lowerAnswer.contains("self") ||
+            lowerAnswer.contains("i am") ||
+            lowerAnswer.contains("i'm") ||
+            lowerAnswer.contains("for myself") ||
+            lowerAnswer.contains("by me") ||
+            lowerAnswer.contains("about me") ||
+            lowerAnswer.contains("on me") ||
+            lowerAnswer.contains("i want") ||
+            lowerAnswer.contains("i will") ||
+            lowerAnswer.contains("i'll") ||
+            lowerAnswer.contains("my story") ||
+            lowerAnswer.contains("my life") ||
+            lowerAnswer.contains("me personally") ||
+            lowerAnswer.contains("to me") ||
+            lowerAnswer.contains("i need") ||
+            lowerAnswer.contains("i think") ||
+            lowerAnswer.contains("my memoir") ||
+            lowerAnswer.contains("i wrote") ||
+            lowerAnswer.contains("written by me") ||
+            lowerAnswer.contains("my personal") ||
+            lowerAnswer.contains("me alone") ||
+            lowerAnswer.contains("just me") ||
+            lowerAnswer.contains("only me") ||
+            lowerAnswer.contains("i myself") ||
+            lowerAnswer.contains("me too") ||
+            lowerAnswer.contains("my journey") ||
+            lowerAnswer.contains("i intend")) &&
+            !lowerAnswer.contains("someone") &&
+            !lowerAnswer.contains("someone else");
 
-      if (response.statusCode == 400) {
-        messages.add(BotMessage(
-            message: "Could you provide a more relevant answer to: $currentQuestion"));
+        print("::: Debugging isForSelf ::: isForSelf: $isForSelf");
+        final lang = Get.locale?.languageCode ?? 'en';
+
+        if (isForSelf) {
+          questionController.questions.value = [
+            Question(
+              id: "2",
+              episodeId: '',
+              sectionId: 'initial',
+              text: {lang: "question_2".tr},
+              // "What is your name?"
+              v: 0,
+              createdAt: DateTime.now().toIso8601String(),
+              updatedAt: DateTime.now().toIso8601String(),
+            ),
+            Question(
+              id: "3",
+              episodeId: '',
+              sectionId: 'initial',
+              text: {lang: "question_3".tr},
+              // "What title would you like to give the book? ..."
+              v: 0,
+              createdAt: DateTime.now().toIso8601String(),
+              updatedAt: DateTime.now().toIso8601String(),
+            ),
+          ];
+          print(
+              "::: Set questions for self ::: ['What is your name?', 'What title ...']");
+        } else {
+          questionController.questions.value = [
+            Question(
+              id: "3",
+              episodeId: '',
+              sectionId: 'initial',
+              text: {lang: "question_3".tr},
+              // "What title would you like to give the book? ..."
+              v: 0,
+              createdAt: DateTime.now().toIso8601String(),
+              updatedAt: DateTime.now().toIso8601String(),
+            ),
+          ];
+          print("::: Set questions for other ::: ['What title ...']");
+        }
+        questionController.currentQuestionIndex.value = 0;
+        _removeLoadingMessage();
+        askQuestion();
       } else {
-        if (questionController.currentQuestionIndex.value == 0 &&
-            userAnswers.length == 1) {
-          String lowerAnswer = userAnswer.toLowerCase();
-          print("::: Debugging isForSelf ::: lowerAnswer: '$lowerAnswer'");
-
-          bool isForSelf = (lowerAnswer.contains(" me ") ||
-              lowerAnswer.contains("myself") ||
-              lowerAnswer.contains("i ") ||
-              lowerAnswer.contains("my own") ||
-              lowerAnswer.contains("for me") ||
-              lowerAnswer.contains("mine") ||
-              lowerAnswer.contains("my book") ||
-              lowerAnswer.contains("personal") ||
-              lowerAnswer.contains("self") ||
-              lowerAnswer.contains("i am") ||
-              lowerAnswer.contains("i'm") ||
-              lowerAnswer.contains("for myself") ||
-              lowerAnswer.contains("by me") ||
-              lowerAnswer.contains("about me") ||
-              lowerAnswer.contains("on me") ||
-              lowerAnswer.contains("i want") ||
-              lowerAnswer.contains("i will") ||
-              lowerAnswer.contains("i'll") ||
-              lowerAnswer.contains("my story") ||
-              lowerAnswer.contains("my life") ||
-              lowerAnswer.contains("me personally") ||
-              lowerAnswer.contains("to me") ||
-              lowerAnswer.contains("i need") ||
-              lowerAnswer.contains("i think") ||
-              lowerAnswer.contains("my memoir") ||
-              lowerAnswer.contains("i wrote") ||
-              lowerAnswer.contains("written by me") ||
-              lowerAnswer.contains("my personal") ||
-              lowerAnswer.contains("me alone") ||
-              lowerAnswer.contains("just me") ||
-              lowerAnswer.contains("only me") ||
-              lowerAnswer.contains("i myself") ||
-              lowerAnswer.contains("me too") ||
-              lowerAnswer.contains("my journey") ||
-              lowerAnswer.contains("i intend")) &&
-              !lowerAnswer.contains("someone") &&
-              !lowerAnswer.contains("someone else");
-
-          print("::: Debugging isForSelf ::: isForSelf: $isForSelf");
-          final lang = Get.locale?.languageCode ?? 'en';
-
-          if (isForSelf) {
-            questionController.questions.value = [
-              Question(
-                id: "2",
-                episodeId: '',
-                sectionId: 'initial',
-                text: {lang: "question_2".tr},
-                // "What is your name?"
-                v: 0,
-                createdAt: DateTime.now().toIso8601String(),
-                updatedAt: DateTime.now().toIso8601String(),
-              ),
-              Question(
-                id: "3",
-                episodeId: '',
-                sectionId: 'initial',
-                text: {lang: "question_3".tr},
-                // "What title would you like to give the book? ..."
-                v: 0,
-                createdAt: DateTime.now().toIso8601String(),
-                updatedAt: DateTime.now().toIso8601String(),
-              ),
-            ];
-            print(
-                "::: Set questions for self ::: ['What is your name?', 'What title ...']");
-          } else {
-            questionController.questions.value = [
-              Question(
-                id: "3",
-                episodeId: '',
-                sectionId: 'initial',
-                text: {lang: "question_3".tr},
-                // "What title would you like to give the book? ..."
-                v: 0,
-                createdAt: DateTime.now().toIso8601String(),
-                updatedAt: DateTime.now().toIso8601String(),
-              ),
-            ];
-            print("::: Set questions for other ::: ['What title ...']");
-          }
-          questionController.currentQuestionIndex.value = 0;
+        _removeLoadingMessage();
+        questionController.nextQuestion();
+        if (questionController.currentQuestionIndex.value <
+            questionController.questions.length) {
           askQuestion();
         } else {
-          questionController.nextQuestion();
-          if (questionController.currentQuestionIndex.value <
-              questionController.questions.length) {
-            askQuestion();
-          } else {
-            print(
-                "All initial questions answered, proceeding to create book...");
-            _createBookAndNavigate();
-          }
+          print(
+              "All initial questions answered, proceeding to create book...");
+          _createBookAndNavigate();
         }
       }
       return;
@@ -313,16 +311,13 @@ class MessageController extends GetxController {
 
   Future<void> _createBookAndNavigate() async {
     print("Creating book with answers: ${userAnswers.toList()}");
-    String bookName = userAnswers.firstWhere(
-          (a) =>
-      a['question'] ==
-          'What title would you like to give the book? Don\'t worry, you can change it anytime.',
-      orElse: () => {'answer': 'My Memoir'},
-    )['answer'] ?? 'My Memoir';
+    String bookName = bookTitle.value.isNotEmpty
+        ? bookTitle.value
+        : 'My Memoir';
     bookController.bookNameController.text = bookName;
 
     Get.dialog(
-      const Dialog(
+      Dialog(
         child: Padding(
           padding: EdgeInsets.all(20.0),
           child: Column(
@@ -330,7 +325,7 @@ class MessageController extends GetxController {
             children: [
               CircularProgressIndicator(),
               SizedBox(height: 20),
-              Text("Creating your book..."),
+              Text("creating_your_book".tr),
             ],
           ),
         ),
@@ -453,7 +448,6 @@ class MessageController extends GetxController {
       }
     } catch (e) {
       print("Error updating percentage: $e");
-      //Get.snackbar('Error', 'Failed to update percentage: $e');
     }
   }
 
@@ -501,7 +495,7 @@ class MessageController extends GetxController {
     } else if (response.statusCode == 400) {
       _removeLoadingMessage();
       messages.add(
-          BotMessage(message: "Could you please elaborate on: $question"));
+          BotMessage(message: "${"request_relevant_answer".tr}$question"));
     } else {
       Get.snackbar('Error', 'Failed to generate sub-questions');
     }
@@ -545,7 +539,7 @@ class MessageController extends GetxController {
     } else if (relevancyResponse.statusCode == 400) {
       _removeLoadingMessage();
       messages.add(BotMessage(
-          message: "Could you provide a more relevant answer on: $subQuestion"));
+          message: "${"request_relevant_answer".tr}$subQuestion"));
     } else {
       Get.snackbar('Error',
           'Failed to check relevancy: ${relevancyResponse.statusCode}');

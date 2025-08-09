@@ -4,6 +4,10 @@ class AppTranslations extends Translations {
   @override
   Map<String, Map<String, String>> get keys => {
     'en_US': {
+      "success" : "Success",
+      "request_relevant_answer": "Could you provide a more relevant answer on: ",
+      "successfully_created_the_book" : "Successfully created the book",
+      "creating_your_book" : "Creating your book...",
       "chapter" : "Chapter",
       "initial_message_1": "Let’s start writing your story. I’ll ask you a series of questions—some easy, some not so much—but don’t worry. If you don’t remember something or prefer not to answer, just let me know and I’ll move on to the next question. Based on your answers, we’ll build your story little by little. Let’s go!",
       "choose_language": "Choose your preferred language",
@@ -125,8 +129,14 @@ class AppTranslations extends Translations {
       "complete": "complete",
       "download_book": "Download Book",
       "thinking": "Thinking",
+      "delete":"Delete",
+      "account_deletion" : "Account deletion request submitted",
     },
     'es_ES': {
+  "delete":"Borrar",
+      "request_relevant_answer": "¿Podrías proporcionar una respuesta más relevante sobre: ",
+      "successfully_created_the_book" : "Se creó el libro con éxito",
+      "creating_your_book" : "Creando tu libro...",
       "chapter" : "Capítulo",
       "initial_message_1": "Empecemos a escribir tu historia. Te haré una serie de preguntas, algunas fáciles, otras no tanto, pero no te preocupes. Si no recuerdas algo o prefieres no responder, házmelo saber y pasaré a la siguiente pregunta. Con base en tus respuestas, construiremos tu historia poco a poco. ¡Vamos!",
       "choose_language": "Elige tu idioma preferido",
@@ -248,6 +258,8 @@ class AppTranslations extends Translations {
       "complete": "completado",
       "download_book": "Descargar Libro",
       "thinking": "Pensamiento",
+      "success" : "Éxito",
+      "account_deletion" : "Solicitud de eliminación de cuenta enviada",
     },
   };
 }

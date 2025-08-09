@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 
 import '../../constants/color/app_colors.dart';
 import '../authentication/custom_button.dart';
@@ -41,7 +42,7 @@ class _CustomDeletePopupState extends State<CustomDeletePopup> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Popup text
-                Text('Delete', style: TextStyle(
+                Text('delete'.tr, style: TextStyle(
                     fontSize: 20,
                     color: Colors.redAccent),
                 ),
@@ -54,9 +55,9 @@ class _CustomDeletePopupState extends State<CustomDeletePopup> {
                 SizedBox(height: 26),
 
                 // Button to trigger action
-                CustomButton(text: 'DELETE ', onPressed: widget.onButtonPressed1,backgroundColor: Colors.red,),
+                CustomButton(text: 'delete'.tr, onPressed: widget.onButtonPressed1,backgroundColor: Colors.red,),
                 SizedBox(height: 16),
-                CustomButton(text: 'Cancel', onPressed: widget.onButtonPressed2,backgroundColor: Colors.white,isEditPage: true,textColor: AppColors.appColor,),
+                CustomButton(text: 'cancel'.tr, onPressed: widget.onButtonPressed2,backgroundColor: Colors.white,isEditPage: true,textColor: AppColors.appColor,),
               ],
             ),
           ),

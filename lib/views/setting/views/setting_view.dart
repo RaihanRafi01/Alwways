@@ -52,7 +52,8 @@ class SettingView extends GetView<SettingController> {
                       return CustomDeletePopup(
                         title: "delete_account_confirmation".tr,
                         onButtonPressed1: () {
-                          // Delete logic
+                          Navigator.of(context).pop();
+                          Get.snackbar('success'.tr, 'account_deletion'.tr);
                         },
                         onButtonPressed2: () {
                           Navigator.of(context).pop();

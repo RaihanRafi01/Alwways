@@ -270,7 +270,7 @@ class BookController extends GetxController {
         // Notify BotController to refresh sections
         final botController = Get.find<BotController>();
         await botController.fetchSections();
-        Get.snackbar('Success', 'Successfully created the book');
+        Get.snackbar('Success', 'successfully_created_the_book'.tr);
       } else {
         Get.snackbar('Error', 'Failed to create book: ${response.body}');
       }

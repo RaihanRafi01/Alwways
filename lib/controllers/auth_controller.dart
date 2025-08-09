@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:playground_02/views/authentication/forgot_password_screen.dart';
 import 'package:playground_02/views/authentication/login_screen.dart';
 import 'package:playground_02/views/authentication/set_new_password_screen.dart';
@@ -179,16 +180,15 @@ class AuthController extends GetxController {
   // Validate user inputs
   bool _isInputValid() {
     if ([
-          firstName,
-          lastName,
-          email,
-          contact,
-          location,
-          gender,
-          password,
-          confirmPassword
-        ].any((field) => field.value.isEmpty) ||
-        pickedImage.value == null) {
+      firstName,
+      lastName,
+      email,
+      contact,
+      location,
+      gender,
+      password,
+      confirmPassword
+    ].any((field) => field.value.isEmpty)) {
       Get.snackbar('Error', 'Please fill in all fields');
       return false;
     }
@@ -223,23 +223,26 @@ class AuthController extends GetxController {
           mappedGender = gender.value; // Fallback to original value if no match
       }
 
+
+      XFile imageToUpload = pickedImage.value ?? await _getDefaultAvatar();
+
       final response = await _service.signUp(
-          firstName.value,
-          lastName.value,
-          email.value,
-          contact.value,
-          location.value,
-          mappedGender,
-          dateOfBirth.value.toString(),
-          password.value,
-          pickedImage.value!);
+        firstName.value,
+        lastName.value,
+        email.value,
+        contact.value,
+        location.value,
+        mappedGender,
+        dateOfBirth.value.toString(),
+        password.value,
+        imageToUpload,
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.snackbar('Success', 'Account created successfully!');
         Get.offAll(LoginScreen());
       } else {
-        final message =
-            jsonDecode(response.body)['message'] ?? 'Sign-up failed';
+        final message = jsonDecode(response.body)['message'] ?? 'Sign-up failed';
         Get.snackbar('Error', message);
       }
     } catch (e) {
@@ -348,5 +351,12 @@ class AuthController extends GetxController {
     profilePictureUrl.value = '';
     pickedImage.value = null;
     Get.offAll(LoginScreen());
+  }
+
+  Future<XFile> _getDefaultAvatar() async {
+    final byteData = await DefaultAssetBundle.of(Get.context!).load('assets/images/auth/user.png');
+    final file = File('${(await getTemporaryDirectory()).path}/user.png');
+    await file.writeAsBytes(byteData.buffer.asUint8List());
+    return XFile(file.path);
   }
 }

@@ -128,7 +128,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               borderSide: const BorderSide(color: AppColors.borderColor, width: 2),
             ),
           ),
-          initialCountryCode: 'BD', // Default to Bangladesh
+          initialCountryCode: 'ES', // Default to Spain
           initialValue: widget.initialValue, // Use initialValue for pre-filling
           onChanged: (phone) {
             if (widget.onChanged != null) {
