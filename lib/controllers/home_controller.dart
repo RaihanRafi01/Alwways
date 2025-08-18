@@ -14,6 +14,7 @@ class HomeController extends GetxController {
     fetchMessage();
   }
 
+
   Future<void> fetchMessage() async {
     try {
       print('Fetching message...');
@@ -21,10 +22,10 @@ class HomeController extends GetxController {
 
       // Ensure profile is loaded if userId is empty
       /*if (authController.userId.value.isEmpty) {
-        print('User ID is empty, attempting to fetch profile...');
-        await authController.fetchProfile();
-        print('Profile fetched, new User ID: ${authController.userId.value}');
-      }*/
+      print('User ID is empty, attempting to fetch profile...');
+      await authController.fetchProfile();
+      print('Profile fetched, new User ID: ${authController.userId.value}');
+    }*/
 
       // If userId is still empty, use welcome message
       if (authController.userId.value.isEmpty) {
@@ -38,14 +39,14 @@ class HomeController extends GetxController {
 
       // Query to find the most recent chat history entry for the user's books
       final result = await db.rawQuery('''
-        SELECT ch.sectionId, s.name
-        FROM chat_history ch
-        JOIN books b ON ch.bookId = b.id
-        JOIN sections s ON ch.sectionId = s.id
-        WHERE b.userId = ?
-        ORDER BY ch.timestamp DESC
-        LIMIT 1
-      ''', [authController.userId.value]);
+      SELECT ch.sectionId, s.name
+      FROM chat_history ch
+      JOIN books b ON ch.bookId = b.id
+      JOIN sections s ON ch.sectionId = s.id
+      WHERE b.userId = ?
+      ORDER BY ch.timestamp DESC
+      LIMIT 1
+    ''', [authController.userId.value]);
 
       print('Query result: $result');
 
@@ -55,8 +56,17 @@ class HomeController extends GetxController {
         print('No chat history found, set welcome message: ${message.value}');
       } else {
         // Get the section name from the most recent chat history entry
-        final sectionName = result.first['name'] as String;
-        print('Section name from DB: $sectionName');
+        final sectionNameJson = result.first['name'] as String;
+        print('Section name from DB: $sectionNameJson');
+
+        // Parse the JSON string
+        final sectionNameMap = jsonDecode(sectionNameJson) as Map<String, dynamic>;
+
+        // Select the appropriate language (e.g., based on app's current locale)
+        // Assuming `Get.locale` is used with GetX for localization
+        final currentLocale = Get.locale?.languageCode ?? 'en'; // Default to 'en' if locale is null
+        final sectionName = sectionNameMap[currentLocale] as String? ?? sectionNameMap['en'] as String; // Fallback to 'en' if locale not found
+        print('Parsed section name for locale $currentLocale: $sectionName');
 
         // Use trParams to substitute sectionName
         message.value = "thank_you_section".trParams({'sectionName': sectionName});

@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:playground_02/constants/color/app_colors.dart';
+import 'package:playground_02/widgets/authentication/custom_button.dart';
 
 class BotMessage extends StatelessWidget {
   final String message;
   final List<Widget>? actions; // Existing parameter for actions (buttons)
-  final bool isLoading; // New parameter for loading state
+  final bool isLoading; // Existing parameter for loading state
+  final bool showNextChapterButton; // New parameter for chapter completion
+  final VoidCallback? onNextChapterPressed; // New callback for next chapter button
 
   const BotMessage({
     super.key,
     required this.message,
     this.actions,
-    this.isLoading = false, // Default to false
+    this.isLoading = false,
+    this.showNextChapterButton = false, // Default to false
+    this.onNextChapterPressed,
   });
 
   @override
@@ -32,12 +37,22 @@ class BotMessage extends StatelessWidget {
                 color: AppColors.textColor,
               ),
             ),
-            if (!isLoading && actions != null && actions!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: actions!,
-              ),
+            if (!isLoading) ...[
+              // Show existing actions if provided
+              if (actions != null && actions!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: actions!,
+                ),
+              ],
+              // Show next chapter button if showNextChapterButton is true
+              if (showNextChapterButton) ...[
+                const SizedBox(height: 8),
+                CustomButton(text: 'proceed_to_next_chapter'.tr, onPressed: (){
+                  onNextChapterPressed!();
+                })
+              ],
             ],
           ],
         ),
@@ -46,7 +61,7 @@ class BotMessage extends StatelessWidget {
   }
 }
 
-// Separate widget for the three-dot animation
+// Separate widget for the three-dot animation (unchanged)
 class ThreeDotsAnimation extends StatefulWidget {
   const ThreeDotsAnimation({super.key});
 

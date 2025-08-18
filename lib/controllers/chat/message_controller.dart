@@ -23,7 +23,16 @@ class MessageController extends GetxController {
   final BookController bookController = Get.put(BookController());
   final ApiService apiService = ApiService();
   final DatabaseHelper dbHelper = DatabaseHelper();
+  var isChapterComplete = false.obs;
   String? sectionId;
+  String? bookId;
+
+  void initializeWithBookAndSection(String bookId, String sectionId) {
+    this.bookId = bookId;
+    this.sectionId = sectionId;
+    print("Initializing MessageController with bookId: $bookId, sectionId: $sectionId");
+    fetchQuestionsAndLoadHistory(sectionId);
+  }
 
   void _showLoadingMessage() {
     messages.add(const BotMessage(message: "", isLoading: true));
@@ -39,7 +48,11 @@ class MessageController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    //final BotController botController = Get.find<BotController>();
+
+    print("=================== >>>>>>>>>>>>>>>>Initializing MessageController with sectionId: ${botController.selectedSectionId.value}");
     if (botController.selectedBookId.value.isNotEmpty) {
+      bookId = botController.selectedBookId.value;
       sectionId = botController.selectedSectionId.value;
       print("Initializing MessageController with sectionId: $sectionId");
       fetchQuestionsAndLoadHistory(sectionId!);
@@ -153,14 +166,23 @@ class MessageController extends GetxController {
   void askQuestion() {
     _removeLoadingMessage();
     final currentQuestion = questionController.getCurrentQuestion();
-    print("Asking question: $currentQuestion (Index: ${questionController
-        .currentQuestionIndex.value}, Total Questions: ${questionController
-        .questions.length})");
+    print(
+        "Asking question: $currentQuestion (Index: ${questionController.currentQuestionIndex.value}, Total Questions: ${questionController.questions.length})");
+
     if (currentQuestion != 'No more questions') {
       messages.add(BotMessage(message: currentQuestion));
+      isChapterComplete.value = false; // Ensure input is enabled
     } else {
-      messages.add(const BotMessage(message: "All questions answered!"));
-      print("All questions answered, checking for initial chat mode...");
+      // Chapter is complete, show completion message with button
+      isChapterComplete.value = true; // Disable input
+      messages.add(
+        BotMessage(
+          message: "chapter_completed".tr, // Localized completion message
+          showNextChapterButton: true, // Custom property to show button
+          onNextChapterPressed: _proceedToNextChapter,
+        ),
+      );
+      print("Chapter completed, showing completion message with next chapter button...");
       if (botController.selectedBookId.value.isEmpty) {
         print("Triggering book creation and navigation...");
         _createBookAndNavigate();
@@ -168,19 +190,42 @@ class MessageController extends GetxController {
     }
   }
 
+  Future<void> _proceedToNextChapter() async {
+    print("Proceeding to next chapter...");
+    final currentSectionIndex = botController.getSectionIndex();
+    final sections = await dbHelper.getSections();
+    final nextSectionIndex = currentSectionIndex.value + 1; // Use .value to get int
+
+    if (nextSectionIndex < sections.length) {
+      final nextSectionId = sections[nextSectionIndex].id; // Now uses int
+      botController.selectSection(nextSectionId);
+      sectionId = nextSectionId;
+      print("Moving to next section: $nextSectionId");
+      await fetchQuestionsAndLoadHistory(nextSectionId);
+      isChapterComplete.value = false; // Re-enable input for new chapter
+    } else {
+
+      // No more sections, navigate to home or show completion
+      Get.snackbar('Info', 'all_chapters_completed'.tr);
+      Get.to(() => HomePageLanding(
+        bookId: botController.selectedBookId.value,
+        bookTitle: bookTitle.value.isNotEmpty ? bookTitle.value : 'My Memoir',
+        coverImage: bookController.getCoverImage(
+            botController.selectedBookId.value,
+            'assets/images/book/cover_image_1.svg'),
+      ));
+    }
+  }
+
   Future<void> sendMessage(String userAnswer) async {
-    if (userAnswer
-        .trim()
-        .isEmpty) return;
+    if (userAnswer.trim().isEmpty || isChapterComplete.value) return;
 
     final currentQuestion = questionController.getCurrentQuestion();
     print(
-        "User answered: '$userAnswer' to question: '$currentQuestion' (Index: ${questionController
-            .currentQuestionIndex.value})");
+        "User answered: '$userAnswer' to question: '$currentQuestion' (Index: ${questionController.currentQuestionIndex.value})");
     messages.add(UserMessage(message: userAnswer));
     userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
 
-    // Store the answer to question 3 (book title) in bookTitle observable
     if (currentQuestion ==
         "What title would you like to give the book? Don't worry, you can change it anytime.") {
       bookTitle.value = userAnswer;
@@ -244,7 +289,6 @@ class MessageController extends GetxController {
               episodeId: '',
               sectionId: 'initial',
               text: {lang: "question_2".tr},
-              // "What is your name?"
               v: 0,
               createdAt: DateTime.now().toIso8601String(),
               updatedAt: DateTime.now().toIso8601String(),
@@ -254,14 +298,12 @@ class MessageController extends GetxController {
               episodeId: '',
               sectionId: 'initial',
               text: {lang: "question_3".tr},
-              // "What title would you like to give the book? ..."
               v: 0,
               createdAt: DateTime.now().toIso8601String(),
               updatedAt: DateTime.now().toIso8601String(),
             ),
           ];
-          print(
-              "::: Set questions for self ::: ['What is your name?', 'What title ...']");
+          print("::: Set questions for self ::: ['What is your name?', 'What title ...']");
         } else {
           questionController.questions.value = [
             Question(
@@ -269,7 +311,6 @@ class MessageController extends GetxController {
               episodeId: '',
               sectionId: 'initial',
               text: {lang: "question_3".tr},
-              // "What title would you like to give the book? ..."
               v: 0,
               createdAt: DateTime.now().toIso8601String(),
               updatedAt: DateTime.now().toIso8601String(),
@@ -287,8 +328,7 @@ class MessageController extends GetxController {
             questionController.questions.length) {
           askQuestion();
         } else {
-          print(
-              "All initial questions answered, proceeding to create book...");
+          print("All initial questions answered, proceeding to create book...");
           _createBookAndNavigate();
         }
       }
@@ -451,8 +491,7 @@ class MessageController extends GetxController {
     }
   }
 
-  Future<void> _handleGenerateSubQuestion(String question,
-      String answer) async {
+  Future<void> _handleGenerateSubQuestion(String question, String answer) async {
     final response = await apiService.generateSubQuestion(question, answer);
     print(':::generateSubQuestion::: Status Code: ${response.statusCode}');
     print(':::generateSubQuestion::: Response Body: ${response.body}');
@@ -485,17 +524,22 @@ class MessageController extends GetxController {
 
         final responseBody = utf8.decode(response.bodyBytes);
         final data = jsonDecode(responseBody);
-        final subQuestions = List<String>.from(data['content']);
-        questionController.setSubQuestions(subQuestions);
+        final subQuestions = List<String>.from(data['content'])
+            .where((q) => q != "generated story" && q.isNotEmpty) // Filter out unwanted messages
+            .toList();
+        if (subQuestions.isEmpty) {
+          print("No valid sub-questions received, moving to next question...");
+          questionController.nextQuestion();
+        } else {
+          questionController.setSubQuestions(subQuestions);
+        }
         askQuestion();
       } else {
-        Get.snackbar(
-            'Error', 'Failed to save answer: ${saveResponse.statusCode}');
+        Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
     } else if (response.statusCode == 400) {
       _removeLoadingMessage();
-      messages.add(
-          BotMessage(message: "${"request_relevant_answer".tr}$question"));
+      messages.add(BotMessage(message: "${"request_relevant_answer".tr}$question"));
     } else {
       Get.snackbar('Error', 'Failed to generate sub-questions');
     }

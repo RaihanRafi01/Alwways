@@ -4,6 +4,7 @@ import 'package:playground_02/views/book/book_landing.dart';
 import 'package:playground_02/views/home/home_landing.dart';
 import 'package:playground_02/views/profile/profile_landing.dart';
 import '../../../constants/color/app_colors.dart';
+import '../../../constants/translations/language_controller.dart';
 import '../../../controllers/auth_controller.dart';
 import '../../../controllers/book/book_controller.dart';
 import '../../../widgets/customNavigationBar.dart';
@@ -19,6 +20,7 @@ class DashboardView extends StatelessWidget {
     Get.put(BookController());
     final AuthController authController = Get.put(AuthController());
     authController.fetchProfile();
+    Get.put(LanguageController());
 
     dashboardController.currentIndex.value = index;
 

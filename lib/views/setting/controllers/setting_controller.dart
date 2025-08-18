@@ -11,7 +11,7 @@ class SettingController extends GetxController {
   var isLoading = false.obs;
 
   // Get the LanguageController instance
-  final LanguageController languageController = Get.put(LanguageController());
+  final LanguageController languageController = Get.find<LanguageController>();
 
   // Toggle method for the Writing Reminder
   void toggleWritingReminder(bool value) {

@@ -122,7 +122,8 @@ class _HomePageLandingState extends State<HomePageLanding> {
                 CustomButton(
                   text: "TALK TO TITI",
                   onPressed: () {
-                    if (displayBookId.value.isNotEmpty) {
+                    if (widget.bookId == '') {
+                      // if there more than 1 book
                       // Ensure botController has the correct book and section selected
                       botController.selectBook(displayBookId.value);
                       String sectionId = botController.sections.isNotEmpty

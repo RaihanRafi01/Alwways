@@ -24,10 +24,11 @@ class ChatScreen extends StatelessWidget {
     final BotController botController = Get.find<BotController>();
     final ScrollController scrollController = ScrollController();
 
-    print('::::::::::::::: GGG ::::::::::::::::::::::: book id : $bookId , sectionId : $sectionId , episodeId : $episodeId');
+    print('::::::::::::::: CHAT SCREEN ::::::::::::::::::::::: book id : $bookId , sectionId : $sectionId , episodeId : $episodeId');
 
     // Initialize chat history and questions
     void initializeChat() async {
+      print('::::::::::::::: initializeChat hit :::::::::::::::::::::::');
       // Set selected IDs in BotController
       botController.selectBook(bookId);
       botController.selectSection(sectionId); // This also sets episodeId
@@ -58,11 +59,16 @@ class ChatScreen extends StatelessWidget {
       initializeChat();
     });
 
+    if (bookId.isNotEmpty && sectionId.isNotEmpty) {
+      messageController.initializeWithBookAndSection(bookId, sectionId);
+    }
+
     return Scaffold(
       backgroundColor: AppColors.appBackground,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.appBackground,
         scrolledUnderElevation: 0,
+        elevation: 0,
         title: const Text('Chat'),
       ),
       body: Column(

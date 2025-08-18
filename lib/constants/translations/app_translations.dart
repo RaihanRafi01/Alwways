@@ -131,8 +131,14 @@ class AppTranslations extends Translations {
       "thinking": "Thinking",
       "delete":"Delete",
       "account_deletion" : "Account deletion request submitted",
+      "chapter_completed": "This chapter is complete!",
+      "all_chapters_completed": "All chapters are completed!",
+      "proceed_to_next_chapter": "Go to Next Chapter"
     },
     'es_ES': {
+  "chapter_completed": "¡Este capítulo está completo!",
+  "all_chapters_completed": "¡Todos los capítulos están completados!",
+  "proceed_to_next_chapter": "Ir al siguiente capítulo",
   "delete":"Borrar",
       "request_relevant_answer": "¿Podrías proporcionar una respuesta más relevante sobre: ",
       "successfully_created_the_book" : "Se creó el libro con éxito",
