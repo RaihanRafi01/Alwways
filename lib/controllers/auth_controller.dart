@@ -27,7 +27,7 @@ class AuthController extends GetxController {
       email = ''.obs,
       contact = ''.obs,
       location = ''.obs,
-      gender = ''.obs;
+      gender = 'Male'.obs;
   var dateOfBirth = Rxn<DateTime>(),
       password = ''.obs,
       confirmPassword = ''.obs;
@@ -179,29 +179,42 @@ class AuthController extends GetxController {
 
   // Validate user inputs
   bool _isInputValid() {
+    // Access the value of RxString variables instead of casting them directly
+    String genderValue = gender.value.isEmpty ? 'Male' : gender.value;
+    String locationValue = location.value.isEmpty ? 'Location' : location.value;
+
+    // Validate that none of the required fields are empty
     if ([
-      firstName,
-      lastName,
-      email,
-      contact,
-      location,
-      gender,
-      password,
-      confirmPassword
-    ].any((field) => field.value.isEmpty)) {
+      firstName.value,
+      lastName.value,
+      email.value,
+      contact.value,
+      locationValue,
+      genderValue,
+      password.value,
+      confirmPassword.value
+    ].any((field) => field.isEmpty)) {
       Get.snackbar('Error', 'Please fill in all fields');
       return false;
     }
+
+    // If date of birth is null, show an error
     if (dateOfBirth.value == null) {
       Get.snackbar('Error', 'Please select a date of birth');
       return false;
     }
+
+    // If passwords do not match, show an error
     if (password.value != confirmPassword.value) {
       Get.snackbar('Error', 'Passwords do not match');
       return false;
     }
+
     return true;
   }
+
+
+
 
   // Sign-up process
   Future<void> _signUp() async {
