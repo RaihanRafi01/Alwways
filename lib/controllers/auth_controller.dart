@@ -42,7 +42,6 @@ class AuthController extends GetxController {
   String get formattedDateOfBirth => dateOfBirth.value != null
       ? DateFormat('dd/MM/yyyy').format(dateOfBirth.value!)
       : '';
-  @override
 
   @override
   // Store tokens securely
@@ -68,7 +67,7 @@ class AuthController extends GetxController {
     try {
       String? token = await _storage.read(key: 'access_token');
       if (token == null) {
-        Get.snackbar('Error', 'No token found. Please log in.');
+        Get.snackbar('Error'.tr, 'No token found. Please log in.'.tr);
         return;
       }
 
@@ -90,17 +89,15 @@ class AuthController extends GetxController {
             : null;
 
         isProfileLoaded.value = true;
-      }
-      else if (response.statusCode == 401){
+      } else if (response.statusCode == 401) {
         Get.offAll(LoginScreen());
-      }
-      else {
+      } else {
         Get.snackbar(
-            'Error', 'Failed to fetch profile: ${response.statusCode}');
+            'Error'.tr, 'Failed to fetch profile: ${response.statusCode}'.tr);
         isProfileLoaded.value = false;
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred: $e');
+      Get.snackbar('Error'.tr, 'An error occurred: $e'.tr);
       isProfileLoaded.value = false;
     }
   }
@@ -111,7 +108,7 @@ class AuthController extends GetxController {
     try {
       String? token = await _storage.read(key: 'access_token');
       if (token == null) {
-        Get.snackbar('Error', 'No token found. Please log in.');
+        Get.snackbar('Error'.tr, 'No token found. Please log in.'.tr);
         return;
       }
 
@@ -123,7 +120,7 @@ class AuthController extends GetxController {
         'location': location.value,
         'gender': gender.value,
         'dateOfBirth':
-            dateOfBirth.value?.toIso8601String().substring(0, 10) ?? '',
+        dateOfBirth.value?.toIso8601String().substring(0, 10) ?? '',
       };
 
       // Log pickedImage details for debugging
@@ -138,9 +135,9 @@ class AuthController extends GetxController {
         String mimeType = pickedImage.value!.name.toLowerCase().endsWith('.png')
             ? 'image/png'
             : pickedImage.value!.name.toLowerCase().endsWith('.jpg') ||
-                    pickedImage.value!.name.toLowerCase().endsWith('.jpeg')
-                ? 'image/jpeg'
-                : 'unknown';
+            pickedImage.value!.name.toLowerCase().endsWith('.jpeg')
+            ? 'image/jpeg'
+            : 'unknown';
         print(
             '::::::::::::::::::::UPDATE : pickedImage inferred MIME type: $mimeType');
       } else {
@@ -155,16 +152,16 @@ class AuthController extends GetxController {
       print('::::::::::::::::::::UPDATE : body ${response.body}');
 
       if (response.statusCode == 200) {
-        Get.snackbar('Success', 'Profile updated successfully');
+        Get.snackbar('Success'.tr, 'Profile updated successfully'.tr);
         await fetchProfile(); // Refresh profile data
         pickedImage.value = null; // Clear picked image
         Get.back(); // Return to ProfileScreen
       } else {
         Get.snackbar(
-            'Error', 'Failed to update profile: ${response.statusCode}');
+            'Error'.tr, 'Failed to update profile: ${response.statusCode}'.tr);
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred: $e');
+      Get.snackbar('Error'.tr, 'An error occurred: $e'.tr);
     } finally {
       isLoading.value = false;
     }
@@ -179,7 +176,6 @@ class AuthController extends GetxController {
 
   // Validate user inputs
   bool _isInputValid() {
-    // Access the value of RxString variables instead of casting them directly
     String genderValue = gender.value.isEmpty ? 'Male' : gender.value;
     String locationValue = location.value.isEmpty ? 'Location' : location.value;
 
@@ -194,27 +190,24 @@ class AuthController extends GetxController {
       password.value,
       confirmPassword.value
     ].any((field) => field.isEmpty)) {
-      Get.snackbar('Error', 'Please fill in all fields');
+      Get.snackbar('Error'.tr, 'Please fill in all fields'.tr);
       return false;
     }
 
     // If date of birth is null, show an error
     if (dateOfBirth.value == null) {
-      Get.snackbar('Error', 'Please select a date of birth');
+      Get.snackbar('Error'.tr, 'Please select a date of birth'.tr);
       return false;
     }
 
     // If passwords do not match, show an error
     if (password.value != confirmPassword.value) {
-      Get.snackbar('Error', 'Passwords do not match');
+      Get.snackbar('Error'.tr, 'Passwords do not match'.tr);
       return false;
     }
 
     return true;
   }
-
-
-
 
   // Sign-up process
   Future<void> _signUp() async {
@@ -236,7 +229,6 @@ class AuthController extends GetxController {
           mappedGender = gender.value; // Fallback to original value if no match
       }
 
-
       XFile imageToUpload = pickedImage.value ?? await _getDefaultAvatar();
 
       final response = await _service.signUp(
@@ -252,19 +244,21 @@ class AuthController extends GetxController {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.snackbar('Success', 'Account created successfully!');
+        Get.snackbar('Success'.tr, 'Account created successfully!'.tr);
         Get.offAll(LoginScreen());
       } else {
-        final message = jsonDecode(response.body)['message'] ?? 'Sign-up failed';
-        Get.snackbar('Error', message);
+        final message =
+            jsonDecode(response.body)['message'] ?? 'Sign-up failed'.tr;
+        Get.snackbar('Error'.tr, message);
       }
     } catch (e) {
-      Get.snackbar('Error', 'An unexpected error occurred');
+      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
       print('Error: $e');
     } finally {
       isLoading.value = false;
     }
   }
+
   // Login, OTP, and reset password methods remain unchanged
   Future<void> login(String username, String password) async {
     isLoading.value = true;
@@ -279,10 +273,10 @@ class AuthController extends GetxController {
         Get.offAll(const HomeSplashscreen());
       } else {
         final responseBody = jsonDecode(response.body);
-        Get.snackbar('Error', responseBody['message'] ?? 'Login failed');
+        Get.snackbar('Error'.tr, responseBody['message'] ?? 'Login failed'.tr);
       }
     } catch (e) {
-      Get.snackbar('Error', 'An unexpected error occurred');
+      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
       print('Error: $e');
     } finally {
       isLoading.value = false;
@@ -296,13 +290,13 @@ class AuthController extends GetxController {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.offAll(VerifyCodeScreen(email: email));
       } else if (response.statusCode == 404) {
-        Get.snackbar('Warning!', 'User not found in this Email');
+        Get.snackbar('Warning!'.tr, 'User not found in this Email'.tr);
       } else {
         final responseBody = jsonDecode(response.body);
-        Get.snackbar('Error', responseBody['message'] ?? 'Failed to send OTP');
+        Get.snackbar('Error'.tr, responseBody['message'] ?? 'Failed to send OTP'.tr);
       }
     } catch (e) {
-      Get.snackbar('Error', 'An unexpected error occurred');
+      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
       print('Error: $e');
     } finally {
       isLoading.value = false;
@@ -316,15 +310,15 @@ class AuthController extends GetxController {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.offAll(SetNewPasswordScreen(email: email, otp: otp));
       } else if (response.statusCode == 404) {
-        Get.snackbar('Warning!', 'User not found in this Email');
+        Get.snackbar('Warning!'.tr, 'User not found in this Email'.tr);
       } else if (response.statusCode == 400) {
-        Get.snackbar('Warning!', 'Invalid verification code');
+        Get.snackbar('Warning!'.tr, 'Invalid verification code'.tr);
       } else {
         final responseBody = jsonDecode(response.body);
-        Get.snackbar('Error', responseBody['message'] ?? 'Verification failed');
+        Get.snackbar('Error'.tr, responseBody['message'] ?? 'Verification failed'.tr);
       }
     } catch (e) {
-      Get.snackbar('Error', 'An unexpected error occurred');
+      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
       print('Error: $e');
     } finally {
       isLoading.value = false;
@@ -339,10 +333,10 @@ class AuthController extends GetxController {
         Get.offAll(LoginScreen());
       } else {
         final responseBody = jsonDecode(response.body);
-        Get.snackbar('Error', responseBody['message'] ?? 'Reset failed');
+        Get.snackbar('Error'.tr, responseBody['message'] ?? 'Reset failed'.tr);
       }
     } catch (e) {
-      Get.snackbar('Error', 'An unexpected error occurred');
+      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
       print('Error: $e');
     } finally {
       isLoading.value = false;
