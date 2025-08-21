@@ -193,7 +193,7 @@ class AppTranslations extends Translations {
       "log_in_with_apple": "Iniciar sesión con Apple",
       "enter_email_to_reset": "Ingresa tu correo electrónico para restablecer tu contraseña.",
       "continue": "CONTINUAR",
-      "warning": "¡Advertencia!",
+      "warning": "advertencia",
       "please_enter_email": "Por favor, ingresa un correo electrónico",
       "please_enter_valid_email": "Por favor, ingresa un correo electrónico válido",
       "set_new_password": "Establecer nueva contraseña",

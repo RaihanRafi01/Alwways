@@ -67,7 +67,7 @@ class AuthController extends GetxController {
     try {
       String? token = await _storage.read(key: 'access_token');
       if (token == null) {
-        Get.snackbar('Error'.tr, 'No token found. Please log in.'.tr);
+        Get.snackbar('error'.tr, 'no_token_found'.tr); // Using localization key
         return;
       }
 
@@ -92,12 +92,11 @@ class AuthController extends GetxController {
       } else if (response.statusCode == 401) {
         Get.offAll(LoginScreen());
       } else {
-        Get.snackbar(
-            'Error'.tr, 'Failed to fetch profile: ${response.statusCode}'.tr);
+        Get.snackbar('error'.tr, 'failed_to_fetch_profile'.tr); // Using localization key
         isProfileLoaded.value = false;
       }
     } catch (e) {
-      Get.snackbar('Error'.tr, 'An error occurred: $e'.tr);
+      Get.snackbar('error'.tr, 'unexpected_error'.tr); // Using localization key
       isProfileLoaded.value = false;
     }
   }
@@ -108,7 +107,7 @@ class AuthController extends GetxController {
     try {
       String? token = await _storage.read(key: 'access_token');
       if (token == null) {
-        Get.snackbar('Error'.tr, 'No token found. Please log in.'.tr);
+        Get.snackbar('error'.tr, 'no_token_found'.tr); // Using localization key
         return;
       }
 
@@ -152,16 +151,15 @@ class AuthController extends GetxController {
       print('::::::::::::::::::::UPDATE : body ${response.body}');
 
       if (response.statusCode == 200) {
-        Get.snackbar('Success'.tr, 'Profile updated successfully'.tr);
+        Get.snackbar('success'.tr, 'profile_updated'.tr); // Using localization key
         await fetchProfile(); // Refresh profile data
         pickedImage.value = null; // Clear picked image
         Get.back(); // Return to ProfileScreen
       } else {
-        Get.snackbar(
-            'Error'.tr, 'Failed to update profile: ${response.statusCode}'.tr);
+        Get.snackbar('error'.tr, 'failed_to_update_profile'.tr); // Using localization key
       }
     } catch (e) {
-      Get.snackbar('Error'.tr, 'An error occurred: $e'.tr);
+      Get.snackbar('error'.tr, 'unexpected_error'.tr); // Using localization key
     } finally {
       isLoading.value = false;
     }
@@ -190,19 +188,19 @@ class AuthController extends GetxController {
       password.value,
       confirmPassword.value
     ].any((field) => field.isEmpty)) {
-      Get.snackbar('Error'.tr, 'Please fill in all fields'.tr);
+      Get.snackbar('warning'.tr, 'please_fill_all_fields'.tr); // Using localization key
       return false;
     }
 
     // If date of birth is null, show an error
     if (dateOfBirth.value == null) {
-      Get.snackbar('Error'.tr, 'Please select a date of birth'.tr);
+      Get.snackbar('warning'.tr, 'please_select_date_of_birth'.tr); // Using localization key
       return false;
     }
 
     // If passwords do not match, show an error
     if (password.value != confirmPassword.value) {
-      Get.snackbar('Error'.tr, 'Passwords do not match'.tr);
+      Get.snackbar('warning'.tr, 'passwords_do_not_match'.tr); // Using localization key
       return false;
     }
 
@@ -244,15 +242,15 @@ class AuthController extends GetxController {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Get.snackbar('Success'.tr, 'Account created successfully!'.tr);
+        Get.snackbar('success'.tr, 'account_created_success'.tr); // Using localization key
         Get.offAll(LoginScreen());
       } else {
         final message =
-            jsonDecode(response.body)['message'] ?? 'Sign-up failed'.tr;
-        Get.snackbar('Error'.tr, message);
+            jsonDecode(response.body)['message'] ?? 'sign_up_failed'.tr; // Using localization key
+        Get.snackbar('error'.tr, message); // Using localization key
       }
     } catch (e) {
-      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
+      Get.snackbar('error'.tr, 'unexpected_error'.tr); // Using localization key
       print('Error: $e');
     } finally {
       isLoading.value = false;
@@ -273,10 +271,10 @@ class AuthController extends GetxController {
         Get.offAll(const HomeSplashscreen());
       } else {
         final responseBody = jsonDecode(response.body);
-        Get.snackbar('Error'.tr, responseBody['message'] ?? 'Login failed'.tr);
+        Get.snackbar('error'.tr, 'login_failed'.tr); // Using localization key
       }
     } catch (e) {
-      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
+      Get.snackbar('error'.tr, 'unexpected_error'.tr); // Using localization key
       print('Error: $e');
     } finally {
       isLoading.value = false;
@@ -290,13 +288,13 @@ class AuthController extends GetxController {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.offAll(VerifyCodeScreen(email: email));
       } else if (response.statusCode == 404) {
-        Get.snackbar('Warning!'.tr, 'User not found in this Email'.tr);
+        Get.snackbar('warning'.tr, 'user_not_found_in_email'.tr); // Using localization key
       } else {
         final responseBody = jsonDecode(response.body);
-        Get.snackbar('Error'.tr, responseBody['message'] ?? 'Failed to send OTP'.tr);
+        Get.snackbar('error'.tr, responseBody['message'] ?? 'failed_to_send_otp'.tr); // Using localization key
       }
     } catch (e) {
-      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
+      Get.snackbar('error'.tr, 'unexpected_error'.tr); // Using localization key
       print('Error: $e');
     } finally {
       isLoading.value = false;
@@ -310,15 +308,15 @@ class AuthController extends GetxController {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.offAll(SetNewPasswordScreen(email: email, otp: otp));
       } else if (response.statusCode == 404) {
-        Get.snackbar('Warning!'.tr, 'User not found in this Email'.tr);
+        Get.snackbar('warning'.tr, 'user_not_found_in_email'.tr); // Using localization key
       } else if (response.statusCode == 400) {
-        Get.snackbar('Warning!'.tr, 'Invalid verification code'.tr);
+        Get.snackbar('warning'.tr, 'invalid_verification_code'.tr); // Using localization key
       } else {
         final responseBody = jsonDecode(response.body);
-        Get.snackbar('Error'.tr, responseBody['message'] ?? 'Verification failed'.tr);
+        Get.snackbar('error'.tr, responseBody['message'] ?? 'verification_failed'.tr); // Using localization key
       }
     } catch (e) {
-      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
+      Get.snackbar('error'.tr, 'unexpected_error'.tr); // Using localization key
       print('Error: $e');
     } finally {
       isLoading.value = false;
@@ -333,10 +331,10 @@ class AuthController extends GetxController {
         Get.offAll(LoginScreen());
       } else {
         final responseBody = jsonDecode(response.body);
-        Get.snackbar('Error'.tr, responseBody['message'] ?? 'Reset failed'.tr);
+        Get.snackbar('error'.tr, responseBody['message'] ?? 'reset_failed'.tr); // Using localization key
       }
     } catch (e) {
-      Get.snackbar('Error'.tr, 'An unexpected error occurred'.tr);
+      Get.snackbar('error'.tr, 'unexpected_error'.tr); // Using localization key
       print('Error: $e');
     } finally {
       isLoading.value = false;
