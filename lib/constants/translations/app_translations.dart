@@ -148,8 +148,10 @@ class AppTranslations extends Translations {
       "account_created_success": "Account created successfully!",
       "failed_to_update_profile": "Failed to update profile",
       "invalid_verification_code": "Invalid verification code",
+      "generated_story": "Generated Story",
     },
     'es_ES': {
+      "generated_story": "Historia generada",
       "success": "Éxito",
       "error": "Error",
       "please_fill_all_fields": "Por favor, complete todos los campos",

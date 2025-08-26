@@ -525,7 +525,8 @@ class MessageController extends GetxController {
         final responseBody = utf8.decode(response.bodyBytes);
         final data = jsonDecode(responseBody);
         final subQuestions = List<String>.from(data['content'])
-            .where((q) => q != "generated story" && q.isNotEmpty) // Filter out unwanted messages
+            .map((q) => q == "generated story" ? "generated_story".tr : q) // Replace "generated story" with localized string
+            .where((q) => q != "generated story" && q.isNotEmpty) // Filter out empty questions
             .toList();
         if (subQuestions.isEmpty) {
           print("No valid sub-questions received, moving to next question...");
