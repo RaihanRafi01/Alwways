@@ -62,7 +62,6 @@ class _BookEditPageState extends State<BookEditPage> {
   Future<void> _performSave() async {
     try {
       if (_contentController.text.trim().isEmpty) {
-        Get.snackbar('Error', 'Content cannot be empty');
         return;
       }
       print("Saving changes for episode ${widget.episodeIndex}, page ${widget.index}");
@@ -81,7 +80,6 @@ class _BookEditPageState extends State<BookEditPage> {
         "content": _contentController.text.trim(),
       });
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save changes: $e');
     }
   }
 

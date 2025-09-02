@@ -206,7 +206,7 @@ class MessageController extends GetxController {
     } else {
 
       // No more sections, navigate to home or show completion
-      Get.snackbar('Info', 'all_chapters_completed'.tr);
+      Get.snackbar('info'.tr, 'all_chapters_completed'.tr);
       Get.to(() => HomePageLanding(
         bookId: botController.selectedBookId.value,
         bookTitle: bookTitle.value.isNotEmpty ? bookTitle.value : 'My Memoir',
@@ -419,7 +419,6 @@ class MessageController extends GetxController {
     } catch (e) {
       print("Error in book creation or question fetching: $e");
       Get.back();
-      Get.snackbar('Error', e.toString());
     }
   }
 
@@ -483,8 +482,6 @@ class MessageController extends GetxController {
         await bookController.fetchBooks();
         print("Refreshed BookLandingController with updated data");
       } else {
-        Get.snackbar(
-            'Error', 'Failed to update percentage: ${response.statusCode}');
       }
     } catch (e) {
       print("Error updating percentage: $e");
@@ -536,13 +533,12 @@ class MessageController extends GetxController {
         }
         askQuestion();
       } else {
-        Get.snackbar('Error', 'Failed to save answer: ${saveResponse.statusCode}');
+
       }
     } else if (response.statusCode == 400) {
       _removeLoadingMessage();
       messages.add(BotMessage(message: "${"request_relevant_answer".tr}$question"));
     } else {
-      Get.snackbar('Error', 'Failed to generate sub-questions');
     }
   }
 
@@ -578,16 +574,12 @@ class MessageController extends GetxController {
         questionController.nextQuestion();
         askQuestion();
       } else {
-        Get.snackbar(
-            'Error', 'Failed to save answer: ${saveResponse.statusCode}');
       }
     } else if (relevancyResponse.statusCode == 400) {
       _removeLoadingMessage();
       messages.add(BotMessage(
           message: "${"request_relevant_answer".tr}$subQuestion"));
     } else {
-      Get.snackbar('Error',
-          'Failed to check relevancy: ${relevancyResponse.statusCode}');
     }
   }
 

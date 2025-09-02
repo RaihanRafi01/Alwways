@@ -244,10 +244,8 @@ class AuthController extends GetxController {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.snackbar('success'.tr, 'account_created_success'.tr); // Using localization key
         Get.offAll(LoginScreen());
-      } else {
-        final message =
-            jsonDecode(response.body)['message'] ?? 'sign_up_failed'.tr; // Using localization key
-        Get.snackbar('error'.tr, message); // Using localization key
+      } else {// Using localization key
+        Get.snackbar('error'.tr, 'sign_up_failed'.tr); // Using localization key
       }
     } catch (e) {
       Get.snackbar('error'.tr, 'unexpected_error'.tr); // Using localization key
@@ -290,8 +288,7 @@ class AuthController extends GetxController {
       } else if (response.statusCode == 404) {
         Get.snackbar('warning'.tr, 'user_not_found_in_email'.tr); // Using localization key
       } else {
-        final responseBody = jsonDecode(response.body);
-        Get.snackbar('error'.tr, responseBody['message'] ?? 'failed_to_send_otp'.tr); // Using localization key
+        Get.snackbar('error'.tr, 'failed_to_send_otp'.tr); // Using localization key
       }
     } catch (e) {
       Get.snackbar('error'.tr, 'unexpected_error'.tr); // Using localization key

@@ -263,23 +263,23 @@ class BookCard extends StatelessWidget {
       final pdfFiles = await _generatePdfFiles(bookId);
 
       if (pdfFiles.isEmpty) {
-        Get.snackbar('Error', 'No PDF files generated');
+        Get.snackbar('warning'.tr, 'no_PDF_files_generated'.tr);
         return;
       }
 
       final result = await OpenFile.open(pdfFiles.first.path);
       if (result.type != ResultType.done) {
-        Get.snackbar('Error', 'Could not open PDF: ${result.message}');
+        Get.snackbar('warning'.tr, 'could_not_open_PDF'.tr);
       } else {
         Get.snackbar(
-          'Success',
-          'PDF generated successfully! ${pdfFiles.length} file(s) created. First file opened.',
+          'success'.tr,
+          'pDF_generated_successfully'.tr,
           duration: const Duration(seconds: 5),
         );
       }
     } catch (e) {
       print('Error generating PDF: $e');
-      Get.snackbar('Error', 'Failed to generate PDF: $e');
+      Get.snackbar('warning'.tr, 'failed_to_generate_PDF'.tr);
     }
   }
 

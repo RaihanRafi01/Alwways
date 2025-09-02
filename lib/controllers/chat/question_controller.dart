@@ -50,7 +50,6 @@ class QuestionController extends GetxController {
         print("Fetched questions: ${fetchedQuestions.map((q) => q.localizedText).toList()}");
         await dbHelper.insertQuestions(fetchedQuestions, sectionId);
       } else {
-        Get.snackbar('Error', 'Failed to fetch questions for section $sectionId: ${response.statusCode}');
         print("Failed to fetch questions: ${response.body}");
       }
     }

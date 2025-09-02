@@ -58,7 +58,6 @@ class BookLandingController extends GetxController {
       print("Updated books with API data: ${books.map((b) => b.id).toList()}");
     } catch (e) {
       print("Error fetching books: $e");
-      Get.snackbar('Error', 'Failed to load books: $e');
     } finally {
       isLoading.value = false;
     }

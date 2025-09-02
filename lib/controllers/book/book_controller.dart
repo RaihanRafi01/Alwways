@@ -70,7 +70,7 @@ class BookController extends GetxController {
       print("Books list refreshed with ${books.length} books after percentage updates");
     } catch (e) {
       print("Error initializing books: $e");
-      Get.snackbar('Error', 'Failed to initialize books: $e');
+      Get.snackbar('warning'.tr, 'failed_to_initialize_books'.tr);
       if (books.isEmpty) {
         books.value = await dbHelper.getBooks();
       }
@@ -258,7 +258,7 @@ class BookController extends GetxController {
 
   Future<void> createBook() async {
     if (bookNameController.text.isEmpty) {
-      Get.snackbar('Error', 'Book name cannot be empty');
+      Get.snackbar('warning'.tr, 'book_name_cannot_be_empty'.tr);
       return;
     }
     try {
@@ -270,12 +270,12 @@ class BookController extends GetxController {
         // Notify BotController to refresh sections
         final botController = Get.find<BotController>();
         await botController.fetchSections();
-        Get.snackbar('Success', 'successfully_created_the_book'.tr);
+        Get.snackbar('success'.tr, 'successfully_created_the_book'.tr);
       } else {
-        Get.snackbar('Error', 'Failed to create book: ${response.body}');
+        Get.snackbar('warning'.tr, 'failed_to_create_book'.tr);
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred: $e');
+      //Get.snackbar('Error', 'An error occurred: $e');
     }
   }
 
@@ -300,14 +300,14 @@ class BookController extends GetxController {
             print('Body: ${response.body}');
 
             if (response.statusCode == 200 || response.statusCode == 201) {
-              Get.snackbar('Success', 'Episode cover updated successfully');
+              Get.snackbar('success'.tr, 'episode_cover_updated_successfully'.tr);
               Get.back();
             } else {
-              Get.snackbar('Error', 'Failed to update episode cover: ${response.body}');
+              //Get.snackbar('Error', 'Failed to update episode cover: ${response.body}');
             }
           } else {
             print("No new cover image or image unchanged, saved locally");
-            Get.snackbar('Success', 'Episode updated locally');
+            //Get.snackbar('Success', 'Episode updated locally');
             Get.back();
           }
           break;
@@ -315,11 +315,11 @@ class BookController extends GetxController {
       }
       if (books.every((book) => book.episodes.every((e) => e.id != episodeId))) {
         print("Episode $episodeId not found in any book");
-        Get.snackbar('Error', 'Episode not found');
+        //Get.snackbar('Error', 'Episode not found');
       }
     } catch (e) {
       print("Error updating episode cover: $e");
-      Get.snackbar('Error', 'An error occurred: $e');
+     // Get.snackbar('Error', 'An error occurred: $e');
     } finally {
       isLoading.value = false;
     }
@@ -343,11 +343,11 @@ class BookController extends GetxController {
         print('Body: ${response.body}');
         if (response.statusCode == 200 || response.statusCode == 201) {
           await _updateBookInDb(id);
-          Get.snackbar('Success', 'Book cover updated successfully');
+          Get.snackbar('success'.tr, 'book_cover_updated_successfully'.tr);
           Get.back();
           bookCoverImage.value = '';
         } else {
-          Get.snackbar('Error', 'Failed to update book cover: ${response.body}');
+          //Get.snackbar('Error', 'Failed to update book cover: ${response.body}');
           await _updateBookInDb(id);
           Get.back();
         }
@@ -355,7 +355,7 @@ class BookController extends GetxController {
         await updateEpisodeCoverApi(id, 0);
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred: $e');
+      //Get.snackbar('Error', 'An error occurred: $e');
     } finally {
       isLoading.value = false;
     }

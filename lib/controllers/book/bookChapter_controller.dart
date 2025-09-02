@@ -181,7 +181,6 @@ class BookChapterController extends GetxController {
       print("LoadStory completed, page count: ${allPages.length}");
     } catch (e) {
       print("Error in loadStory: $e");
-      Get.snackbar('Error', 'Failed to load story: $e');
       allPages.clear();
       allPageChapters.clear();
       allPageImages.clear();
@@ -278,20 +277,18 @@ class BookChapterController extends GetxController {
         if (response.statusCode == 200 || response.statusCode == 201) {
           await updateDatabaseStory();
           print("Successfully updated content for page $index via API");
-          Get.snackbar('Success', 'Changes saved successfully');
+          Get.snackbar('success'.tr, 'changes_saved_successfully'.tr);
         } else {
-          Get.snackbar('Error', 'Failed to update server: ${response.body}');
           await updateDatabaseStory();
         }
       } catch (e) {
         print("API call error: $e");
-        Get.snackbar('Error', 'Failed to save changes to server: $e');
         await updateDatabaseStory();
       }
     } else {
       await updateDatabaseStory();
       print("Updated content locally for page $index");
-      Get.snackbar('Success', 'Changes saved successfully');
+      Get.snackbar('success'.tr, 'changes_saved_successfully'.tr);
     }
   }
 

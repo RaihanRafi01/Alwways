@@ -127,8 +127,8 @@ class ChatLandingScreen extends StatelessWidget {
 
                       if (isFree == 'Free' && sectionIndex > 2) { // Index > 2 means 4th section or beyond
                         Get.snackbar(
-                          "Upgrade Required",
-                          "Free users can only access the first 3 sections. Please upgrade your subscription to access more.",
+                          "upgrade_required".tr,
+                          "upgrade_message".tr,
                           snackPosition: SnackPosition.TOP,
                           backgroundColor: Colors.red.withOpacity(0.9),
                           colorText: Colors.white,

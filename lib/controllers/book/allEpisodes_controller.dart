@@ -86,7 +86,7 @@ class AllEpisodesController extends GetxController {
       _flattenPages();
     } catch (e) {
       print("Error in loadAllEpisodes: $e");
-      Get.snackbar('Error', 'Failed to load episodes: $e');
+      Get.snackbar('warning'.tr, 'failed_to_load_episodes'.tr);
       flatPages.add({'type': 'error', 'message': 'No content yet'});
     } finally {
       isLoading.value = false;
@@ -330,10 +330,9 @@ class AllEpisodesController extends GetxController {
           print(
               "Successfully updated content for episode $episodeIndex, page $pageIndex via API");
         } else {
-          Get.snackbar('Error', 'Failed to update server: ${response.body}');
+
         }
       } catch (e) {
-        Get.snackbar('Error', 'API call error: $e');
       }
     } else {
       await updateDatabaseStory(episodeIndex);
