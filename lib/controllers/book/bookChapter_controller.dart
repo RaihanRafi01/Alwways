@@ -51,6 +51,11 @@ class BookChapterController extends GetxController {
     isLoading.value = true;
 
     try {
+      // Validate inputs
+      if (bookId.isEmpty || episodeId.isEmpty) {
+        throw Exception("Invalid bookId or episodeId");
+      }
+
       // Find the book
       final book = bookController.books.firstWhere(
             (b) => b.id == bookId,
@@ -58,18 +63,16 @@ class BookChapterController extends GetxController {
       );
       print("Book found: ${book.title}, Episodes: ${book.episodes.length}");
 
-      // Find the episode by ID or index
+      // Find the episode
       Episode episode;
       if (RegExp(r'^\d+$').hasMatch(episodeId)) {
-        // If episodeId is a number, treat it as an index
         final index = int.parse(episodeId);
         if (index < 0 || index >= book.episodes.length) {
           throw Exception("Invalid episode index: $episodeId");
         }
         episode = book.episodes[index];
-        this.episodeId = episode.id; // Update episodeId to actual ID
+        this.episodeId = episode.id;
       } else {
-        // Treat episodeId as an ID
         episode = book.episodes.firstWhere(
               (e) => e.id == episodeId,
           orElse: () => throw Exception("Episode not found: $episodeId"),
@@ -77,7 +80,7 @@ class BookChapterController extends GetxController {
       }
       print("Episode loaded: ${episode.title}, Episode ID: ${episode.id}");
 
-      // Fetch episode from database or use the one from book
+      // Fetch episode from database
       final db = await dbHelper.database;
       final episodeMaps = await db.query(
         'episodes',
@@ -88,13 +91,13 @@ class BookChapterController extends GetxController {
       Episode dbEpisode;
       if (episodeMaps.isNotEmpty) {
         dbEpisode = Episode.fromMap(episodeMaps.first);
-        print("Episode fetched from DB: ${dbEpisode.title}, Story: ${dbEpisode.story?.substring(0, dbEpisode.story != null && dbEpisode.story!.length > 50 ? 50 : dbEpisode.story?.length ?? 0)}...");
+        print("Episode fetched from DB: ${dbEpisode.title}");
       } else {
         dbEpisode = episode;
-        print("Episode from book: ${episode.title}, Story: ${episode.story?.substring(0, episode.story != null && episode.story!.length > 50 ? 50 : episode.story?.length ?? 0)}...");
+        print("Using episode from book: ${episode.title}");
       }
 
-      // Reset all lists to ensure clean state
+      // Reset all lists
       allPages.clear();
       allPageChapters.clear();
       allPageImages.clear();
@@ -110,14 +113,13 @@ class BookChapterController extends GetxController {
 
       // Check for story conversations
       final storyConversations = dbEpisode.conversations.where((c) => c['storyGenerated'] == true).toList();
-      print("Found ${storyConversations.length} story conversations: ${storyConversations.map((c) => c['_id']).toList()}");
+      print("Found ${storyConversations.length} story conversations");
 
       if (storyConversations.isNotEmpty) {
         usingConversations.value = true;
         if (storyConversations.length == 1) {
-          // Single conversation: Split the botResponse using _splitStoryContent
           story.value = storyConversations[0]['botResponse'] as String;
-          print("Single conversation, botResponse length: ${story.value.length}, content: ${story.value.substring(0, story.value.length < 100 ? story.value.length : 100)}...");
+          print("Single conversation, botResponse length: ${story.value.length}");
           _splitStoryContent(story.value, storyConversations[0]['_id'] as String, sections);
           pageConversationIds.value = List.generate(allPages.length, (_) => storyConversations[0]['_id'] as String);
           if (sections.length >= allPages.length) {
@@ -125,10 +127,10 @@ class BookChapterController extends GetxController {
           } else {
             allPageChapters.value = List.generate(allPages.length, (i) => "Chapter ${i + 1}");
           }
+          // Ensure allPageImages has one entry per story page + cover
           allPageImages.addAll(List<String?>.filled(allPages.length, null));
-          print("Split single conversation into ${allPages.length} pages");
+          print("Split single conversation into ${allPages.length} pages, allPageImages length: ${allPageImages.length}");
         } else {
-          // Multiple conversations: Each conversation is a page
           allPages.value = storyConversations.map((c) => c['botResponse'] as String).toList();
           pageConversationIds.value = storyConversations.map((c) => c['_id'] as String).toList();
           if (sections.length >= storyConversations.length) {
@@ -136,8 +138,9 @@ class BookChapterController extends GetxController {
           } else {
             allPageChapters.value = List.generate(allPages.length, (i) => "Chapter ${i + 1}");
           }
+          // Ensure allPageImages has one entry per story page + cover
           allPageImages.addAll(List<String?>.filled(allPages.length, null));
-          print("Loaded ${allPages.length} pages from conversations: ${allPages.map((p) => p.substring(0, p.length < 50 ? p.length : 50)).toList()}");
+          print("Loaded ${allPages.length} pages from conversations, allPageImages length: ${allPageImages.length}");
         }
       } else {
         usingConversations.value = false;
@@ -151,46 +154,77 @@ class BookChapterController extends GetxController {
           if (episodeIndex == -1) {
             throw Exception("Episode not found in book episodes");
           }
-          final response = await apiService.generateStory(bookId, episodeIndex.toString());
-          print("No story field, fetching from API-------statusCode---------> ${response.statusCode}");
-          print("No story field, fetching from API--------body--------> ${response.body}");
-          if (response.statusCode == 200) {
-            final data = jsonDecode(response.body);
-            story.value = data['story'];
-            print("Story fetched from API, length: ${story.value.length}, content: ${story.value.substring(0, story.value.length < 50 ? story.value.length : 50)}...");
-            _splitStoryContent(story.value, '', sections);
 
-            final updatedEpisode = dbEpisode.copyWith(story: story.value);
-            if (episodeMaps.isEmpty) {
-              await dbHelper.insertEpisode(updatedEpisode);
-            } else {
-              await dbHelper.updateEpisode(updatedEpisode);
+          int retries = 3;
+          while (retries > 0) {
+            try {
+              final response = await apiService.generateStory(bookId, episodeIndex.toString());
+              print("API response status: ${response.statusCode}");
+              if (response.statusCode == 200) {
+                final data = jsonDecode(response.body);
+                story.value = data['story'];
+                print("Story fetched from API, length: ${story.value.length}");
+                _splitStoryContent(story.value, '', sections);
+
+                // Save to database
+                final updatedEpisode = dbEpisode.copyWith(story: story.value);
+                if (episodeMaps.isEmpty) {
+                  await dbHelper.insertEpisode(updatedEpisode);
+                } else {
+                  await dbHelper.updateEpisode(updatedEpisode);
+                }
+                print("Saved API-fetched story to database");
+                break;
+              } else {
+                throw Exception("API failed with status: ${response.statusCode}");
+              }
+            } catch (e) {
+              retries--;
+              print("API retry $retries failed: $e");
+              if (retries == 0) {
+                throw Exception("Failed to fetch story after retries: $e");
+              }
+              await Future.delayed(Duration(seconds: 1));
             }
-            print("Fetched and saved story from API for episode ${episode.id}");
-          } else {
-            throw Exception("Failed to generate story: ${response.statusCode}");
           }
         }
+        // Ensure allPageImages has one entry per story page + cover
+        allPageImages.addAll(List<String?>.filled(allPages.length, null));
+        print("Added images for story pages, allPageImages length: ${allPageImages.length}");
       }
 
-      // Reset page controller to the first page
+      // Ensure at least two pages (cover + one story page)
+      if (allPages.isEmpty) {
+        allPages.add("Start your story here...");
+        allPageChapters.add(sections.isNotEmpty ? sections[0].localizedName : "Chapter 1");
+        allPageImages.add(null);
+        pageConversationIds.add('');
+        print("Added fallback page due to empty content");
+      }
+
+      // Reset page controller
       if (pageController.hasClients) {
         pageController.jumpToPage(0);
       }
       currentPage.value = 0;
-      print("LoadStory completed, page count: ${allPages.length}");
+      print("LoadStory completed, page count: ${allPages.length}, chapters: ${allPageChapters.length}, images: ${allPageImages.length}");
     } catch (e) {
       print("Error in loadStory: $e");
       allPages.clear();
       allPageChapters.clear();
       allPageImages.clear();
       pageConversationIds.clear();
-      allPages.add("No stories yet");
-      allPageChapters.add("Error");
-      allPageImages.add(null);
+      allPages.add("Start your story here...");
+      allPageChapters.add("Chapter 1");
+      allPageImages.add(episodeCoverImage);
+      allPageImages.add(null); // Ensure at least one story page
       pageConversationIds.add('');
     } finally {
       isLoading.value = false;
+      allPages.refresh();
+      allPageChapters.refresh();
+      allPageImages.refresh();
+      pageConversationIds.refresh();
     }
   }
 
@@ -216,6 +250,7 @@ class BookChapterController extends GetxController {
       allPages.add('');
       allPageChapters.add(sections.isNotEmpty ? sections[0].localizedName : 'Chapter 1');
       pageConversationIds.add(conversationId);
+      allPageImages.add(null); // Ensure image entry for empty page
       return;
     }
 
@@ -230,6 +265,7 @@ class BookChapterController extends GetxController {
         allPages.add(pageContent);
         allPageChapters.add(sections.length > allPages.length - 1 ? sections[allPages.length - 1].localizedName : 'Chapter ${allPages.length}');
         pageConversationIds.add(conversationId);
+        allPageImages.add(null); // Add null for each story page
         print("Word page ${allPages.length}: ${pageContent.length > 60 ? pageContent.substring(0, 60) : pageContent}...");
       }
     }
@@ -239,6 +275,7 @@ class BookChapterController extends GetxController {
       allPages.add(story);
       allPageChapters.add(sections.isNotEmpty ? sections[0].localizedName : 'Chapter 1');
       pageConversationIds.add(conversationId);
+      allPageImages.add(null);
       print("Added single page for short content: $story");
     }
 
@@ -247,12 +284,14 @@ class BookChapterController extends GetxController {
       allPages.add('');
       allPageChapters.add(sections.length > allPages.length - 1 ? sections[allPages.length - 1].localizedName : 'Chapter ${allPages.length}');
       pageConversationIds.add(conversationId);
-      print("Added empty page to reach minimum page count: ${allPages.length}");
+      allPageImages.add(null); // Add null for each empty page
+      print(" add empty page to reach minimum page count: ${allPages.length}");
     }
 
     print("Split story into ${allPages.length} pages based on words");
     print("Final page count: ${allPages.length}");
     print("allPages content: $allPages");
+    print("allPageImages length: ${allPageImages.length}");
   }
 
   Future<void> updateChapterContent(int index, String newContent) async {

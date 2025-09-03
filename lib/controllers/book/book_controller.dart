@@ -7,6 +7,7 @@ import '../../services/api_service/api_service.dart';
 import '../../services/database/databaseHelper.dart';
 import '../../services/model/bookModel.dart';
 import '../chat/botLanding_controller.dart';
+import 'bookLanding_controller.dart';
 
 class BookController extends GetxController {
   TextEditingController bookNameController = TextEditingController();
@@ -271,6 +272,8 @@ class BookController extends GetxController {
         final botController = Get.find<BotController>();
         await botController.fetchSections();
         Get.snackbar('success'.tr, 'successfully_created_the_book'.tr);
+        final bookLandingController = Get.find<BookLandingController>();
+        await bookLandingController.fetchBooks();
       } else {
         Get.snackbar('warning'.tr, 'failed_to_create_book'.tr);
       }

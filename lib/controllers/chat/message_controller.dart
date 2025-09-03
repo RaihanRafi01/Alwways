@@ -227,7 +227,8 @@ class MessageController extends GetxController {
     userAnswers.add({'question': currentQuestion, 'answer': userAnswer});
 
     if (currentQuestion ==
-        "What title would you like to give the book? Don't worry, you can change it anytime.") {
+        "What title would you like to give the book? Don't worry, you can change it anytime." || currentQuestion ==
+        "¿Qué título quieres ponerle al libro? No te preocupes, puedes cambiarlo cuando quieras.") {
       bookTitle.value = userAnswer;
       print("Stored book title: ${bookTitle.value}");
     }
@@ -427,11 +428,9 @@ class MessageController extends GetxController {
     Section? currentSection;
 
     try {
-      currentSection =
-          sections.firstWhere((section) => section.id == sectionId);
+      currentSection = sections.firstWhere((section) => section.id == sectionId);
     } catch (e) {
-      print(
-          "Error: No section found for sectionId: $sectionId  Error :::::::::::::::::::::::: $e");
+      print("Error: No section found for sectionId: $sectionId  Error :::::::::::::::::::::::: $e");
       return;
     }
 
@@ -440,8 +439,7 @@ class MessageController extends GetxController {
     final episodeId = botController.selectedEpisodeId.value;
     final history = await dbHelper.getChatHistory(bookId, episodeId);
 
-    final mainQuestions = questionController.questions.map((q) =>
-    q.localizedText).toList();
+    final mainQuestions = questionController.questions.map((q) => q.localizedText).toList();
     final uniqueAnsweredQuestions = history
         .where((entry) => mainQuestions.contains(entry['question']))
         .map((entry) => entry['question'])
@@ -449,19 +447,16 @@ class MessageController extends GetxController {
         .toList();
     final answeredMainQuestions = uniqueAnsweredQuestions.length;
 
-    final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions /
-        totalQuestions) * 100 : 0;
-    print("Section: ${currentSection
-        .localizedName}, Total: $totalQuestions, Answered: $answeredMainQuestions, Completion: ${completionPercentage
-        .toStringAsFixed(2)}%");
+    final completionPercentage = totalQuestions > 0 ? (answeredMainQuestions / totalQuestions) * 100 : 0;
+    print("Section: ${currentSection.localizedName}, Total: $totalQuestions, Answered: $answeredMainQuestions, Completion: ${completionPercentage.toStringAsFixed(2)}%");
 
     final episodeIndex = botController.selectedSectionIndex.toString() ?? '0';
     print("::::::::::::::::::::::Selected section index: $episodeIndex");
+
     try {
-      final response = await apiService.updateEpisodePercentage(
-          bookId, episodeIndex, completionPercentage);
-      print(
-          ":::updateEpisodePercentage::: Status Code: ${response.statusCode}");
+      // Update episode percentage
+      final response = await apiService.updateEpisodePercentage(bookId, episodeIndex, completionPercentage);
+      print(":::updateEpisodePercentage::: Status Code: ${response.statusCode}");
       print(":::updateEpisodePercentage::: Response Body: ${response.body}");
       if (response.statusCode == 200 || response.statusCode == 201) {
         final db = await dbHelper.database;
@@ -472,19 +467,75 @@ class MessageController extends GetxController {
         );
         if (episodeMaps.isNotEmpty) {
           final episode = Episode.fromMap(episodeMaps.first);
-          final updatedEpisode = episode.copyWith(
-              percentage: completionPercentage.toDouble());
+          final updatedEpisode = episode.copyWith(percentage: completionPercentage.toDouble());
           await dbHelper.updateEpisode(updatedEpisode);
-          print("Updated episode percentage in database: ${updatedEpisode
-              .percentage}");
+          print("Updated episode percentage in database: ${updatedEpisode.percentage}");
         }
-        final bookController = Get.put(BookLandingController());
+
+        // Update book percentage
+        await _updateBookPercentage(bookId);
+
+        // Refresh BookLandingController
+        final bookController = Get.find<BookLandingController>();
         await bookController.fetchBooks();
         print("Refreshed BookLandingController with updated data");
-      } else {
       }
     } catch (e) {
       print("Error updating percentage: $e");
+    }
+  }
+
+  Future<void> _updateBookPercentage(String bookId) async {
+    try {
+      final db = await dbHelper.database;
+      final episodeMaps = await db.query(
+        'episodes',
+        where: 'bookId = ?',
+        whereArgs: [bookId],
+      );
+
+      if (episodeMaps.isEmpty) {
+        print("No episodes found for bookId: $bookId");
+        return;
+      }
+
+      // Calculate average percentage of all episodes
+      final episodes = episodeMaps.map((map) => Episode.fromMap(map)).toList();
+      final totalPercentage = episodes.fold<double>(
+        0.0,
+            (sum, episode) => sum + (episode.percentage ?? 0.0),
+      );
+      final bookPercentage = episodes.isNotEmpty ? totalPercentage / episodes.length : 0.0;
+      print("Calculated book percentage for bookId $bookId: $bookPercentage%");
+
+      // Update book in database
+      final bookMaps = await db.query(
+        'books',
+        where: 'id = ?',
+        whereArgs: [bookId],
+      );
+      if (bookMaps.isNotEmpty) {
+        final book = Book.fromMap(bookMaps.first);
+        final updatedBook = book.copyWith(percentage: bookPercentage);
+        await db.update(
+          'books',
+          updatedBook.toMap(),
+          where: 'id = ?',
+          whereArgs: [bookId],
+        );
+        print("Updated book percentage in database: $bookPercentage%");
+      }
+
+      // Update API if necessary
+      try {
+        final response = await apiService.updateBookPercentage(bookId, bookPercentage);
+        print(":::updateBookPercentage::: Status Code: ${response.statusCode}");
+        print(":::updateBookPercentage::: Response Body: ${response.body}");
+      } catch (e) {
+        print("Error updating book percentage via API: $e");
+      }
+    } catch (e) {
+      print("Error updating book percentage: $e");
     }
   }
 

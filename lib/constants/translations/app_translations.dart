@@ -163,8 +163,10 @@ class AppTranslations extends Translations {
       "could_not_open_PDF": "Could not open PDF again later",
       "pDF_generated_successfully": "PDF generated successfully!",
       "failed_to_generate_PDF": "Failed to generate PDF please try again later",
+      "book_preview_text": "New chapters will be added and existing chapters will change as you chat with the AI Bot.",
     },
     'es_ES': {
+      "book_preview_text": "Se agregarán nuevos capítulos y los capítulos existentes cambiarán a medida que chateas con el bot de IA.",
       "failed_to_generate_PDF": "No se pudo generar el PDF. Inténtelo de nuevo más tarde.",
       "pDF_generated_successfully": "¡PDF generado exitosamente!",
       "could_not_open_PDF": "No se pudo abrir el PDF nuevamente más tarde",

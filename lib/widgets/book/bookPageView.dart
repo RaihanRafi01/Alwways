@@ -25,166 +25,161 @@ class BookPageView extends StatelessWidget {
     required this.isEpisode,
     required this.episodeIndex,
   }) {
-    print("BookPageView - Raw Get.arguments: ${Get.arguments}");
-    print("BookPageView - bookId: $bookId, episodeIndex: $episodeIndex");
-    print("BookPageView - episode name: $title");
-    print("BookPageView - coverImage: $coverImage");
+    print("BookPageView - bookId: $bookId, episodeIndex: $episodeIndex, title: $title, coverImage: $coverImage");
     controller.loadStory(bookId, episodeIndex, coverImage);
   }
 
   @override
   Widget build(BuildContext context) {
-    Get.put(AllEpisodesController());
-    // Convert episodeIndex to chapter number (e.g., "0" -> "Chapter 1")
-    final chapterNumber = (int.parse(episodeIndex) + 1).toString();
-
-    // Define a common text style for all story content
     const storyTextStyle = TextStyle(
       fontSize: 16,
       color: AppColors.bookTextColor,
-      height: 1.5, // Ensure consistent line spacing
-      fontWeight: FontWeight.normal, // Explicitly set to avoid inherited variations
+      height: 1.5,
+      fontWeight: FontWeight.normal,
     );
 
     return Scaffold(
       backgroundColor: AppColors.appBackground,
-      appBar: const CustomAppbar(title: ''),
+      appBar: CustomAppbar(title: title),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (controller.allPages.isEmpty) {
+          return const Center(child: Text('No content available'));
+        }
         return Column(
           children: [
             Expanded(
-              child: Obx(() {
-                final pageCount = controller.allPages.isEmpty ? 1 : controller.allPages.length + 1;
-                return PageView.builder(
-                  controller: controller.pageController,
-                  itemCount: pageCount,
-                  itemBuilder: (context, index) {
-                    print("Building page at index: $index, pageCount: $pageCount");
-                    print("allPages.length: ${controller.allPages.length}, allPageChapters.length: ${controller.allPageChapters.length}, allPageImages.length: ${controller.allPageImages.length}");
-                    if (index == 0) {
-                      return Center(
-                        child: BookCover(
-                          haveTitle: true,
-                          isGrid: false,
-                          title: title,
-                          coverImage: coverImage,
-                          bookId: bookId,
-                          isEpisode: isEpisode,
-                        ),
-                      );
-                    }
-                    final pageIndex = index - 1;
-                    if (controller.allPages.isEmpty ||
-                        pageIndex >= controller.allPages.length ||
-                        pageIndex >= controller.allPageChapters.length ||
-                        pageIndex >= controller.allPageImages.length) {
-                      return const Center(child: Text('No content available'));
-                    }
+              child: PageView.builder(
+                controller: controller.pageController,
+                itemCount: controller.allPages.length + 1, // Cover + story pages
+                onPageChanged: (index) {
+                  controller.currentPage.value = index;
+                  print("Page changed to index: $index");
+                },
+                itemBuilder: (context, index) {
+                  print("Building page at index: $index, pageCount: ${controller.allPages.length + 1}");
+                  print("allPages.length: ${controller.allPages.length}, allPageChapters.length: ${controller.allPageChapters.length}, allPageImages.length: ${controller.allPageImages.length}");
+                  if (index == 0) {
+                    return Center(
+                      child: BookCover(
+                        haveTitle: true,
+                        isGrid: false,
+                        title: title,
+                        coverImage: coverImage,
+                        bookId: bookId,
+                        isEpisode: isEpisode,
+                      ),
+                    );
+                  }
+                  final pageIndex = index - 1;
+                  if (pageIndex >= controller.allPages.length ||
+                      pageIndex >= controller.allPageChapters.length) {
+                    return const Center(child: Text('Invalid page index'));
+                  }
+                  // Relax the check for allPageImages to avoid failure
+                  if (pageIndex >= controller.allPageImages.length - 1) {
+                    print("Warning: allPageImages too short, expected at least ${pageIndex + 1}, got ${controller.allPageImages.length}");
+                  }
 
-                    // Prepare the story content
-                    final storyContent = controller.allPages[pageIndex];
+                  final storyContent = controller.allPages[pageIndex];
+                  final chapterTitle = controller.allPageChapters[pageIndex];
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
-                      child: Container(
-                        color: AppColors.bookBackground,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                children: [
-                                  const SizedBox(height: 30),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    child: Container(
+                      color: AppColors.bookBackground,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              children: [
+                                const SizedBox(height: 30),
+                                Text(
+                                  chapterTitle,
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                const SizedBox(height: 20),
+                                SvgPicture.asset(
+                                  "assets/images/book/chapter_underline_1.svg",
+                                  width: 140,
+                                ),
+                                const SizedBox(height: 20),
+                                if (pageIndex == 0)
                                   Text(
-                                    "${'chapter'.tr} $chapterNumber",
-                                    style: const TextStyle(fontSize: 18),
+                                    title,
+                                    style: const TextStyle(fontSize: 20),
                                   ),
-                                  const SizedBox(height: 20),
-                                  SvgPicture.asset(
-                                    "assets/images/book/chapter_underline_1.svg",
-                                    width: 140,
-                                  ),
-                                  const SizedBox(height: 20),
-                                  if (index == 1) // Show title only on second page
-                                    Text(
-                                      title,
-                                      style: const TextStyle(fontSize: 20),
-                                    ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: pageIndex == 0 // Apply drop cap only to the first story page
-                                        ? RichText(
-                                      text: TextSpan(
-                                        style: DefaultTextStyle.of(context).style.copyWith(
-                                          // Inherit defaults but override with storyTextStyle
-                                          fontSize: storyTextStyle.fontSize,
-                                          color: storyTextStyle.color,
-                                          height: storyTextStyle.height,
-                                          fontWeight: storyTextStyle.fontWeight,
-                                        ),
-                                        children: [
-                                          // First letter with larger size
-                                          TextSpan(
-                                            text: storyContent.isNotEmpty ? storyContent[0] : '',
-                                            style: storyTextStyle.copyWith(
-                                              fontSize: 40, // Larger size for the first letter
-                                            ),
-                                          ),
-                                          // Rest of the content with matching style
-                                          TextSpan(
-                                            text: storyContent.isNotEmpty ? storyContent.substring(1) : '',
-                                            style: storyTextStyle, // Use the same style as other pages
-                                          ),
-                                        ],
+                                Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: pageIndex == 0
+                                      ? RichText(
+                                    text: TextSpan(
+                                      style: DefaultTextStyle.of(context).style.copyWith(
+                                        fontSize: storyTextStyle.fontSize,
+                                        color: storyTextStyle.color,
+                                        height: storyTextStyle.height,
+                                        fontWeight: storyTextStyle.fontWeight,
                                       ),
-                                    )
-                                        : Text(
-                                      storyContent,
-                                      style: storyTextStyle, // Use the same style as the first page
+                                      children: [
+                                        TextSpan(
+                                          text: storyContent.isNotEmpty ? storyContent[0] : '',
+                                          style: storyTextStyle.copyWith(
+                                            fontSize: 40,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: storyContent.isNotEmpty ? storyContent.substring(1) : '',
+                                          style: storyTextStyle,
+                                        ),
+                                      ],
                                     ),
+                                  )
+                                      : Text(
+                                    storyContent,
+                                    style: storyTextStyle,
                                   ),
-                                ],
-                              ),
-                              Align(
-                                alignment: Alignment.bottomRight,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 16, right: 16),
-                                  child: GestureDetector(
-                                    onTap: () async {
-                                      final isCover = controller.allPages[pageIndex].contains("ChapterCover");
-                                      final result = await Get.to(() => BookEditPage(
-                                        episodeIndex: int.parse(episodeIndex),
-                                        index: pageIndex,
-                                        chapterTitle: controller.allPageChapters[pageIndex],
-                                        chapterContent: controller.allPages[pageIndex],
-                                        isCover: isCover,
-                                      ));
-                                      if (result != null) {
-                                        await controller.updateChapterTitle(pageIndex, result["title"]);
-                                        await controller.updateChapterContent(pageIndex, result["content"]);
-                                      }
-                                    },
-                                    child: SvgPicture.asset(
-                                      "assets/images/book/edit_icon.svg",
-                                      height: 24,
-                                      width: 24,
-                                    ),
+                                ),
+                              ],
+                            ),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 16, right: 16),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final isCover = storyContent.contains("ChapterCover");
+                                    final result = await Get.to(() => BookEditPage(
+                                      episodeIndex: int.parse(episodeIndex),
+                                      index: pageIndex,
+                                      chapterTitle: chapterTitle,
+                                      chapterContent: storyContent,
+                                      isCover: isCover,
+                                    ));
+                                    if (result != null) {
+                                      await controller.updateChapterTitle(pageIndex, result["title"]);
+                                      await controller.updateChapterContent(pageIndex, result["content"]);
+                                    }
+                                  },
+                                  child: SvgPicture.asset(
+                                    "assets/images/book/edit_icon.svg",
+                                    height: 24,
+                                    width: 24,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  },
-                );
-              }),
+                    ),
+                  );
+                },
+              ),
             ),
-            const SizedBox(height: 100),
+            const SizedBox(height: 20),
           ],
         );
       }),

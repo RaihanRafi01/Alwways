@@ -125,9 +125,9 @@ class AllEpisodesView extends StatelessWidget {
                                 width: 20,
                               ),
                               const SizedBox(width: 20),
-                              const Flexible(
+                              Flexible(
                                 child: Text(
-                                  "New chapters will be added and existing chapters will change as you chat with the AI Bot.",
+                                  "book_preview_text".tr,
                                   overflow: TextOverflow.clip,
                                 ),
                               ),
