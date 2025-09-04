@@ -30,7 +30,8 @@ class BookLandingController extends GetxController {
       for (var book in apiBooks) {
         print("Book '${book.title}' coverImage: '${book.coverImage}'");
         for (var episode in book.episodes) {
-          print("Episode '${episode.title}' coverImage: '${episode.coverImage}'");
+          print(
+              "Episode '${episode.title}' coverImage: '${episode.coverImage}'");
         }
       }
 
@@ -38,11 +39,13 @@ class BookLandingController extends GetxController {
         final dbBook = books.firstWhereOrNull((b) => b.id == apiBook.id);
         if (dbBook != null) {
           final mergedEpisodes = apiBook.episodes.map((apiEpisode) {
-            final dbEpisode = dbBook.episodes.firstWhereOrNull((e) => e.id == apiEpisode.id);
+            final dbEpisode = dbBook.episodes.firstWhereOrNull((e) =>
+            e.id == apiEpisode.id);
             if (dbEpisode != null && dbEpisode.story != null) {
               return apiEpisode.copyWith(
                 story: dbEpisode.story,
-                backgroundCover: dbEpisode.backgroundCover ?? apiEpisode.backgroundCover,
+                backgroundCover: dbEpisode.backgroundCover ??
+                    apiEpisode.backgroundCover,
               );
             }
             return apiEpisode;
